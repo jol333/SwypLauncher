@@ -102,7 +102,7 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for gu
 
 ## License
 
-This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](LICENSE.md) file for details.
 
 ## Privacy Policy
 
@@ -119,4 +119,4 @@ For issues, questions, or feature requests, please open an issue on GitHub.
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history
 - **[PRIVACY_POLICY.md](PRIVACY_POLICY.md)** - Privacy policy
-- **[LICENSE](LICENSE)** - Apache License, Version 2.0
+- **[LICENSE](LICENSE.md)** - Apache License, Version 2.0

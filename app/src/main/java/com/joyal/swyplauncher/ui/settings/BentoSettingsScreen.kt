@@ -355,7 +355,7 @@ fun BentoSettingsScreen(
                                 style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
                                 color = Color.Gray,
                                 modifier = Modifier.clickable { 
-                                    uriHandler.openUri("https://github.com/jol333/swyplauncher/blob/main/LICENSE")
+                                    uriHandler.openUri("https://github.com/jol333/SwypLauncher/blob/main/LICENSE.md")
                                 }
                             )
                         }
