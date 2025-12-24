@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Swyp Launcher</string>
+    
+    <!-- Shortcut labels -->
+    <string name="shortcut_handwriting_short">Draw</string>
+    <string name="shortcut_handwriting_long">Handwriting Mode</string>
+    <string name="shortcut_index_short">Index</string>
+    <string name="shortcut_index_long">Index Mode</string>
+    <string name="shortcut_keyboard_short">Type</string>
+    <string name="shortcut_keyboard_long">Keyboard Mode</string>
+    <string name="shortcut_voice_short">Voice</string>
+    <string name="shortcut_voice_long">Voice Mode</string>
+</resources>

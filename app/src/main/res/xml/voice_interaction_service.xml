@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<voice-interaction-service
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:sessionService="com.joyal.swyplauncher.service.AssistantVoiceInteractionSessionService"
+    android:recognitionService="com.joyal.swyplauncher.service.AssistantRecognitionService"
+    android:supportsAssist="true"
+    android:supportsLaunchVoiceAssistFromKeyguard="true"
+    android:supportsLocalInteraction="true"
+    android:settingsActivity="com.joyal.swyplauncher.MainActivity" />

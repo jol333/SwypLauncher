@@ -1,0 +1,34 @@
+Swyp Launcher
+Copyright 2025 Swyp Launcher Contributors
+
+This product uses the following software:
+
+1. Android Open Source Project
+   Copyright (c) The Android Open Source Project
+   Licensed under the Apache License, Version 2.0
+   http://source.android.com/
+
+2. Kotlin
+   Copyright (c) JetBrains s.r.o. and contributors
+   Licensed under the Apache License, Version 2.0
+   https://kotlinlang.org/
+
+3. Coil
+   Copyright (c) Coil Contributors
+   Licensed under the Apache License, Version 2.0
+   https://coil-kt.github.io/coil/
+
+4. Reorderable
+   Copyright (c) Calvin
+   Licensed under the Apache License, Version 2.0
+   https://github.com/Calvin-LL/Reorderable
+
+5. JUnit 4
+   Copyright (c) JUnit.org
+   Licensed under the Eclipse Public License 1.0
+   https://junit.org/junit4/license.html
+
+6. Google ML Kit
+   Copyright (c) Google LLC
+   Subject to Google APIs Terms of Service
+   https://developers.google.com/ml-kit/terms
