@@ -8,6 +8,19 @@ An Android digital assistant that can be used as an app launcher!
 Swyp Launcher is a modern Android assistant application that serves as a launcher to launch apps quickly. The app provides four distinct interaction modes (handwriting, index, keyboard, and voice) optimized for single-handed operation. All UI elements are positioned in the bottom half of the screen for easy thumb access. It's completely free and all four modes run locally without any internet connection.
 
 
+
+<table border="0">
+  <tr border="0">
+    <td border="0"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" target="_blank"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="360" alt="Screenshot 1"/></a></td>
+    <td border="0"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" target="_blank"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="360" alt="Screenshot 2"/></a></td>
+    <td border="0"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" target="_blank"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="360" alt="Screenshot 3"/></a></td>
+    <td border="0"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" target="_blank"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="360" alt="Screenshot 4"/></a></td>
+    <td border="0"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" target="_blank"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" width="360" alt="Screenshot 5"/></a></td>
+    <td border="0"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" target="_blank"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" width="360" alt="Screenshot 6"/></a></td>
+    <td border="0"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/7.jpg" target="_blank"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/7.jpg" width="360" alt="Screenshot 7"/></a></td>
+  </tr>
+</table>
+
 ## Features
 
 ### Four Interaction Modes
