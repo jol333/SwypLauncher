@@ -1,7 +1,7 @@
 package com.joyal.swyplauncher.ui
 
 import android.content.Intent
-import android.content.res.Configuration
+
 import android.os.Build
 import android.os.Bundle
 import android.view.RoundedCorner
@@ -46,7 +46,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ScreenRotation
+
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes
@@ -127,20 +127,6 @@ class AssistActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Check if the device is in landscape mode
-        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            // Show Compose-based toast with rotate icon and finish
-            setContent {
-                SwypLauncherTheme {
-                    LandscapeModeToast(onTimeout = { finish() })
-                }
-            }
-            return
-        }
-
-        // Lock to portrait mode after passing the check
-        requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         // Loads apps before composition
         prewarmLauncherViewModel
@@ -799,40 +785,7 @@ fun UsageStatsPermissionPromptDialog(
     )
 }
 
-@Composable
-fun LandscapeModeToast(onTimeout: () -> Unit) {
-    LaunchedEffect(Unit) {
-        delay(2000) // Show for 2 seconds like a toast
-        onTimeout()
-    }
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = Color(0xE6323232),
-            contentColor = Color.White
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.ScreenRotation,
-                    contentDescription = "Rotate phone",
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = "Swyp Launcher works only in portrait mode",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-    }
-}
 
 @Composable
 private fun InvertedCorners(
