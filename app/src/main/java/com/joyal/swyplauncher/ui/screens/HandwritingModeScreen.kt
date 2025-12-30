@@ -60,6 +60,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -248,14 +249,19 @@ fun HandwritingModeScreen(
         currentPath.clear()
     }
 
+    // Orientation detection for responsive layout
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val canvasHeight = if (isLandscape) 160.dp else 260.dp
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Drawing canvas area - fixed height to prevent expansion when scrolling
+        // Drawing canvas area - responsive height based on orientation
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(280.dp)
+                .height(canvasHeight)
         ) {
             Canvas(
                 modifier = Modifier

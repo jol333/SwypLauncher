@@ -123,6 +123,12 @@ fun IndexModeScreen(
                 val lazyListState = rememberLazyListState()
                 val configuration = LocalConfiguration.current
                 val density = LocalDensity.current
+                
+                // Orientation-aware settings for alphabet grid
+                val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+                val alphabetGridColumns = if (isLandscape) 10 else 6
+                val alphabetItemSize = if (isLandscape) 48.dp else 64.dp
+                val alphabetItemSpacing = if (isLandscape) 8.dp else 12.dp
 
                 // Auto-scroll to center selected letter
                 LaunchedEffect(selectedLetter, isExpanded) {
@@ -178,12 +184,12 @@ fun IndexModeScreen(
                             }
                         }
                     } else {
-                        // Grid layout
+                        // Grid layout - more columns in landscape
                         LazyVerticalGrid(
-                            columns = GridCells.Fixed(6),
+                            columns = GridCells.Fixed(alphabetGridColumns),
                             contentPadding = PaddingValues(0.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(alphabetItemSpacing),
+                            verticalArrangement = Arrangement.spacedBy(alphabetItemSpacing),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             items(
@@ -194,6 +200,7 @@ fun IndexModeScreen(
                                     letter = letter,
                                     isSelected = false,
                                     isBlurEnabled = isBlurEnabled,
+                                    itemSize = alphabetItemSize,
                                     onClick = {
                                         indexViewModel.setSelectedLetter(letter)
                                         indexViewModel.setExpanded(true)
@@ -373,7 +380,8 @@ fun LetterIndexItem(
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isBlurEnabled: Boolean = false
+    isBlurEnabled: Boolean = false,
+    itemSize: androidx.compose.ui.unit.Dp = 64.dp
 ) {
     val gradientBrush = Brush.horizontalGradient(
         colors = listOf(
@@ -396,10 +404,13 @@ fun LetterIndexItem(
     }
     val borderBrush = if (isSelected) selectedGradientBrush else gradientBrush
 
+    // Adjust text style based on item size
+    val textStyle = if (itemSize < 64.dp) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium
+
     Surface(
         onClick = onClick,
         modifier = modifier
-            .size(64.dp)
+            .size(itemSize)
             .animateContentSize(
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -420,7 +431,7 @@ fun LetterIndexItem(
         ) {
             Text(
                 text = letter.toString(),
-                style = MaterialTheme.typography.headlineMedium,
+                style = textStyle,
                 fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold,
                 color = if (isSelected) Color(0xFFFFFFFF) else Color(0xFFE0E0E0)
             )

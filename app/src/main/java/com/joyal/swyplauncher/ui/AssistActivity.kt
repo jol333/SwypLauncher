@@ -29,6 +29,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -41,6 +42,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -84,6 +86,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -261,11 +264,15 @@ fun AssistantScreen(
     // Track the initial mode to determine if keyboard should open immediately
     val initialMode = remember { selectedMode }
 
-    // Constants and core state
-    val minSheetFraction = 0.64f
+    // Orientation detection
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+
+    // Constants and core state - landscape uses 90% height, portrait uses 64%-100%
+    val minSheetFraction = if (isLandscape) 0.90f else 0.64f
     val maxSheetFraction = 1f
     val dismissThresholdPx = 300f
-    val sheetFractionAnim = remember { Animatable(minSheetFraction) }
+    val sheetFractionAnim = remember(isLandscape) { Animatable(minSheetFraction) }
     val dragOffsetY = remember { Animatable(0f) }
 
     // Pager state for horizontal swiping between modes
@@ -611,95 +618,173 @@ fun AssistantScreen(
                         }
 
                         Box(modifier = Modifier.fillMaxSize()) {
-                            Column(modifier = Modifier.fillMaxSize()) {
+                            // Orientation-aware layout
+                            if (isLandscape) {
+                                // Landscape: Horizontal layout with vertical mode switcher on left
+                                Row(modifier = Modifier.fillMaxSize()) {
+                                    // Left side: Vertical mode switcher with dynamic insets for camera notch
+                                    // Use status bar height (notch area in landscape) + 8dp for proper spacing
+                                    val notchPadding = with(LocalDensity.current) {
+                                        WindowInsets.statusBars.getTop(this).toDp() + 8.dp
+                                    }
+                                    val leftSystemInset = with(LocalDensity.current) {
+                                        WindowInsets.systemBars.getLeft(this, androidx.compose.ui.unit.LayoutDirection.Ltr).toDp()
+                                    }
+                                    VerticalModeSwitcher(
+                                        selectedMode = selectedMode,
+                                        enabledModes = modes,
+                                        onModeSelected = modeViewModel::setMode,
+                                        onShowHiddenApps = authenticateForHiddenApps,
+                                        isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                        modifier = Modifier
+                                            .fillMaxHeight()
+                                            .padding(start = leftSystemInset + notchPadding, end = 12.dp)
+                                    )
 
-                                ModeSwitcher(
-                                    selectedMode = selectedMode,
-                                    enabledModes = modes,
-                                    onModeSelected = modeViewModel::setMode,
-                                    onShowHiddenApps = authenticateForHiddenApps,
-                                    isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = topPadding)
-                                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                                )
+                                    // Right side: Mode content with HorizontalPager
+                                    HorizontalPager(
+                                        state = pagerState,
+                                        modifier = Modifier
+                                            .fillMaxHeight()
+                                            .weight(1f),
+                                        beyondViewportPageCount = 0
+                                    ) { page ->
+                                        when (val mode = modes[page]) {
+                                            LauncherMode.HANDWRITING -> HandwritingModeScreen(
+                                                onDismiss = { handleDismiss(true) },
+                                                launcherViewModel = launcherViewModel,
+                                                onAddShortcut = { appId ->
+                                                    shortcutAppId = appId
+                                                    showShortcutEditor = true
+                                                }
+                                            )
 
+                                            LauncherMode.INDEX -> IndexModeScreen(
+                                                onDismiss = { handleDismiss(true) },
+                                                launcherViewModel = launcherViewModel,
+                                                isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                                onAddShortcut = { appId ->
+                                                    shortcutAppId = appId
+                                                    showShortcutEditor = true
+                                                }
+                                            )
 
-                                // Mode-specific content with HorizontalPager
-                                HorizontalPager(
-                                    state = pagerState,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f),
-                                    beyondViewportPageCount = 0 // Only compose visible page
-                                ) { page ->
-                                    when (val mode = modes[page]) {
-                                        LauncherMode.HANDWRITING -> HandwritingModeScreen(
-                                            onDismiss = { handleDismiss(true) },
-                                            launcherViewModel = launcherViewModel,
-                                            onAddShortcut = { appId ->
-                                                shortcutAppId = appId
-                                                showShortcutEditor = true
-                                            }
-                                        )
+                                            LauncherMode.KEYBOARD -> KeyboardModeScreen(
+                                                onDismiss = { handleDismiss(true) },
+                                                launcherViewModel = launcherViewModel,
+                                                isActive = page == pagerState.currentPage,
+                                                isInitialMode = mode == initialMode,
+                                                isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                                onAddShortcut = { appId ->
+                                                    shortcutAppId = appId
+                                                    showShortcutEditor = true
+                                                }
+                                            )
 
-                                        LauncherMode.INDEX -> IndexModeScreen(
-                                            onDismiss = { handleDismiss(true) },
-                                            launcherViewModel = launcherViewModel,
-                                            isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
-                                            onAddShortcut = { appId ->
-                                                shortcutAppId = appId
-                                                showShortcutEditor = true
-                                            }
-                                        )
-
-                                        LauncherMode.KEYBOARD -> KeyboardModeScreen(
-                                            onDismiss = { handleDismiss(true) },
-                                            launcherViewModel = launcherViewModel,
-                                            isActive = page == pagerState.currentPage,
-                                            isInitialMode = mode == initialMode,
-                                            isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
-                                            onAddShortcut = { appId ->
-                                                shortcutAppId = appId
-                                                showShortcutEditor = true
-                                            }
-                                        )
-
-                                        LauncherMode.VOICE -> VoiceModeScreen(
-                                            onDismiss = { handleDismiss(true) },
-                                            launcherViewModel = launcherViewModel,
-                                            isActive = page == pagerState.currentPage,
-                                            onAddShortcut = { appId ->
-                                                shortcutAppId = appId
-                                                showShortcutEditor = true
-                                            }
-                                        )
+                                            LauncherMode.VOICE -> VoiceModeScreen(
+                                                onDismiss = { handleDismiss(true) },
+                                                launcherViewModel = launcherViewModel,
+                                                isActive = page == pagerState.currentPage,
+                                                onAddShortcut = { appId ->
+                                                    shortcutAppId = appId
+                                                    showShortcutEditor = true
+                                                }
+                                            )
+                                        }
                                     }
                                 }
-                            }
+                            } else {
+                                // Portrait: Vertical layout (unchanged from original)
+                                Column(modifier = Modifier.fillMaxSize()) {
 
-                            // Tooltip positioned below ModeSwitcher, aligned to the right
-                            androidx.compose.animation.AnimatedVisibility(
-                                visible = uiState.showHideAppTooltip,
-                                enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
-                                exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 2 }),
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(top = topPadding + 72.dp, end = 16.dp)
-                            ) {
-                                val numButtons = modes.size + 1
-                                val totalGapSize = 8.dp * modes.size
-                                val horizontalPadding = 32.dp // 16.dp * 2
-                                val availableWidth = screenWidth - horizontalPadding - totalGapSize
-                                val buttonWidth = availableWidth / numButtons
-                                val caretOffset = buttonWidth / 2
+                                    ModeSwitcher(
+                                        selectedMode = selectedMode,
+                                        enabledModes = modes,
+                                        onModeSelected = modeViewModel::setMode,
+                                        onShowHiddenApps = authenticateForHiddenApps,
+                                        isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = topPadding)
+                                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                                    )
 
-                                HideAppTooltip(
-                                    onDismiss = { launcherViewModel.dismissHideAppTooltip() },
-                                    isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
-                                    caretOffsetFromRight = caretOffset
-                                )
+
+                                    // Mode-specific content with HorizontalPager
+                                    HorizontalPager(
+                                        state = pagerState,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .weight(1f),
+                                        beyondViewportPageCount = 0 // Only compose visible page
+                                    ) { page ->
+                                        when (val mode = modes[page]) {
+                                            LauncherMode.HANDWRITING -> HandwritingModeScreen(
+                                                onDismiss = { handleDismiss(true) },
+                                                launcherViewModel = launcherViewModel,
+                                                onAddShortcut = { appId ->
+                                                    shortcutAppId = appId
+                                                    showShortcutEditor = true
+                                                }
+                                            )
+
+                                            LauncherMode.INDEX -> IndexModeScreen(
+                                                onDismiss = { handleDismiss(true) },
+                                                launcherViewModel = launcherViewModel,
+                                                isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                                onAddShortcut = { appId ->
+                                                    shortcutAppId = appId
+                                                    showShortcutEditor = true
+                                                }
+                                            )
+
+                                            LauncherMode.KEYBOARD -> KeyboardModeScreen(
+                                                onDismiss = { handleDismiss(true) },
+                                                launcherViewModel = launcherViewModel,
+                                                isActive = page == pagerState.currentPage,
+                                                isInitialMode = mode == initialMode,
+                                                isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                                onAddShortcut = { appId ->
+                                                    shortcutAppId = appId
+                                                    showShortcutEditor = true
+                                                }
+                                            )
+
+                                            LauncherMode.VOICE -> VoiceModeScreen(
+                                                onDismiss = { handleDismiss(true) },
+                                                launcherViewModel = launcherViewModel,
+                                                isActive = page == pagerState.currentPage,
+                                                onAddShortcut = { appId ->
+                                                    shortcutAppId = appId
+                                                    showShortcutEditor = true
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+
+                                // Tooltip positioned below ModeSwitcher, aligned to the right (portrait only)
+                                androidx.compose.animation.AnimatedVisibility(
+                                    visible = uiState.showHideAppTooltip,
+                                    enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
+                                    exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 2 }),
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(top = topPadding + 72.dp, end = 16.dp)
+                                ) {
+                                    val numButtons = modes.size + 1
+                                    val totalGapSize = 8.dp * modes.size
+                                    val horizontalPadding = 32.dp // 16.dp * 2
+                                    val availableWidth = screenWidth - horizontalPadding - totalGapSize
+                                    val buttonWidth = availableWidth / numButtons
+                                    val caretOffset = buttonWidth / 2
+
+                                    HideAppTooltip(
+                                        onDismiss = { launcherViewModel.dismissHideAppTooltip() },
+                                        isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                        caretOffsetFromRight = caretOffset
+                                    )
+                                }
                             }
 
                             // Hidden apps screen overlay
@@ -961,6 +1046,171 @@ fun RowScope.ModeButton(
                     drawPath(composePath, backgroundColor)
 
                     // Draw semi-transparent white outline when blur is enabled
+                    if (isBlurEnabled) {
+                        drawPath(
+                            composePath,
+                            color = Color.White.copy(alpha = 0.2f),
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f)
+                        )
+                    }
+                }
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = label,
+            tint = contentColor,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+/**
+ * Vertical ModeSwitcher for landscape orientation.
+ * Arranges mode buttons in a vertical column instead of horizontal row.
+ */
+@Composable
+fun VerticalModeSwitcher(
+    selectedMode: LauncherMode,
+    enabledModes: List<LauncherMode>,
+    onModeSelected: (LauncherMode) -> Unit,
+    onShowHiddenApps: () -> Unit,
+    isBlurEnabled: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
+    ) {
+        val allModes = listOf(
+            Triple(R.drawable.ic_handwriting, "Draw", LauncherMode.HANDWRITING),
+            Triple(R.drawable.ic_index, "Index", LauncherMode.INDEX),
+            Triple(R.drawable.ic_keyboard, "Type", LauncherMode.KEYBOARD),
+            Triple(R.drawable.ic_microphone, "Voice", LauncherMode.VOICE)
+        )
+
+        val modes = enabledModes.mapNotNull { enabledMode ->
+            allModes.find { it.third == enabledMode }
+        }
+
+        modes.forEach { (icon, label, mode) ->
+            VerticalModeButton(
+                iconRes = icon,
+                label = label,
+                isSelected = selectedMode == mode,
+                onClick = { onModeSelected(mode) },
+                isBlurEnabled = isBlurEnabled
+            )
+        }
+
+        VerticalModeButton(
+            iconRes = R.drawable.ic_settings,
+            label = "Settings",
+            isSelected = false,
+            onClick = {
+                context.startActivity(
+                    Intent(
+                        context,
+                        com.joyal.swyplauncher.MainActivity::class.java
+                    ).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    })
+            },
+            onDoubleTap = onShowHiddenApps,
+            isBlurEnabled = isBlurEnabled
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
+@Composable
+fun ColumnScope.VerticalModeButton(
+    iconRes: Int,
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    onDoubleTap: (() -> Unit)? = null,
+    isBlurEnabled: Boolean = false
+) {
+    val isSettingsIcon = iconRes == R.drawable.ic_settings
+    val motionScheme = MotionScheme.expressive()
+
+    val (backgroundColor, contentColor) = when {
+        isSelected && isBlurEnabled -> MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.onPrimary
+        isSelected -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
+        isSettingsIcon -> MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
+        else -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    val morphProgress = remember { Animatable(if (isSelected) 1f else 0f) }
+    val rotationDegrees = remember { Animatable(if (isSelected) 180f else 0f) }
+
+    LaunchedEffect(isSelected) {
+        launch {
+            morphProgress.animateTo(
+                if (isSelected) 1f else 0f,
+                motionScheme.slowSpatialSpec()
+            )
+        }
+        launch {
+            rotationDegrees.animateTo(
+                if (isSelected) 180f else 0f,
+                motionScheme.slowSpatialSpec()
+            )
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .size(48.dp) // Fixed size for vertical layout
+            .then(
+                if (onDoubleTap != null) {
+                    Modifier.combinedClickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onClick,
+                        onDoubleClick = onDoubleTap
+                    )
+                } else {
+                    Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onClick
+                    )
+                }
+            )
+            .drawBehind {
+                rotate(rotationDegrees.value, center) {
+                    val androidPath = android.graphics.Path()
+
+                    if (isSettingsIcon) {
+                        MaterialShapes.Sunny.toPath(androidPath)
+                    } else {
+                        Morph(MaterialShapes.Cookie4Sided, MaterialShapes.Cookie7Sided)
+                            .toPath(morphProgress.value, androidPath)
+                    }
+
+                    val bounds = android.graphics.RectF()
+                    androidPath.computeBounds(bounds, true)
+                    val scale = size.minDimension / maxOf(bounds.width(), bounds.height())
+
+                    android.graphics.Matrix().apply {
+                        setScale(scale, scale)
+                        postTranslate(
+                            (size.width - bounds.width() * scale) / 2f - bounds.left * scale,
+                            (size.height - bounds.height() * scale) / 2f - bounds.top * scale
+                        )
+                        androidPath.transform(this)
+                    }
+
+                    val composePath = androidPath.asComposePath()
+
+                    drawPath(composePath, backgroundColor)
+
                     if (isBlurEnabled) {
                         drawPath(
                             composePath,

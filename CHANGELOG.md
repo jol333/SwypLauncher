@@ -2,6 +2,15 @@
 
 All notable changes to Swyp Launcher will be documented in this file.
 
+## [1.1.0] - 2025-12-30
+
+### Changed
+- Removed restrictions on landscape mode for digital assistant bottom sheet
+- Digital assistant bottom sheet UI is now optimized for landscape mode
+- Changed the color of dynamic shortcut icons to make it visible on both dark and light color context menu
+
+---
+
 ## [1.0.0] - 2025-12-24
 
 ### Initial Release

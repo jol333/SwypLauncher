@@ -315,7 +315,7 @@ fun DonateSection(
                 Spacer(Modifier.height(8.dp))
                 
                 Text(
-                    text = "If this app saves you time, consider buying me a coffee.\nYour support helps fuel my free side projects.",
+                    text = "If this app saves you time, consider buying me a coffee. Your support helps fuel my free side projects.",
                     color = BentoColors.TextSecondary,
                     style = BentoTypography.bodyMedium,
                     textAlign = TextAlign.Center
