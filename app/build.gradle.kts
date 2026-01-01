@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.baselineprofile)
 }
 
 android {
@@ -53,6 +54,13 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
+        // Benchmark build type for startup profiling
+        create("benchmark") {
+            initWith(buildTypes.getByName("release"))
+            matchingFallbacks += listOf("release")
+            isDebuggable = false
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
     
     packaging {
@@ -70,6 +78,11 @@ android {
     buildFeatures {
         compose = true
     }
+}
+
+baselineProfile {
+    automaticGenerationDuringBuild = true
+    dexLayoutOptimization = true
 }
 
 dependencies {
@@ -107,8 +120,12 @@ dependencies {
     // Biometric
     implementation(libs.androidx.biometric)
     
-    // Reorderable
-    implementation("sh.calvin.reorderable:reorderable:3.0.0")
+    // Reorderable (now using version catalog)
+    implementation(libs.reorderable)
+
+    // Baseline Profile & Startup Tracing
+    implementation(libs.androidx.profileinstaller)
+    "baselineProfile"(project(":baselineprofile"))
 
     // Testing
     testImplementation(libs.junit)
