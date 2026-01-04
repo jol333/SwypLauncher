@@ -46,6 +46,7 @@ import com.joyal.swyplauncher.domain.model.LauncherMode
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
 import com.joyal.swyplauncher.ui.settings.BentoSettingsScreen
+import com.joyal.swyplauncher.ui.theme.BentoColors
 import com.joyal.swyplauncher.ui.theme.SwypLauncherTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -143,116 +144,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun SortOrderDialog(
-    currentOrder: com.joyal.swyplauncher.domain.repository.AppSortOrder,
-    onDismiss: () -> Unit,
-    onSelect: (com.joyal.swyplauncher.domain.repository.AppSortOrder) -> Unit,
-    context: android.content.Context
-) {
-    var showPermissionDialog by androidx.compose.runtime.remember {
-        mutableStateOf(
-            false
-        )
-    }
 
-    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 6.dp,
-            modifier = Modifier.border(
-                width = 1.dp,
-                color = com.joyal.swyplauncher.ui.theme.BentoColors.BorderLight,
-                shape = RoundedCornerShape(24.dp)
-            )
-        ) {
-            Column(modifier = Modifier.padding(24.dp)) {
-                Text("App sort order", style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(16.dp))
 
-                com.joyal.swyplauncher.domain.repository.AppSortOrder.entries.forEach { order ->
-                    Surface(
-                        onClick = {
-                            // Check permission for USAGE sort order
-                            if (order == com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE) {
-                                if (!com.joyal.swyplauncher.util.UsageStatsHelper.hasUsageStatsPermission(
-                                        context
-                                    )
-                                ) {
-                                    showPermissionDialog = true
-                                } else {
-                                    onSelect(order)
-                                }
-                            } else {
-                                onSelect(order)
-                            }
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (order == currentOrder)
-                            MaterialTheme.colorScheme.primaryContainer
-                        else
-                            MaterialTheme.colorScheme.surface
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            androidx.compose.material3.RadioButton(
-                                selected = order == currentOrder,
-                                onClick = null
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Column {
-                                Text(
-                                    text = when (order) {
-                                        com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> "By name (A-Z)"
-                                        com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> "By usage"
-                                        com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> "By category"
-                                    },
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                                Text(
-                                    text = when (order) {
-                                        com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> "Alphabetically sorted"
-                                        com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> "Most used apps appear first"
-                                        com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> "Grouped by app category"
-                                    },
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                }
-
-                Spacer(Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    androidx.compose.material3.TextButton(onClick = onDismiss) {
-                        Text("Cancel")
-                    }
-                }
-            }
-        }
-    }
-
-    if (showPermissionDialog) {
-        UsageAccessPermissionDialog(
-            onDismiss = { showPermissionDialog = false },
-            onGrantPermission = {
-                com.joyal.swyplauncher.util.UsageStatsHelper.openUsageAccessSettings(context)
-                showPermissionDialog = false
-                onDismiss()
-            }
-        )
-    }
-}
 
 @Composable
 fun UsageAccessPermissionDialog(
@@ -281,9 +174,104 @@ fun UsageAccessPermissionDialog(
     )
 }
 
+
+
+// Content composable for container transform (no Dialog wrapper)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModeOrderDialog(
+fun SortOrderDialogContent(
+    currentOrder: com.joyal.swyplauncher.domain.repository.AppSortOrder,
+    onDismiss: () -> Unit,
+    onSelect: (com.joyal.swyplauncher.domain.repository.AppSortOrder) -> Unit,
+    context: android.content.Context
+) {
+    var showPermissionDialog by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier.padding(24.dp)) {
+        Text("App sort order", style = MaterialTheme.typography.titleLarge, color = BentoColors.TextPrimary)
+        Spacer(Modifier.height(16.dp))
+
+        com.joyal.swyplauncher.domain.repository.AppSortOrder.entries.forEach { order ->
+            Surface(
+                onClick = {
+                    if (order == com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE) {
+                        if (!com.joyal.swyplauncher.util.UsageStatsHelper.hasUsageStatsPermission(context)) {
+                            showPermissionDialog = true
+                        } else {
+                            onSelect(order)
+                        }
+                    } else {
+                        onSelect(order)
+                    }
+                },
+                shape = RoundedCornerShape(12.dp),
+                color = if (order == currentOrder)
+                    MaterialTheme.colorScheme.primaryContainer
+                else
+                    MaterialTheme.colorScheme.surface
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    androidx.compose.material3.RadioButton(
+                        selected = order == currentOrder,
+                        onClick = null
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = when (order) {
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> "By name (A-Z)"
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> "By usage"
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> "By category"
+                            },
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = when (order) {
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> "Alphabetically sorted"
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> "Most used apps appear first"
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> "Grouped by app category"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+        }
+
+        Spacer(Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    }
+
+    if (showPermissionDialog) {
+        UsageAccessPermissionDialog(
+            onDismiss = { showPermissionDialog = false },
+            onGrantPermission = {
+                com.joyal.swyplauncher.util.UsageStatsHelper.openUsageAccessSettings(context)
+                showPermissionDialog = false
+                onDismiss()
+            }
+        )
+    }
+}
+
+// Content composable for container transform (no Dialog wrapper)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ModeOrderDialogContent(
     prefs: SharedPreferences,
     onDismiss: () -> Unit,
     preferencesRepository: PreferencesRepository? = null,
@@ -314,160 +302,146 @@ fun ModeOrderDialog(
     }
     val context = LocalContext.current
 
-    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 6.dp,
-            modifier = Modifier.border(
-                width = 1.dp,
-                color = com.joyal.swyplauncher.ui.theme.BentoColors.BorderLight,
-                shape = RoundedCornerShape(24.dp)
-            )
+    Column(modifier = Modifier.padding(24.dp)) {
+        Text("Select app launch modes", style = MaterialTheme.typography.titleLarge, color = BentoColors.TextPrimary)
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "Long press & drag handle to reorder",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(16.dp))
+
+        LazyColumn(
+            state = lazyListState,
+            modifier = Modifier.height(300.dp)
         ) {
-            Column(modifier = Modifier.padding(24.dp)) {
-                Text("Select app launch modes", style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    "Long press & drag handle to reorder",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(Modifier.height(16.dp))
+            items(enabledModes.size, key = { enabledModes[it] }) { index ->
+                ReorderableItem(reorderableState, key = enabledModes[index]) { isDragging ->
+                    val mode = enabledModes[index]
+                    val elevation by animateDpAsState(
+                        if (isDragging) 8.dp else 0.dp,
+                        label = "elevation"
+                    )
 
-                LazyColumn(
-                    state = lazyListState,
-                    modifier = Modifier.height(300.dp)
-                ) {
-                    items(enabledModes.size, key = { enabledModes[it] }) { index ->
-                        ReorderableItem(reorderableState, key = enabledModes[index]) { isDragging ->
-                            val mode = enabledModes[index]
-                            val elevation by animateDpAsState(
-                                if (isDragging) 8.dp else 0.dp,
-                                label = "elevation"
-                            )
-
-                            Surface(
-                                shadowElevation = elevation,
-                                tonalElevation = if (isDragging) 4.dp else 0.dp,
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.padding(vertical = 4.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    androidx.compose.material3.IconButton(
-                                        onClick = {},
-                                        modifier = Modifier.longPressDraggableHandle(
-                                            onDragStarted = {
-                                                hapticFeedback.performHapticFeedback(
-                                                    HapticFeedbackType.LongPress
-                                                )
-                                            },
-                                            onDragStopped = {
-                                                hapticFeedback.performHapticFeedback(
-                                                    HapticFeedbackType.TextHandleMove
-                                                )
-                                            }
-                                        )
-                                    ) {
-                                        Icon(
-                                            Icons.Outlined.DragHandle,
-                                            contentDescription = "Drag to reorder",
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    Text(
-                                        mode.name.lowercase().replaceFirstChar { it.uppercase() },
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Checkbox(
-                                        checked = true,
-                                        onCheckedChange = { checked ->
-                                            if (!checked && enabledModes.size > 1) {
-                                                enabledModes = enabledModes - mode
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Disabled modes
-                    allModes.forEach { mode ->
-                        if (mode !in enabledModes) {
-                            item(key = "disabled_$mode") {
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    modifier = Modifier.padding(vertical = 4.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            Icons.Outlined.DragHandle,
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .size(48.dp)
-                                                .padding(12.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                                alpha = 0.3f
-                                            )
-                                        )
-                                        Text(
-                                            mode.name.lowercase()
-                                                .replaceFirstChar { it.uppercase() },
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            modifier = Modifier.weight(1f),
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                        )
-                                        Checkbox(
-                                            checked = false,
-                                            onCheckedChange = { checked ->
-                                                if (checked) {
-                                                    enabledModes = enabledModes + mode
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    androidx.compose.material3.TextButton(onClick = onDismiss) {
-                        Text("Cancel")
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    androidx.compose.material3.TextButton(
-                        onClick = {
-                            preferencesRepository?.setEnabledModes(enabledModes)
-                            // Update dynamic shortcuts
-                            com.joyal.swyplauncher.util.AppShortcutManager.updateShortcuts(
-                                context,
-                                enabledModes
-                            )
-                            onSave(enabledModes.size)
-                            onDismiss()
-                        }
+                    Surface(
+                        shadowElevation = elevation,
+                        tonalElevation = if (isDragging) 4.dp else 0.dp,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.padding(vertical = 4.dp)
                     ) {
-                        Text("Save")
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            androidx.compose.material3.IconButton(
+                                onClick = {},
+                                modifier = Modifier.longPressDraggableHandle(
+                                    onDragStarted = {
+                                        hapticFeedback.performHapticFeedback(
+                                            HapticFeedbackType.LongPress
+                                        )
+                                    },
+                                    onDragStopped = {
+                                        hapticFeedback.performHapticFeedback(
+                                            HapticFeedbackType.TextHandleMove
+                                        )
+                                    }
+                                )
+                            ) {
+                                Icon(
+                                    Icons.Outlined.DragHandle,
+                                    contentDescription = "Drag to reorder",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Text(
+                                mode.name.lowercase().replaceFirstChar { it.uppercase() },
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Checkbox(
+                                checked = true,
+                                onCheckedChange = { checked ->
+                                    if (!checked && enabledModes.size > 1) {
+                                        enabledModes = enabledModes - mode
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
+            }
+
+            // Disabled modes
+            allModes.forEach { mode ->
+                if (mode !in enabledModes) {
+                    item(key = "disabled_$mode") {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Outlined.DragHandle,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .padding(12.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                        alpha = 0.3f
+                                    )
+                                )
+                                Text(
+                                    mode.name.lowercase()
+                                        .replaceFirstChar { it.uppercase() },
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.weight(1f),
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                )
+                                Checkbox(
+                                    checked = false,
+                                    onCheckedChange = { checked ->
+                                        if (checked) {
+                                            enabledModes = enabledModes + mode
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+            Spacer(Modifier.width(8.dp))
+            androidx.compose.material3.TextButton(
+                onClick = {
+                    preferencesRepository?.setEnabledModes(enabledModes)
+                    com.joyal.swyplauncher.util.AppShortcutManager.updateShortcuts(
+                        context,
+                        enabledModes
+                    )
+                    onSave(enabledModes.size)
+                    onDismiss()
+                }
+            ) {
+                Text("Save")
             }
         }
     }

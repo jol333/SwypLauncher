@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,10 +24,14 @@ import com.joyal.swyplauncher.ui.theme.BentoColors
 fun AutoOpenCard(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    offsetX: Float = 0f
 ) {
     Box(
         modifier = modifier
+            .graphicsLayer {
+                translationX = offsetX
+            }
             .heightIn(min = 180.dp)
             .fillMaxHeight()
             .clip(RoundedCornerShape(24.dp))
@@ -98,10 +103,14 @@ fun AutoOpenCard(
 fun SortAppsByCard(
     sortOrder: AppSortOrder,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    offsetX: Float = 0f
 ) {
     Box(
         modifier = modifier
+            .graphicsLayer {
+                translationX = offsetX
+            }
             .heightIn(min = 180.dp)
             .fillMaxHeight()
             .clip(RoundedCornerShape(24.dp))

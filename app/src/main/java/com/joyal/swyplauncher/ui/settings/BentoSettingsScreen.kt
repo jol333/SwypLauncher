@@ -2,6 +2,8 @@ package com.joyal.swyplauncher.ui.settings
 
 import android.content.Intent
 import android.content.SharedPreferences
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,6 +28,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ElectricBolt
+import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -38,18 +41,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import com.joyal.swyplauncher.ui.theme.BentoColors
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,14 +134,75 @@ fun BentoSettingsScreen(
         }
     }
 
+    // M3 Expressive spatial spring for jelly bounce effect
+    // Low damping (0.65) creates the bounce, medium stiffness for responsive feel
+    val expressiveSpatialSpring = spring<Float>(
+        dampingRatio = 0.65f,
+        stiffness = 300f
+    )
+
+    // Track card bounds for container transform
+    var launchModesCardBounds by remember { mutableStateOf(Rect.Zero) }
+    var sortAppsCardBounds by remember { mutableStateOf(Rect.Zero) }
+
+    // Container transform animation progress (0 = card, 1 = popup)
+    val modeOrderProgress by animateFloatAsState(
+        targetValue = if (showModeOrderDialog) 1f else 0f,
+        animationSpec = spring(
+            dampingRatio = 0.65f, // M3E spatial spring - jelly bounce
+            stiffness = 280f
+        ),
+        label = "modeOrderProgress"
+    )
+
+    val sortOrderProgress by animateFloatAsState(
+        targetValue = if (showSortOrderDialog) 1f else 0f,
+        animationSpec = spring(
+            dampingRatio = 0.65f, // M3E spatial spring - jelly bounce
+            stiffness = 280f
+        ),
+        label = "sortOrderProgress"
+    )
+
+    // Spatial awareness: Adjacent cards push away when dialog opens
+    val density = LocalDensity.current
+    val appShortcutsOffset by animateFloatAsState(
+        targetValue = if (showModeOrderDialog) with(density) { 15.dp.toPx() } else 0f,
+        animationSpec = expressiveSpatialSpring,
+        label = "appShortcutsOffset"
+    )
+    val launchModesOffset by animateFloatAsState(
+        targetValue = if (showModeOrderDialog) with(density) { (-8).dp.toPx() } else 0f,
+        animationSpec = expressiveSpatialSpring,
+        label = "launchModesOffset"
+    )
+
+    // Sort apps row: AutoOpenCard pushes left when SortOrderDialog opens
+    val autoOpenOffset by animateFloatAsState(
+        targetValue = if (showSortOrderDialog) with(density) { (-15).dp.toPx() } else 0f,
+        animationSpec = expressiveSpatialSpring,
+        label = "autoOpenOffset"
+    )
+    val sortAppsOffset by animateFloatAsState(
+        targetValue = if (showSortOrderDialog) with(density) { 8.dp.toPx() } else 0f,
+        animationSpec = expressiveSpatialSpring,
+        label = "sortAppsOffset"
+    )
+
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(BentoColors.BackgroundDark)
     ) {
+        val blurRadius = (modeOrderProgress * 10f + sortOrderProgress * 10f).dp
+
         LazyColumn(
             state = listState,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .blur(radius = blurRadius),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Image Header - full width, no margins, starts from top
@@ -218,7 +294,13 @@ fun BentoSettingsScreen(
                     LaunchModesCard(
                         count = enabledModesCount,
                         onClick = { showModeOrderDialog = true },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .onGloballyPositioned { coordinates ->
+                                launchModesCardBounds = coordinates.boundsInRoot()
+                            }
+                            .alpha(1f - modeOrderProgress), // Fade out as popup morphs in
+                        offsetX = launchModesOffset
                     )
                     AppShortcutsCard(
                         count = shortcutsCount,
@@ -230,7 +312,8 @@ fun BentoSettingsScreen(
                                 )
                             )
                         },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        offsetX = appShortcutsOffset
                     )
                 }
             }
@@ -271,12 +354,19 @@ fun BentoSettingsScreen(
                             autoOpenSingleResult = it
                             prefs.edit().putBoolean("auto_open_single_result", it).apply()
                         },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        offsetX = autoOpenOffset
                     )
                     SortAppsByCard(
                         sortOrder = appSortOrder,
                         onClick = { showSortOrderDialog = true },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .onGloballyPositioned { coordinates ->
+                                sortAppsCardBounds = coordinates.boundsInRoot()
+                            }
+                            .alpha(1f - sortOrderProgress), // Fade out as popup morphs in
+                        offsetX = sortAppsOffset
                     )
                 }
             }
@@ -312,7 +402,7 @@ fun BentoSettingsScreen(
                         .offset(y = (-32).dp)
                 ) {
                     DonateSection(scrollProgress = scrollProgress, context = context)
-                    
+
                     Spacer(Modifier.height(48.dp))
 
                     val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
@@ -328,7 +418,7 @@ fun BentoSettingsScreen(
                                 text = "Privacy Policy",
                                 style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
                                 color = Color.Gray,
-                                modifier = Modifier.clickable { 
+                                modifier = Modifier.clickable {
                                     uriHandler.openUri("https://github.com/jol333/swyplauncher/blob/main/PRIVACY_POLICY.md")
                                 }
                             )
@@ -341,7 +431,7 @@ fun BentoSettingsScreen(
                                 text = "Source Code",
                                 style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
                                 color = Color.Gray,
-                                modifier = Modifier.clickable { 
+                                modifier = Modifier.clickable {
                                     uriHandler.openUri("https://github.com/jol333/swyplauncher")
                                 }
                             )
@@ -354,17 +444,20 @@ fun BentoSettingsScreen(
                                 text = "License",
                                 style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
                                 color = Color.Gray,
-                                modifier = Modifier.clickable { 
+                                modifier = Modifier.clickable {
                                     uriHandler.openUri("https://github.com/jol333/SwypLauncher/blob/main/LICENSE.md")
                                 }
                             )
                         }
-                        
+
                         Spacer(modifier = Modifier.height(8.dp))
-                        
+
                         val versionName = remember {
                             try {
-                                context.packageManager.getPackageInfo(context.packageName, 0).versionName
+                                context.packageManager.getPackageInfo(
+                                    context.packageName,
+                                    0
+                                ).versionName
                             } catch (e: Exception) {
                                 "Unknown"
                             }
@@ -376,7 +469,7 @@ fun BentoSettingsScreen(
                             color = Color.Gray.copy(alpha = 0.5f)
                         )
                     }
-                    
+
                     Spacer(Modifier.height(100.dp))
                 }
             }
@@ -392,27 +485,183 @@ fun BentoSettingsScreen(
                 }
             )
         }
-    }
 
-    if (showModeOrderDialog) {
-        com.joyal.swyplauncher.ModeOrderDialog(
-            prefs = prefs,
+        // Container transform overlay for ModeOrderDialog
+        ContainerTransformPopup(
+            isVisible = showModeOrderDialog || modeOrderProgress > 0f,
+            progress = modeOrderProgress,
+            cardBounds = launchModesCardBounds,
+            popupHeight = 480.dp,
             onDismiss = { showModeOrderDialog = false },
-            preferencesRepository = preferencesRepository,
-            onSave = { newCount -> enabledModesCount = newCount }
+            cardContent = {
+                Column {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.TouchApp,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = BentoColors.AccentGreen
+                        )
+                        Text(
+                            text = "LAUNCH MODES",
+                            color = BentoColors.TextLabel,
+                            style = BentoTypography.labelLarge
+                        )
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = enabledModesCount.toString(),
+                        color = BentoColors.AccentGreen,
+                        style = BentoTypography.displayLarge
+                    )
+                    Text(
+                        text = "Modes selected",
+                        color = BentoColors.TextSecondary,
+                        style = BentoTypography.bodyMedium
+                    )
+                }
+            },
+            popupContent = {
+                com.joyal.swyplauncher.ModeOrderDialogContent(
+                    prefs = prefs,
+                    onDismiss = { showModeOrderDialog = false },
+                    preferencesRepository = preferencesRepository,
+                    onSave = { newCount -> enabledModesCount = newCount }
+                )
+            }
+        )
+
+        // Container transform overlay for SortOrderDialog
+        ContainerTransformPopup(
+            isVisible = showSortOrderDialog || sortOrderProgress > 0f,
+            progress = sortOrderProgress,
+            cardBounds = sortAppsCardBounds,
+            popupHeight = 380.dp,
+            onDismiss = { showSortOrderDialog = false },
+            cardContent = {
+                Column {
+                    Text(
+                        text = "SORT APPS BY",
+                        color = BentoColors.TextLabel,
+                        style = BentoTypography.labelLarge
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = when (appSortOrder) {
+                            com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> "Name"
+                            com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> "Usage"
+                            com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> "Category"
+                        },
+                        fontSize = 48.sp,
+                        fontWeight = FontWeight.Black,
+                        color = BentoColors.AccentGreen,
+                        maxLines = 1,
+                        softWrap = false,
+                        modifier = Modifier.offset(x = (-4).dp)
+                    )
+                    Text(
+                        text = when (appSortOrder) {
+                            com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> "Alphabetically sorted"
+                            com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> "Most used apps appear first"
+                            com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> "Grouped by category"
+                        },
+                        color = BentoColors.TextMuted,
+                        style = BentoTypography.bodyMedium
+                    )
+                }
+            },
+            popupContent = {
+                com.joyal.swyplauncher.SortOrderDialogContent(
+                    currentOrder = appSortOrder,
+                    onDismiss = { showSortOrderDialog = false },
+                    onSelect = { order ->
+                        appSortOrder = order
+                        preferencesRepository?.setAppSortOrder(order)
+                        showSortOrderDialog = false
+                    },
+                    context = context
+                )
+            }
         )
     }
+}
 
-    if (showSortOrderDialog) {
-        com.joyal.swyplauncher.SortOrderDialog(
-            currentOrder = appSortOrder,
-            onDismiss = { showSortOrderDialog = false },
-            onSelect = { order ->
-                appSortOrder = order
-                preferencesRepository?.setAppSortOrder(order)
-                showSortOrderDialog = false
-            },
-            context = context
+@Composable
+private fun ContainerTransformPopup(
+    isVisible: Boolean,
+    progress: Float,
+    cardBounds: Rect,
+    popupHeight: Dp,
+    onDismiss: () -> Unit,
+    cardContent: @Composable () -> Unit,
+    popupContent: @Composable () -> Unit
+) {
+    if (isVisible) {
+        val density = LocalDensity.current
+        val configuration = LocalConfiguration.current
+        val screenWidth = with(density) { configuration.screenWidthDp.dp.toPx() }
+        val screenHeight = with(density) { configuration.screenHeightDp.dp.toPx() }
+
+        // Calculate popup target dimensions
+        val popupWidth = with(density) { 320.dp.toPx() } // Fixed width for popup
+        val popupHeightPx = with(density) { popupHeight.toPx() }
+        val popupX = (screenWidth - popupWidth) / 2 // Center horizontally
+        val popupY = (screenHeight - popupHeightPx) / 2
+
+        // Interpolate from card bounds to popup bounds
+        val currentX = cardBounds.left + (popupX - cardBounds.left) * progress
+        val currentY = cardBounds.top + (popupY - cardBounds.top) * progress
+        val currentWidth = cardBounds.width + (popupWidth - cardBounds.width) * progress
+        val currentHeight = cardBounds.height + (popupHeightPx - cardBounds.height) * progress
+
+        // Scrim
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .alpha(progress * 0.6f)
+                .background(Color.Black)
+                .clickable(enabled = progress > 0.5f) { onDismiss() }
         )
+
+        // Morphing container
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(currentX.roundToInt(), currentY.roundToInt()) }
+                .size(
+                    width = with(density) { currentWidth.toDp() },
+                    height = with(density) { currentHeight.toDp() }
+                )
+                .clip(RoundedCornerShape(24.dp))
+                .background(BentoColors.CardBackground)
+                .border(
+                    width = 1.dp,
+                    color = BentoColors.BorderLight,
+                    shape = RoundedCornerShape(24.dp)
+                )
+        ) {
+            // Card content fades out, popup content fades in
+            if (progress < 0.5f) {
+                // Show card content
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .alpha(1f - progress * 2)
+                        .padding(24.dp)
+                ) {
+                    cardContent()
+                }
+            }
+            // Popup content
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .alpha((progress - 0.5f).coerceIn(0f, 0.5f) * 2)
+            ) {
+                popupContent()
+            }
+        }
     }
 }

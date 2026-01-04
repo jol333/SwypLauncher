@@ -188,9 +188,12 @@ fun DonateSection(
     scrollProgress: Float,
     context: Context
 ) {
+    // Adjust progress to start earlier and finish before end of scroll
+    val adjustedProgress = (scrollProgress * 2.5f).coerceIn(0f, 1f)
+
     // Animate scale based on scroll progress with spring animation
     val scale by animateFloatAsState(
-        targetValue = 0.7f + (scrollProgress * 0.3f),
+        targetValue = 0.7f + (adjustedProgress * 0.3f),
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
@@ -200,7 +203,7 @@ fun DonateSection(
     
     // Animate rotation for playful effect
     val rotation by animateFloatAsState(
-        targetValue = (1f - scrollProgress) * -10f,
+        targetValue = (1f - adjustedProgress) * -10f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessMedium
@@ -210,7 +213,7 @@ fun DonateSection(
     
     // Icon scale with extra bounce
     val iconScale by animateFloatAsState(
-        targetValue = if (scrollProgress > 0.8f) 1.1f else 0.8f,
+        targetValue = if (adjustedProgress > 0.8f) 1.1f else 0.8f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioLowBouncy,
             stiffness = Spring.StiffnessLow
@@ -225,8 +228,8 @@ fun DonateSection(
                 scaleX = scale
                 scaleY = scale
                 rotationZ = rotation
-                alpha = scrollProgress
-                translationY = (1f - scrollProgress) * 50f
+                alpha = (adjustedProgress * 2f).coerceIn(0f, 1f)
+                translationY = (1f - adjustedProgress) * 50f
             }
             .clip(RoundedCornerShape(24.dp))
             .background(

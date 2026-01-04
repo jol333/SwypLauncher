@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -119,10 +120,14 @@ fun TrySwypLauncherCard(
 fun LaunchModesCard(
     count: Int,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    offsetX: Float = 0f
 ) {
     Box(
         modifier = modifier
+            .graphicsLayer {
+                translationX = offsetX
+            }
             .height(192.dp)
             .clip(RoundedCornerShape(24.dp))
             .background(
@@ -182,10 +187,14 @@ fun LaunchModesCard(
 fun AppShortcutsCard(
     count: Int,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    offsetX: Float = 0f
 ) {
     Box(
         modifier = modifier
+            .graphicsLayer {
+                translationX = offsetX
+            }
             .height(192.dp)
             .clip(RoundedCornerShape(24.dp))
             .background(
