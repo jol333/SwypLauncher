@@ -1,5 +1,8 @@
 import java.util.Properties
 import java.io.FileInputStream
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 plugins {
     alias(libs.plugins.android.application)
@@ -18,8 +21,10 @@ android {
         applicationId = "com.joyal.swyplauncher"
         minSdk = 34
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"))
+            .format(DateTimeFormatter.ofPattern("yyyyMMddHH"))
+            .toInt()
+        versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -53,6 +58,9 @@ android {
             if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
             }
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
         }
         // Benchmark build type for startup profiling
         create("benchmark") {
@@ -81,7 +89,7 @@ android {
 }
 
 baselineProfile {
-    automaticGenerationDuringBuild = true
+    automaticGenerationDuringBuild = false
     dexLayoutOptimization = true
 }
 

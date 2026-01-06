@@ -2,6 +2,7 @@ package com.joyal.swyplauncher.ui.settings
 
 import android.content.Intent
 import android.content.SharedPreferences
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
@@ -38,6 +39,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +65,7 @@ import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import com.joyal.swyplauncher.ui.theme.BentoColors
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -111,6 +114,9 @@ fun BentoSettingsScreen(
 
     val listState = rememberLazyListState()
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+
 
     // Get enabled modes count (mutable to update when dialog saves)
     var enabledModesCount by remember {
