@@ -2,6 +2,7 @@ package com.joyal.swyplauncher.ui.settings
 
 import android.content.Intent
 import android.content.SharedPreferences
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -49,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
@@ -56,6 +59,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -497,7 +501,6 @@ fun BentoSettingsScreen(
             isVisible = showModeOrderDialog || modeOrderProgress > 0f,
             progress = modeOrderProgress,
             cardBounds = launchModesCardBounds,
-            popupHeight = 480.dp,
             onDismiss = { showModeOrderDialog = false },
             cardContent = {
                 Column {
@@ -545,7 +548,6 @@ fun BentoSettingsScreen(
             isVisible = showSortOrderDialog || sortOrderProgress > 0f,
             progress = sortOrderProgress,
             cardBounds = sortAppsCardBounds,
-            popupHeight = 380.dp,
             onDismiss = { showSortOrderDialog = false },
             cardContent = {
                 Column {
@@ -600,73 +602,99 @@ private fun ContainerTransformPopup(
     isVisible: Boolean,
     progress: Float,
     cardBounds: Rect,
-    popupHeight: Dp,
     onDismiss: () -> Unit,
     cardContent: @Composable () -> Unit,
     popupContent: @Composable () -> Unit
 ) {
+    // Handle back press when popup is visible (progress > 0.5 means popup is mostly visible)
+    BackHandler(enabled = isVisible && progress > 0.5f) {
+        onDismiss()
+    }
+    
     if (isVisible) {
-        val density = LocalDensity.current
-        val configuration = LocalConfiguration.current
-        val screenWidth = with(density) { configuration.screenWidthDp.dp.toPx() }
-        val screenHeight = with(density) { configuration.screenHeightDp.dp.toPx() }
+        SubcomposeLayout(modifier = Modifier.fillMaxSize()) { constraints ->
+            val popupWidthPx = 320.dp.roundToPx()
 
-        // Calculate popup target dimensions
-        val popupWidth = with(density) { 320.dp.toPx() } // Fixed width for popup
-        val popupHeightPx = with(density) { popupHeight.toPx() }
-        val popupX = (screenWidth - popupWidth) / 2 // Center horizontally
-        val popupY = (screenHeight - popupHeightPx) / 2
-
-        // Interpolate from card bounds to popup bounds
-        val currentX = cardBounds.left + (popupX - cardBounds.left) * progress
-        val currentY = cardBounds.top + (popupY - cardBounds.top) * progress
-        val currentWidth = cardBounds.width + (popupWidth - cardBounds.width) * progress
-        val currentHeight = cardBounds.height + (popupHeightPx - cardBounds.height) * progress
-
-        // Scrim
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .alpha(progress * 0.6f)
-                .background(Color.Black)
-                .clickable(enabled = progress > 0.5f) { onDismiss() }
-        )
-
-        // Morphing container
-        Box(
-            modifier = Modifier
-                .offset { IntOffset(currentX.roundToInt(), currentY.roundToInt()) }
-                .size(
-                    width = with(density) { currentWidth.toDp() },
-                    height = with(density) { currentHeight.toDp() }
-                )
-                .clip(RoundedCornerShape(24.dp))
-                .background(BentoColors.CardBackground)
-                .border(
-                    width = 1.dp,
-                    color = BentoColors.BorderLight,
-                    shape = RoundedCornerShape(24.dp)
-                )
-        ) {
-            // Card content fades out, popup content fades in
-            if (progress < 0.5f) {
-                // Show card content
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .alpha(1f - progress * 2)
-                        .padding(24.dp)
-                ) {
-                    cardContent()
+            // Measure popup content to get target height
+            val popupPlaceable = subcompose("popupContent") {
+                Box(modifier = Modifier.width(320.dp)) {
+                    popupContent()
                 }
-            }
-            // Popup content
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .alpha((progress - 0.5f).coerceIn(0f, 0.5f) * 2)
-            ) {
-                popupContent()
+            }.first().measure(
+                Constraints(
+                    minWidth = popupWidthPx,
+                    maxWidth = popupWidthPx,
+                    minHeight = 0,
+                    maxHeight = constraints.maxHeight
+                )
+            )
+            
+            val targetHeightPx = popupPlaceable.height.toFloat()
+            val screenWidth = constraints.maxWidth.toFloat()
+            val screenHeight = constraints.maxHeight.toFloat()
+
+            // Calculate target position (centered)
+            val popupX = (screenWidth - popupWidthPx) / 2f
+            val popupY = (screenHeight - targetHeightPx) / 2f
+
+            // Interpolate
+            val currentX = cardBounds.left + (popupX - cardBounds.left) * progress
+            val currentY = cardBounds.top + (popupY - cardBounds.top) * progress
+            val currentWidth = cardBounds.width + (popupWidthPx - cardBounds.width) * progress
+            val currentHeight = cardBounds.height + (targetHeightPx - cardBounds.height) * progress
+
+            val contentPlaceable = subcompose("content") {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // Scrim
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .alpha(progress * 0.6f)
+                            .background(Color.Black)
+                            .clickable(enabled = progress > 0.5f) { onDismiss() }
+                    )
+
+                    // Morphing container
+                    Box(
+                        modifier = Modifier
+                            .offset { IntOffset(currentX.roundToInt(), currentY.roundToInt()) }
+                            .size(
+                                width = currentWidth.toDp(),
+                                height = currentHeight.toDp()
+                            )
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(BentoColors.CardBackground)
+                            .border(
+                                width = 1.dp,
+                                color = BentoColors.BorderLight,
+                                shape = RoundedCornerShape(24.dp)
+                            )
+                    ) {
+                        // Card content fades out
+                        if (progress < 0.5f) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .alpha(1f - progress * 2)
+                                    .padding(24.dp)
+                            ) {
+                                cardContent()
+                            }
+                        }
+                        // Popup content fades in
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .alpha((progress - 0.5f).coerceIn(0f, 0.5f) * 2)
+                        ) {
+                            popupContent()
+                        }
+                    }
+                }
+            }.first().measure(constraints)
+
+            layout(constraints.maxWidth, constraints.maxHeight) {
+                contentPlaceable.place(0, 0)
             }
         }
     }

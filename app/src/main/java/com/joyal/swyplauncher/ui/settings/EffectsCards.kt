@@ -13,13 +13,34 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Rocket
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,7 +52,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.ui.theme.BentoColors
 import kotlin.math.roundToInt
@@ -86,9 +106,9 @@ fun VisualEffectsCard(
                     style = BentoTypography.labelLarge
                 )
             }
-            
+
             Spacer(Modifier.height(16.dp))
-            
+
             // Blur background toggle
             Row(
                 modifier = Modifier
@@ -112,7 +132,7 @@ fun VisualEffectsCard(
                         style = BentoTypography.bodyMedium
                     )
                 }
-                
+
                 Switch(
                     checked = blurEnabled,
                     onCheckedChange = onBlurEnabledChange,
@@ -125,7 +145,7 @@ fun VisualEffectsCard(
                     )
                 )
             }
-            
+
             // Blur intensity slider (only visible when enabled)
             // The 16dp spacing is INSIDE AnimatedVisibility so it animates out smoothly
             AnimatedVisibility(
@@ -145,7 +165,7 @@ fun VisualEffectsCard(
             ) {
                 Column {
                     Spacer(Modifier.height(24.dp)) // 16dp gap + 8dp extra spacing
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -161,9 +181,9 @@ fun VisualEffectsCard(
                             style = BentoTypography.bodyMedium
                         )
                     }
-                    
+
                     Spacer(Modifier.height(2.dp))
-                    
+
                     BentoSlider(
                         value = sliderBlurLevel,
                         onValueChange = { newValue ->
@@ -200,7 +220,7 @@ fun DonateSection(
         ),
         label = "scale"
     )
-    
+
     // Animate rotation for playful effect
     val rotation by animateFloatAsState(
         targetValue = (1f - adjustedProgress) * -10f,
@@ -210,7 +230,7 @@ fun DonateSection(
         ),
         label = "rotation"
     )
-    
+
     // Icon scale with extra bounce
     val iconScale by animateFloatAsState(
         targetValue = if (adjustedProgress > 0.8f) 1.1f else 0.8f,
@@ -288,7 +308,7 @@ fun DonateSection(
                         tint = Color.Unspecified
                     )
                 }
-                
+
                 // Heart badge
                 Box(
                     modifier = Modifier
@@ -299,13 +319,15 @@ fun DonateSection(
                         .background(Color(0xFFFFADA7)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "❤",
-                        fontSize = 12.sp
+                    Icon(
+                        imageVector = Icons.Filled.Favorite,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = Color(0xFFE53935)
                     )
                 }
             }
-            
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -314,9 +336,9 @@ fun DonateSection(
                     color = BentoColors.TextPrimary,
                     style = BentoTypography.titleLarge
                 )
-                
+
                 Spacer(Modifier.height(8.dp))
-                
+
                 Text(
                     text = "If this app saves you time, consider buying me a coffee. Your support helps fuel my free side projects.",
                     color = BentoColors.TextSecondary,
@@ -377,24 +399,24 @@ fun AssistantBottomSheet(
                     modifier = Modifier.size(48.dp),
                     tint = BentoColors.AccentGreen
                 )
-                
+
                 Spacer(Modifier.height(16.dp))
-                
+
                 Text(
                     text = "Set as default assistant",
                     color = BentoColors.TextPrimary,
                     style = BentoTypography.titleLarge
                 )
-                
+
                 Spacer(Modifier.height(8.dp))
-                
+
                 Text(
                     text = "To launch using navigation gesture and power button",
                     color = BentoColors.TextSecondary,
                     style = BentoTypography.bodyMedium,
                     textAlign = TextAlign.Center
                 )
-                
+
                 Spacer(Modifier.height(24.dp))
 
                 // Instruction Box
@@ -420,9 +442,9 @@ fun AssistantBottomSheet(
                         )
                     }
                 }
-                
+
                 Spacer(Modifier.height(24.dp))
-                
+
                 // Setup button
                 Box(
                     modifier = Modifier
@@ -431,7 +453,7 @@ fun AssistantBottomSheet(
                         .clip(RoundedCornerShape(26.dp))
                         .background(BentoColors.AccentGreen)
                         .clickable { onSetupClick() },
-                        contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "Set up now",
@@ -439,9 +461,9 @@ fun AssistantBottomSheet(
                         style = BentoTypography.labelButton
                     )
                 }
-                
+
                 Spacer(Modifier.height(12.dp))
-                
+
                 // Skip button
                 TextButton(onClick = onDismiss) {
                     Text(

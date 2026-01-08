@@ -190,6 +190,17 @@ class AssistActivity : FragmentActivity() {
             val blurLevel = preferencesRepository.getBlurLevel()
             window.setBackgroundBlurRadius(blurLevel)
             window.setBackgroundDrawableResource(android.R.color.transparent)
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+            val attributes = window.attributes
+            attributes.setBlurBehindRadius(blurLevel)
+            window.attributes = attributes
+        } else {
+            window.setBackgroundBlurRadius(0)
+            val attributes = window.attributes
+            attributes.setBlurBehindRadius(0)
+            attributes.flags =
+                attributes.flags and android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND.inv()
+            window.attributes = attributes
         }
     }
 }
@@ -226,28 +237,7 @@ fun AssistantScreen(
     }
 
     // Track blur state (user preference + system runtime state)
-    val (blurEnabled, crossWindowBlurEnabled) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val enabled = remember {
-            context.getSharedPreferences("swyplauncher_prefs", android.content.Context.MODE_PRIVATE)
-                .getBoolean("background_blur_enabled", false)
-        }
-        var runtimeEnabled by remember {
-            mutableStateOf(
-                enabled &&
-                        (context.getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager).isCrossWindowBlurEnabled
-            )
-        }
-
-        LaunchedEffect(enabled) {
-            if (enabled) {
-                (context.getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager)
-                    .addCrossWindowBlurEnabledListener { runtimeEnabled = it }
-            }
-        }
-        enabled to runtimeEnabled
-    } else {
-        false to false
-    }
+    val blurEnabled = remember { preferencesRepository.isBackgroundBlurEnabled() }
 
     val visibleState = remember { MutableTransitionState(false).apply { targetState = true } }
     var showUsageStatsPrompt by remember { mutableStateOf(false) }
@@ -516,7 +506,7 @@ fun AssistantScreen(
                             )
                         }
                 ) {
-                    val backgroundColor = if (blurEnabled && crossWindowBlurEnabled)
+                    val backgroundColor = if (blurEnabled)
                         Color(0xAA000000) // Semi-transparent for frosted glass effect
                     else Color.Black // Opaque when blur is disabled
 
@@ -531,7 +521,7 @@ fun AssistantScreen(
                             .fillMaxWidth()
                             .weight(1f)
                             .then(
-                                if (blurEnabled && crossWindowBlurEnabled) {
+                                if (blurEnabled) {
                                     Modifier.drawWithCache {
                                         val noiseSize = 128
                                         val noiseBitmap = android.graphics.Bitmap.createBitmap(
@@ -635,7 +625,7 @@ fun AssistantScreen(
                                         enabledModes = modes,
                                         onModeSelected = modeViewModel::setMode,
                                         onShowHiddenApps = authenticateForHiddenApps,
-                                        isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                        isBlurEnabled = blurEnabled,
                                         modifier = Modifier
                                             .fillMaxHeight()
                                             .padding(start = leftSystemInset + notchPadding, end = 12.dp)
@@ -662,7 +652,7 @@ fun AssistantScreen(
                                             LauncherMode.INDEX -> IndexModeScreen(
                                                 onDismiss = { handleDismiss(true) },
                                                 launcherViewModel = launcherViewModel,
-                                                isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                                isBlurEnabled = blurEnabled,
                                                 onAddShortcut = { appId ->
                                                     shortcutAppId = appId
                                                     showShortcutEditor = true
@@ -674,7 +664,7 @@ fun AssistantScreen(
                                                 launcherViewModel = launcherViewModel,
                                                 isActive = page == pagerState.currentPage,
                                                 isInitialMode = mode == initialMode,
-                                                isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                                isBlurEnabled = blurEnabled,
                                                 onAddShortcut = { appId ->
                                                     shortcutAppId = appId
                                                     showShortcutEditor = true
@@ -702,7 +692,7 @@ fun AssistantScreen(
                                         enabledModes = modes,
                                         onModeSelected = modeViewModel::setMode,
                                         onShowHiddenApps = authenticateForHiddenApps,
-                                        isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                        isBlurEnabled = blurEnabled,
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(top = topPadding)
@@ -731,7 +721,7 @@ fun AssistantScreen(
                                             LauncherMode.INDEX -> IndexModeScreen(
                                                 onDismiss = { handleDismiss(true) },
                                                 launcherViewModel = launcherViewModel,
-                                                isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                                isBlurEnabled = blurEnabled,
                                                 onAddShortcut = { appId ->
                                                     shortcutAppId = appId
                                                     showShortcutEditor = true
@@ -743,7 +733,7 @@ fun AssistantScreen(
                                                 launcherViewModel = launcherViewModel,
                                                 isActive = page == pagerState.currentPage,
                                                 isInitialMode = mode == initialMode,
-                                                isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                                isBlurEnabled = blurEnabled,
                                                 onAddShortcut = { appId ->
                                                     shortcutAppId = appId
                                                     showShortcutEditor = true
@@ -781,7 +771,7 @@ fun AssistantScreen(
 
                                     HideAppTooltip(
                                         onDismiss = { launcherViewModel.dismissHideAppTooltip() },
-                                        isBlurEnabled = blurEnabled && crossWindowBlurEnabled,
+                                        isBlurEnabled = blurEnabled,
                                         caretOffsetFromRight = caretOffset
                                     )
                                 }

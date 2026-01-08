@@ -251,7 +251,7 @@ fun AutoOpenCard(
                 )
             )
             
-            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.weight(1f).heightIn(min = 12.dp))
             
             Text(
                 text = "Auto-open app",

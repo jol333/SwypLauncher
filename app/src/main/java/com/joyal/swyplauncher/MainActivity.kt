@@ -314,7 +314,7 @@ fun ModeOrderDialogContent(
 
         LazyColumn(
             state = lazyListState,
-            modifier = Modifier.height(300.dp)
+            modifier = Modifier.height((allModes.size * 72).dp.coerceAtMost(600.dp))
         ) {
             items(enabledModes.size, key = { enabledModes[it] }) { index ->
                 ReorderableItem(reorderableState, key = enabledModes[index]) { isDragging ->
