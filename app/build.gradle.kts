@@ -27,6 +27,9 @@ android {
         versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Limit bundled languages to only those we support
+        resourceConfigurations += listOf("en", "ml")
     }
 
     // Load keystore properties if available

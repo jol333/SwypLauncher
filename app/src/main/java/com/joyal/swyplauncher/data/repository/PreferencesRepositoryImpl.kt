@@ -158,6 +158,15 @@ class PreferencesRepositoryImpl @Inject constructor(
         prefs.edit().putString(KEY_APP_SHORTCUTS, json).apply()
     }
 
+    override fun getAppLanguage(): com.joyal.swyplauncher.domain.model.AppLanguage {
+        val code = prefs.getString(KEY_APP_LANGUAGE, null)
+        return com.joyal.swyplauncher.domain.model.AppLanguage.fromCode(code)
+    }
+
+    override fun setAppLanguage(language: com.joyal.swyplauncher.domain.model.AppLanguage) {
+        prefs.edit().putString(KEY_APP_LANGUAGE, language.code).apply()
+    }
+
     companion object {
         private const val KEY_HANDWRITING_INIT_TOAST_SHOWN = "handwriting_init_toast_shown"
         private const val KEY_HANDWRITING_MODEL_DOWNLOADED = "handwriting_model_downloaded"
@@ -173,5 +182,6 @@ class PreferencesRepositoryImpl @Inject constructor(
         private const val KEY_BACKGROUND_BLUR_ENABLED = "background_blur_enabled"
         private const val KEY_BLUR_LEVEL = "blur_level"
         private const val KEY_APP_SHORTCUTS = "app_shortcuts"
+        private const val KEY_APP_LANGUAGE = "app_language"
     }
 }

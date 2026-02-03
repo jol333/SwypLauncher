@@ -62,6 +62,7 @@ import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.model.AppShortcut
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -219,14 +220,14 @@ fun AppContextMenu(
 
             // Add shortcut option
             if (onAddShortcut != null) {
-                MenuOption(Icons.AutoMirrored.Outlined.Label, "Set a shortcut") {
+                MenuOption(Icons.AutoMirrored.Outlined.Label, stringResource(R.string.set_a_shortcut)) {
                     onAddShortcut()
                     dismissWithAnimation()
                 }
             }
 
             // App info
-            MenuOption(Icons.Outlined.Info, "App info") {
+            MenuOption(Icons.Outlined.Info, stringResource(R.string.app_info)) {
                 runCatching {
                     context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                         data = Uri.fromParts("package", app.packageName, null)
@@ -237,7 +238,7 @@ fun AppContextMenu(
             }
 
             // 5. View in Play Store
-            MenuOption(Icons.Outlined.ShoppingCart, "View in app store") {
+            MenuOption(Icons.Outlined.ShoppingCart, stringResource(R.string.view_in_app_store)) {
                 runCatching {
                     val intent = Intent(Intent.ACTION_VIEW).apply {
                         data = Uri.parse("market://details?id=${app.packageName}")
@@ -255,14 +256,19 @@ fun AppContextMenu(
             // 6. Hide/Unhide app
             MenuOption(
                 if (showHideOption) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
-                if (showHideOption) "Hide" else "Unhide"
+                if (showHideOption) stringResource(R.string.hide_app) else stringResource(R.string.unhide_app)
             ) {
                 if (showHideOption) onHide() else onUnhide()
                 dismissWithAnimation()
             }
 
             // 7. Uninstall option
-            MenuOption(Icons.Outlined.Delete, "Uninstall") {
+            // Store string resources for use in AlertDialog (which can't use stringResource)
+            val cannotUninstallTitle = stringResource(R.string.cannot_uninstall)
+            val cannotUninstallMessage = stringResource(R.string.cannot_uninstall_message)
+            val hideLabel = stringResource(R.string.hide)
+            val cancelLabel = stringResource(R.string.cancel)
+            MenuOption(Icons.Outlined.Delete, stringResource(R.string.uninstall)) {
                 runCatching {
                     val appInfo = context.packageManager.getApplicationInfo(app.packageName, 0)
                     val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
@@ -277,14 +283,14 @@ fun AppContextMenu(
                         }
                         isSystemApp -> {
                             AlertDialog.Builder(ContextThemeWrapper(context, android.R.style.Theme_DeviceDefault_Dialog_Alert))
-                                .setTitle("Cannot Uninstall")
-                                .setMessage("This app cannot be uninstalled. Would you like to hide it instead?")
-                                .setPositiveButton("Hide") { dialog, _ ->
+                                .setTitle(cannotUninstallTitle)
+                                .setMessage(cannotUninstallMessage)
+                                .setPositiveButton(hideLabel) { dialog, _ ->
                                     onHide()
                                     dialog.dismiss()
                                     dismissWithAnimation()
                                 }
-                                .setNegativeButton("Cancel") { dialog, _ ->
+                                .setNegativeButton(cancelLabel) { dialog, _ ->
                                     dialog.dismiss()
                                     dismissWithAnimation()
                                 }

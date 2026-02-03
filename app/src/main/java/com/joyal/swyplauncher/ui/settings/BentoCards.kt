@@ -21,7 +21,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.ui.theme.BentoColors
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun TrySwypLauncherCard(
@@ -67,13 +69,12 @@ fun TrySwypLauncherCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Try Swyp Launcher",
+                        text = stringResource(R.string.try_swyp_launcher),
                         color = BentoColors.TextPrimary,
                         style = BentoTypography.titleLarge
                     )
-                    Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "Test the UI and features",
+                        text = stringResource(R.string.test_ui_features),
                         color = BentoColors.TextSecondary,
                         style = BentoTypography.bodyMedium
                     )
@@ -89,7 +90,7 @@ fun TrySwypLauncherCard(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Rocket,
-                        contentDescription = "Launch",
+                        contentDescription = stringResource(R.string.launch),
                         modifier = Modifier.size(24.dp),
                         tint = Color.White
                     )
@@ -107,7 +108,7 @@ fun TrySwypLauncherCard(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Launch now",
+                    text = stringResource(R.string.launch_now),
                     color = Color.Black,
                     style = BentoTypography.labelButton
                 )
@@ -159,7 +160,7 @@ fun LaunchModesCard(
                     tint = BentoColors.AccentGreen
                 )
                 Text(
-                    text = "LAUNCH MODES",
+                    text = stringResource(R.string.launch_modes),
                     color = BentoColors.TextLabel,
                     style = BentoTypography.labelLarge
                 )
@@ -175,7 +176,7 @@ fun LaunchModesCard(
             )
             
             Text(
-                text = "Modes selected",
+                text = stringResource(R.string.modes_selected),
                 color = BentoColors.TextSecondary,
                 style = BentoTypography.bodyMedium
             )
@@ -226,7 +227,7 @@ fun AppShortcutsCard(
                     tint = BentoColors.AccentGreen
                 )
                 Text(
-                    text = "APP SHORTCUTS",
+                    text = stringResource(R.string.app_shortcuts),
                     color = BentoColors.TextLabel,
                     style = BentoTypography.labelLarge
                 )
@@ -242,7 +243,7 @@ fun AppShortcutsCard(
             )
             
             Text(
-                text = if (count == 1) "Active shortcut" else "Active shortcuts",
+                text = if (count == 1) stringResource(R.string.active_shortcut_singular) else stringResource(R.string.active_shortcuts_plural),
                 color = BentoColors.TextSecondary,
                 style = BentoTypography.bodyMedium
             )

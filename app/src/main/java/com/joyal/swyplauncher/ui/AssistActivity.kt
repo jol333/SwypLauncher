@@ -98,7 +98,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.toPath
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -119,7 +119,7 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 @AndroidEntryPoint
-class AssistActivity : FragmentActivity() {
+class AssistActivity : AppCompatActivity() {
     private val prewarmLauncherViewModel: LauncherViewModel by viewModels()
 
     @Inject
@@ -209,7 +209,7 @@ class AssistActivity : FragmentActivity() {
 @Composable
 fun AssistantScreen(
     onDismiss: () -> Unit,
-    activity: FragmentActivity,
+    activity: AppCompatActivity,
     modeViewModel: ModeViewModel = hiltViewModel(),
     preferencesRepository: com.joyal.swyplauncher.domain.repository.PreferencesRepository,
     getInstalledAppsUseCase: com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase,

@@ -45,6 +45,9 @@ interface PreferencesRepository {
     
     fun getAppShortcuts(): Map<String, Set<String>>
     fun setAppShortcuts(shortcuts: Map<String, Set<String>>)
+    
+    fun getAppLanguage(): com.joyal.swyplauncher.domain.model.AppLanguage
+    fun setAppLanguage(language: com.joyal.swyplauncher.domain.model.AppLanguage)
 }
 
 enum class AppSortOrder {

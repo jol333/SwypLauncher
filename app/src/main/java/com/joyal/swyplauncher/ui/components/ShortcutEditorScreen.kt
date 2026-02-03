@@ -71,9 +71,11 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
+import com.joyal.swyplauncher.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,6 +104,7 @@ fun ShortcutEditorScreen(
     val nameFocusRequester = remember { FocusRequester() }
     val searchFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(500)
@@ -133,10 +136,10 @@ fun ShortcutEditorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (initialShortcut.isEmpty()) "New shortcut" else "Edit shortcut") },
+                title = { Text(if (initialShortcut.isEmpty()) stringResource(R.string.new_shortcut) else stringResource(R.string.edit_shortcut)) },
                 navigationIcon = {
                     IconButton(onClick = onCancel) {
-                        Icon(Icons.Default.Close, "Close")
+                        Icon(Icons.Default.Close, stringResource(R.string.close))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -175,7 +178,7 @@ fun ShortcutEditorScreen(
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
-                            "MAGIC WORD",
+                            stringResource(R.string.magic_word),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
@@ -193,7 +196,7 @@ fun ShortcutEditorScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .focusRequester(nameFocusRequester),
-                            placeholder = { Text("Type shortcut (min 2 chars)") },
+                            placeholder = { Text(stringResource(R.string.magic_word_placeholder)) },
                             singleLine = true,
                             shape = MaterialTheme.shapes.extraLarge,
                             isError = showMagicWordError,
@@ -211,8 +214,8 @@ fun ShortcutEditorScreen(
                         )
 
                         Text(
-                            if (shortcutName.isEmpty()) "Type this word in the launcher to see these apps as results."
-                            else "Type '$shortcutName' in the launcher to see these apps as results.",
+                            if (shortcutName.isEmpty()) stringResource(R.string.magic_word_hint_empty)
+                            else stringResource(R.string.magic_word_hint_format, shortcutName),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 8.dp, start = 4.dp)
@@ -222,7 +225,7 @@ fun ShortcutEditorScreen(
                     if (selectedApps.isNotEmpty()) {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                "APPS TO SHOW (${selectedApps.size})",
+                                stringResource(R.string.apps_to_show_count, selectedApps.size),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold,
@@ -260,7 +263,7 @@ fun ShortcutEditorScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    "SELECT APPS TO SHOW",
+                                    stringResource(R.string.select_apps_to_show),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold
@@ -268,7 +271,7 @@ fun ShortcutEditorScreen(
                                 IconButton(onClick = { isSearchVisible = true }) {
                                     Icon(
                                         Icons.Default.Search,
-                                        "Search",
+                                        stringResource(R.string.search),
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
@@ -318,7 +321,7 @@ fun ShortcutEditorScreen(
                                         decorationBox = { innerTextField ->
                                             if (searchQuery.isEmpty()) {
                                                 Text(
-                                                    "Search apps to add...",
+                                                    stringResource(R.string.search_apps_placeholder),
                                                     style = MaterialTheme.typography.bodyLarge,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
                                                         alpha = 0.7f
@@ -330,7 +333,7 @@ fun ShortcutEditorScreen(
                                     )
                                     Icon(
                                         Icons.Default.Close,
-                                        "Clear",
+                                        stringResource(R.string.clear),
                                         modifier = Modifier.clickable {
                                             if (searchQuery.isNotEmpty()) searchQuery = ""
                                             else isSearchVisible = false
@@ -423,19 +426,19 @@ fun ShortcutEditorScreen(
                                 shortcutName.isEmpty() -> {
                                     showMagicWordError = true
                                     scope.launch {
-                                        snackbarHostState.showSnackbar("Please type a magic word")
+                                        snackbarHostState.showSnackbar(context.getString(R.string.please_type_magic_word))
                                     }
                                 }
 
                                 shortcutName.length < 2 -> {
                                     showMagicWordError = true
                                     scope.launch {
-                                        snackbarHostState.showSnackbar("Shortcut name must be at least 2 characters")
+                                        snackbarHostState.showSnackbar(context.getString(R.string.shortcut_min_chars))
                                     }
                                 }
 
                                 selectedApps.isEmpty() -> scope.launch {
-                                    snackbarHostState.showSnackbar("Please select at least one app")
+                                    snackbarHostState.showSnackbar(context.getString(R.string.select_at_least_one_app))
                                 }
 
                                 shortcutName in existingShortcutNames && shortcutName != initialShortcut ->
@@ -453,8 +456,8 @@ fun ShortcutEditorScreen(
     if (showOverwriteDialog) {
         AlertDialog(
             onDismissRequest = { showOverwriteDialog = false },
-            title = { Text("Shortcut already exists") },
-            text = { Text("A shortcut with the name \"$shortcutName\" already exists. Do you want to replace it?") },
+            title = { Text(stringResource(R.string.shortcut_exists_title)) },
+            text = { Text(stringResource(R.string.shortcut_exists_message, shortcutName)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -462,12 +465,12 @@ fun ShortcutEditorScreen(
                         onSave(shortcutName, selectedApps)
                     }
                 ) {
-                    Text("Replace")
+                    Text(stringResource(R.string.replace))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showOverwriteDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -493,7 +496,7 @@ fun SaveButton(onClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "Save shortcut",
+                stringResource(R.string.save_shortcut),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -537,7 +540,7 @@ fun SelectedAppChip(app: AppInfo, onRemove: () -> Unit) {
             ) {
                 Icon(
                     Icons.Default.Close,
-                    contentDescription = "Remove",
+                    contentDescription = stringResource(R.string.remove),
                     tint = Color.White,
                     modifier = Modifier.size(12.dp)
                 )
@@ -599,7 +602,7 @@ fun AppSelectionItem(
         if (isSelected) {
             Icon(
                 Icons.Default.Check,
-                contentDescription = "Selected",
+                contentDescription = stringResource(R.string.selected),
                 tint = MaterialTheme.colorScheme.primary
             )
         }

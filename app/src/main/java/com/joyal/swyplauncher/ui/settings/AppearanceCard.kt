@@ -28,8 +28,10 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.ui.theme.BentoColors
 import kotlin.math.roundToInt
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun AppearanceCard(
@@ -86,7 +88,7 @@ fun AppearanceCard(
                     tint = BentoColors.AccentGreen
                 )
                 Text(
-                    text = "APPEARANCE",
+                    text = stringResource(R.string.appearance),
                     color = BentoColors.TextLabel,
                     style = BentoTypography.labelLarge
                 )
@@ -150,7 +152,7 @@ fun AppearanceCard(
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = "App",
+                                text = stringResource(R.string.app),
                                 color = BentoColors.TextPrimary,
                                 style = BentoTypography.labelSmall,
                                 maxLines = 1
@@ -169,7 +171,7 @@ fun AppearanceCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Apps per row",
+                        text = stringResource(R.string.apps_per_row),
                         color = BentoColors.TextPrimary,
                         style = BentoTypography.bodyMedium
                     )
@@ -204,7 +206,7 @@ fun AppearanceCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Corner radius",
+                        text = stringResource(R.string.corner_radius),
                         color = BentoColors.TextPrimary,
                         style = BentoTypography.bodyMedium
                     )

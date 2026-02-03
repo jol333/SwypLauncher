@@ -58,6 +58,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -115,6 +116,15 @@ fun BentoSettingsScreen(
         )
     }
     var blurLevel by remember { mutableStateOf(preferencesRepository?.getBlurLevel() ?: 80) }
+    
+    // Language state
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    var currentLanguage by remember {
+        mutableStateOf(
+            preferencesRepository?.getAppLanguage()
+                ?: com.joyal.swyplauncher.domain.model.AppLanguage.SYSTEM
+        )
+    }
 
     val listState = rememberLazyListState()
     val context = LocalContext.current
@@ -154,6 +164,7 @@ fun BentoSettingsScreen(
     // Track card bounds for container transform
     var launchModesCardBounds by remember { mutableStateOf(Rect.Zero) }
     var sortAppsCardBounds by remember { mutableStateOf(Rect.Zero) }
+    var languageCardBounds by remember { mutableStateOf(Rect.Zero) }
 
     // Container transform animation progress (0 = card, 1 = popup)
     val modeOrderProgress by animateFloatAsState(
@@ -172,6 +183,15 @@ fun BentoSettingsScreen(
             stiffness = 280f
         ),
         label = "sortOrderProgress"
+    )
+    
+    val languageProgress by animateFloatAsState(
+        targetValue = if (showLanguageDialog) 1f else 0f,
+        animationSpec = spring(
+            dampingRatio = 0.65f, // M3E spatial spring - jelly bounce
+            stiffness = 280f
+        ),
+        label = "languageProgress"
     )
 
     // Spatial awareness: Adjacent cards push away when dialog opens
@@ -198,6 +218,13 @@ fun BentoSettingsScreen(
         animationSpec = expressiveSpatialSpring,
         label = "sortAppsOffset"
     )
+    
+    // Language card offset when dialog opens
+    val languageOffset by animateFloatAsState(
+        targetValue = if (showLanguageDialog) with(density) { 8.dp.toPx() } else 0f,
+        animationSpec = expressiveSpatialSpring,
+        label = "languageOffset"
+    )
 
 
 
@@ -206,7 +233,7 @@ fun BentoSettingsScreen(
             .fillMaxSize()
             .background(BentoColors.BackgroundDark)
     ) {
-        val blurRadius = (modeOrderProgress * 10f + sortOrderProgress * 10f).dp
+        val blurRadius = (modeOrderProgress * 10f + sortOrderProgress * 10f + languageProgress * 10f).dp
 
         LazyColumn(
             state = listState,
@@ -262,9 +289,10 @@ fun BentoSettingsScreen(
                                     tint = Color.White
                                 )
                                 Text(
-                                    text = "Set as default assistant",
+                                    text = stringResource(R.string.set_as_default_assistant),
                                     color = Color.White,
-                                    style = BentoTypography.bodyMedium
+                                    style = BentoTypography.bodyMedium,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                 )
                             }
 
@@ -274,7 +302,7 @@ fun BentoSettingsScreen(
                         // Logo
                         Image(
                             painter = painterResource(id = R.drawable.swyp_logo),
-                            contentDescription = "Swyp Logo",
+                            contentDescription = stringResource(R.string.app_name),
                             modifier = Modifier.size(120.dp),
                             contentScale = ContentScale.Fit
                         )
@@ -403,6 +431,22 @@ fun BentoSettingsScreen(
                     }
                 )
             }
+            
+            // Language Card
+            item {
+                LanguageCard(
+                    currentLanguage = currentLanguage,
+                    onClick = { showLanguageDialog = true },
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .offset(y = (-32).dp)
+                        .onGloballyPositioned { coordinates ->
+                            languageCardBounds = coordinates.boundsInRoot()
+                        }
+                        .alpha(1f - languageProgress),
+                    offsetX = languageOffset
+                )
+            }
 
             // Donate Section & Footer
             item {
@@ -515,7 +559,7 @@ fun BentoSettingsScreen(
                             tint = BentoColors.AccentGreen
                         )
                         Text(
-                            text = "LAUNCH MODES",
+                            text = stringResource(R.string.launch_modes),
                             color = BentoColors.TextLabel,
                             style = BentoTypography.labelLarge
                         )
@@ -527,7 +571,7 @@ fun BentoSettingsScreen(
                         style = BentoTypography.displayLarge
                     )
                     Text(
-                        text = "Modes selected",
+                        text = stringResource(R.string.modes_selected),
                         color = BentoColors.TextSecondary,
                         style = BentoTypography.bodyMedium
                     )
@@ -552,16 +596,16 @@ fun BentoSettingsScreen(
             cardContent = {
                 Column {
                     Text(
-                        text = "SORT APPS BY",
+                        text = stringResource(R.string.sort_apps_by),
                         color = BentoColors.TextLabel,
                         style = BentoTypography.labelLarge
                     )
                     Spacer(Modifier.weight(1f))
                     Text(
                         text = when (appSortOrder) {
-                            com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> "Name"
-                            com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> "Usage"
-                            com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> "Category"
+                            com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> stringResource(R.string.sort_name)
+                            com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> stringResource(R.string.sort_usage)
+                            com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> stringResource(R.string.sort_category)
                         },
                         fontSize = 48.sp,
                         fontWeight = FontWeight.Black,
@@ -572,9 +616,9 @@ fun BentoSettingsScreen(
                     )
                     Text(
                         text = when (appSortOrder) {
-                            com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> "Alphabetically sorted"
-                            com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> "Most used apps appear first"
-                            com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> "Grouped by category"
+                            com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> stringResource(R.string.sort_name_desc)
+                            com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> stringResource(R.string.sort_usage_desc)
+                            com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> stringResource(R.string.sort_category_desc)
                         },
                         color = BentoColors.TextMuted,
                         style = BentoTypography.bodyMedium
@@ -594,8 +638,57 @@ fun BentoSettingsScreen(
                 )
             }
         )
+
+        // Container transform overlay for LanguageDialog
+        ContainerTransformPopup(
+            isVisible = showLanguageDialog || languageProgress > 0f,
+            progress = languageProgress,
+            cardBounds = languageCardBounds,
+            onDismiss = { showLanguageDialog = false },
+            cardContent = {
+                Column {
+                    Text(
+                        text = stringResource(R.string.language),
+                        color = BentoColors.TextLabel,
+                        style = BentoTypography.labelLarge
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = currentLanguage.nativeName,
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Black,
+                        color = BentoColors.AccentGreen,
+                        maxLines = 1,
+                        softWrap = false,
+                        modifier = Modifier.offset(x = (-4).dp)
+                    )
+                    Text(
+                        text = if (currentLanguage == com.joyal.swyplauncher.domain.model.AppLanguage.SYSTEM) {
+                            stringResource(R.string.system_default)
+                        } else {
+                            currentLanguage.displayName
+                        },
+                        color = BentoColors.TextMuted,
+                        style = BentoTypography.bodyMedium
+                    )
+                }
+            },
+            popupContent = {
+                LanguageDialogContent(
+                    currentLanguage = currentLanguage,
+                    onDismiss = { showLanguageDialog = false },
+                    onSelect = { language ->
+                        currentLanguage = language
+                        preferencesRepository?.setAppLanguage(language)
+                        com.joyal.swyplauncher.util.LocaleManager.applyLanguage(language)
+                        showLanguageDialog = false
+                    }
+                )
+            }
+        )
     }
 }
+
 
 @Composable
 private fun ContainerTransformPopup(

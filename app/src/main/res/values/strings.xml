@@ -10,4 +10,147 @@
     <string name="shortcut_keyboard_long">Keyboard Mode</string>
     <string name="shortcut_voice_short">Voice</string>
     <string name="shortcut_voice_long">Voice Mode</string>
+    
+    <!-- Settings Screen - Header -->
+    <string name="set_as_default_assistant">Set as default assistant</string>
+    <string name="try_swyp_launcher">Try Swyp Launcher</string>
+    <string name="test_ui_features">Test the UI and features</string>
+    <string name="launch_now">Launch now</string>
+    
+    <!-- Settings Screen - Launch Modes -->
+    <string name="launch_modes">LAUNCH MODES</string>
+    <string name="modes_selected">Modes selected</string>
+    <string name="select_app_launch_modes">Select app launch modes</string>
+    <string name="long_press_drag_reorder">Long press &amp; drag handle to reorder</string>
+    
+    <!-- Settings Screen - App Shortcuts -->
+    <string name="app_shortcuts">APP SHORTCUTS</string>
+    <string name="active_shortcut">Active shortcut</string>
+    <string name="active_shortcuts">Active shortcuts</string>
+    
+    <!-- Settings Screen - Appearance -->
+    <string name="appearance">APPEARANCE</string>
+    <string name="grid_size">Grid size</string>
+    <string name="corner_radius">Corner radius</string>
+    <string name="live_preview">Live Preview</string>
+    
+    <!-- Settings Screen - Sort Apps -->
+    <string name="sort_apps_by">SORT APPS BY</string>
+    <string name="app_sort_order">App sort order</string>
+    <string name="sort_name">Name</string>
+    <string name="sort_usage">Usage</string>
+    <string name="sort_category">Category</string>
+    <string name="sort_name_desc">Alphabetically sorted</string>
+    <string name="sort_usage_desc">Most used apps appear first</string>
+    <string name="sort_category_desc">Grouped by category</string>
+    <string name="by_name_az">By name (A-Z)</string>
+    <string name="by_usage">By usage</string>
+    <string name="by_category">By category</string>
+    <string name="grouped_by_app_category">Grouped by app category</string>
+    
+    <!-- Settings Screen - Auto-open -->
+    <string name="auto_open_app">Auto-open app</string>
+    <string name="auto_open_desc">Open app automatically if single search result</string>
+    
+    <!-- Settings Screen - Visual Effects -->
+    <string name="visual_effects">VISUAL EFFECTS</string>
+    <string name="background_blur">Background blur</string>
+    <string name="blur_intensity">Blur intensity</string>
+    
+    <!-- Settings Screen - Language -->
+    <string name="language">LANGUAGE</string>
+    <string name="app_language">App language</string>
+    <string name="system_default">System Default</string>
+    <string name="select_language">Select language</string>
+    
+    <!-- Settings Screen - Footer -->
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="source_code">Source Code</string>
+    <string name="license">License</string>
+    <string name="version_format">Version %1$s</string>
+    
+    <!-- Dialog buttons -->
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="replace">Replace</string>
+    
+    <!-- Hidden Apps Screen -->
+    <string name="hidden_apps">Hidden Apps</string>
+    <string name="back">Back</string>
+    <string name="no_hidden_apps">No hidden apps</string>
+    
+    <!-- App Shortcuts Screen -->
+    <string name="new_shortcut">New shortcut</string>
+    <string name="create">Create</string>
+    <string name="no_shortcuts_yet">No shortcuts yet</string>
+    <string name="shortcuts_empty_desc">Create custom commands to show specific apps in search results</string>
+    <string name="delete">Delete</string>
+    
+    <!-- Shortcut Editor Screen -->
+    <string name="edit_shortcut">Edit shortcut</string>
+    <string name="close">Close</string>
+    <string name="magic_word">MAGIC WORD</string>
+    <string name="magic_word_placeholder">Type shortcut (min 2 chars)</string>
+    <string name="magic_word_hint_empty">Type this word in the launcher to see these apps as results.</string>
+    <string name="magic_word_hint_format">Type \'%1$s\' in the launcher to see these apps as results.</string>
+    <string name="apps_to_show_count">APPS TO SHOW (%1$d)</string>
+    <string name="select_apps_to_show">SELECT APPS TO SHOW</string>
+    <string name="search">Search</string>
+    <string name="search_apps_placeholder">Search apps to add...</string>
+    <string name="clear">Clear</string>
+    <string name="save_shortcut">Save shortcut</string>
+    <string name="remove">Remove</string>
+    <string name="selected">Selected</string>
+    <string name="please_type_magic_word">Please type a magic word</string>
+    <string name="shortcut_min_chars">Shortcut name must be at least 2 characters</string>
+    <string name="select_at_least_one_app">Please select at least one app</string>
+    <string name="shortcut_exists_title">Shortcut already exists</string>
+    <string name="shortcut_exists_message">A shortcut with the name \"%1$s\" already exists. Do you want to replace it?</string>
+    
+    <!-- Context Menu -->
+    <string name="app_info">App info</string>
+    <string name="hide_app">Hide</string>
+    <string name="unhide_app">Unhide</string>
+    <string name="uninstall">Uninstall</string>
+    <string name="set_a_shortcut">Set a shortcut</string>
+    <string name="view_in_app_store">View in app store</string>
+    <string name="cannot_uninstall">Cannot Uninstall</string>
+    <string name="cannot_uninstall_message">This app cannot be uninstalled. Would you like to hide it instead?</string>
+    <string name="hide">Hide</string>
+    
+    <!-- Mode Names -->
+    <string name="mode_handwriting">Handwriting</string>
+    <string name="mode_keyboard">Keyboard</string>
+    <string name="mode_voice">Voice</string>
+    <string name="mode_index">Index</string>
+    
+    <!-- Usage Stats Permission -->
+    <string name="usage_access_required">Usage Access Required</string>
+    <string name="usage_access_message">To sort apps by usage, Swyp Launcher needs access to usage statistics. You\'ll be taken to the settings screen to grant this permission.\n(Select Swyp Launcher and permit usage access)</string>
+    <string name="grant_permission">Grant Permission</string>
+    
+    <!-- Voice Mode -->
+    <string name="say_app_name">Say an app name…</string>
+    <string name="listening">Listening…</string>
+    <string name="tap_to_speak">Tap mic to speak</string>
+    
+    <!-- Donate Section -->
+    <string name="support_development">Support Development</string>
+    <string name="buy_me_coffee">Buy me a coffee</string>
+    <string name="donate_message">If this app saves you time, consider buying me a coffee. Your support helps fuel my free side projects.</string>
+    
+    <!-- Additional UI strings -->
+    <string name="launch">Launch</string>
+    <string name="active_shortcut_singular">Active shortcut</string>
+    <string name="active_shortcuts_plural">Active shortcuts</string>
+    <string name="blur_background">Blur background</string>
+    <string name="blur_background_desc">Semi-transparent frosted glass look</string>
+    <string name="apps_per_row">Apps per row</string>
+    <string name="app">App</string>
+    <string name="drag_to_reorder">Drag to reorder</string>
+    <string name="set_up_now">Set up now</string>
+    <string name="skip_for_now">Skip for now</string>
+    <string name="how_to_enable">How to enable:</string>
+    <string name="assistant_instruction">Click on \'Default digital assistant app\' in the next screen and choose \'Swyp Launcher\'</string>
+    <string name="to_launch_using_gesture">To launch using navigation gesture and power button</string>
 </resources>

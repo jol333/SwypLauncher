@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import com.joyal.swyplauncher.ui.components.AppContextMenu
 import com.joyal.swyplauncher.ui.components.AppIconItem
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
+import com.joyal.swyplauncher.R
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,10 +67,10 @@ fun HiddenAppsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Hidden Apps") },
+                title = { Text(stringResource(R.string.hidden_apps)) },
                 navigationIcon = {
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -103,7 +105,7 @@ fun HiddenAppsScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No hidden apps",
+                        text = stringResource(R.string.no_hidden_apps),
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White.copy(alpha = 0.6f)
                     )

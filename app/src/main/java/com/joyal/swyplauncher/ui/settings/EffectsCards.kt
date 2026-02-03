@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.ui.theme.BentoColors
 import kotlin.math.roundToInt
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun VisualEffectsCard(
@@ -101,7 +102,7 @@ fun VisualEffectsCard(
                     tint = BentoColors.AccentGreen
                 )
                 Text(
-                    text = "VISUAL EFFECTS",
+                    text = stringResource(R.string.visual_effects),
                     color = BentoColors.TextLabel,
                     style = BentoTypography.labelLarge
                 )
@@ -122,12 +123,12 @@ fun VisualEffectsCard(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text(
-                        text = "Blur background",
+                        text = stringResource(R.string.blur_background),
                         color = BentoColors.TextPrimary,
                         style = BentoTypography.titleMedium
                     )
                     Text(
-                        text = "Semi-transparent frosted glass look",
+                        text = stringResource(R.string.blur_background_desc),
                         color = BentoColors.TextMuted,
                         style = BentoTypography.bodyMedium
                     )
@@ -171,7 +172,7 @@ fun VisualEffectsCard(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Blur intensity",
+                            text = stringResource(R.string.blur_intensity),
                             color = BentoColors.TextPrimary,
                             style = BentoTypography.bodyMedium
                         )
@@ -303,7 +304,7 @@ fun DonateSection(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_buy_me_coffee),
-                        contentDescription = "Buy me a coffee",
+                        contentDescription = stringResource(R.string.buy_me_coffee),
                         modifier = Modifier.size(32.dp),
                         tint = Color.Unspecified
                     )
@@ -332,7 +333,7 @@ fun DonateSection(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Buy me a coffee",
+                    text = stringResource(R.string.buy_me_coffee),
                     color = BentoColors.TextPrimary,
                     style = BentoTypography.titleLarge
                 )
@@ -340,7 +341,7 @@ fun DonateSection(
                 Spacer(Modifier.height(8.dp))
 
                 Text(
-                    text = "If this app saves you time, consider buying me a coffee. Your support helps fuel my free side projects.",
+                    text = stringResource(R.string.donate_message),
                     color = BentoColors.TextSecondary,
                     style = BentoTypography.bodyMedium,
                     textAlign = TextAlign.Center
@@ -403,15 +404,16 @@ fun AssistantBottomSheet(
                 Spacer(Modifier.height(16.dp))
 
                 Text(
-                    text = "Set as default assistant",
+                    text = stringResource(R.string.set_as_default_assistant),
                     color = BentoColors.TextPrimary,
-                    style = BentoTypography.titleLarge
+                    style = BentoTypography.titleLarge,
+                    textAlign = TextAlign.Center
                 )
 
                 Spacer(Modifier.height(8.dp))
 
                 Text(
-                    text = "To launch using navigation gesture and power button",
+                    text = stringResource(R.string.to_launch_using_gesture),
                     color = BentoColors.TextSecondary,
                     style = BentoTypography.bodyMedium,
                     textAlign = TextAlign.Center
@@ -431,12 +433,12 @@ fun AssistantBottomSheet(
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                            text = "How to enable:",
+                            text = stringResource(R.string.how_to_enable),
                             color = BentoColors.AccentGreen,
                             style = BentoTypography.labelSmall.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(
-                            text = "Click on 'Default digital assistant app' in the next screen and choose 'Swyp Launcher'",
+                            text = stringResource(R.string.assistant_instruction),
                             color = BentoColors.TextSecondary,
                             style = BentoTypography.bodyMedium
                         )
@@ -456,7 +458,7 @@ fun AssistantBottomSheet(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Set up now",
+                        text = stringResource(R.string.set_up_now),
                         color = Color.White,
                         style = BentoTypography.labelButton
                     )
@@ -467,7 +469,7 @@ fun AssistantBottomSheet(
                 // Skip button
                 TextButton(onClick = onDismiss) {
                     Text(
-                        text = "Skip for now",
+                        text = stringResource(R.string.skip_for_now),
                         color = BentoColors.TextMuted,
                         style = BentoTypography.bodyMedium
                     )

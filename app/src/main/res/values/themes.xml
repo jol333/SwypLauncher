@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.SwypLauncher" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.SwypLauncher" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Ensure we use Material3 colors when in Compose -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
     
     <style name="Theme.SwypLauncher.Translucent" parent="Theme.SwypLauncher">
         <item name="android:windowIsTranslucent">true</item>

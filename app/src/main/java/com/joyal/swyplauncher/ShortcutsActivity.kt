@@ -1,7 +1,7 @@
 package com.joyal.swyplauncher
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
@@ -91,9 +91,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.roundToInt
+import androidx.compose.ui.res.stringResource
 
 @AndroidEntryPoint
-class ShortcutsActivity : ComponentActivity() {
+class ShortcutsActivity : AppCompatActivity() {
 
     @Inject
     lateinit var preferencesRepository: PreferencesRepository
@@ -238,10 +239,10 @@ fun ShortcutsListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("App shortcuts") },
+                title = { Text(stringResource(R.string.app_shortcuts)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -254,8 +255,8 @@ fun ShortcutsListScreen(
                 onClick = onAddClick,
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                icon = { Icon(Icons.Default.Add, "Create") },
-                text = { Text("New shortcut") }
+                icon = { Icon(Icons.Default.Add, stringResource(R.string.create)) },
+                text = { Text(stringResource(R.string.new_shortcut)) }
             )
         }
     ) { padding ->
@@ -302,13 +303,13 @@ fun EmptyState(padding: PaddingValues) {
             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
         )
         Text(
-            "No shortcuts yet",
+            stringResource(R.string.no_shortcuts_yet),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            "Create custom commands to show specific apps in search results",
+            stringResource(R.string.shortcuts_empty_desc),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -368,7 +369,7 @@ fun ShortcutCard(
             IconButton(onClick = onDelete) {
                 Icon(
                     Icons.Default.Delete,
-                    contentDescription = "Delete",
+                    contentDescription = stringResource(R.string.delete),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
             }

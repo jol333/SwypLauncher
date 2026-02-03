@@ -28,8 +28,10 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.joyal.swyplauncher.domain.repository.AppSortOrder
+import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.ui.theme.BentoColors
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
 
 /**
  * M3 Expressive Spatial Spring configuration for jelly wobble effect.
@@ -254,7 +256,7 @@ fun AutoOpenCard(
             Spacer(Modifier.weight(1f).heightIn(min = 12.dp))
             
             Text(
-                text = "Auto-open app",
+                text = stringResource(R.string.auto_open_app),
                 color = BentoColors.TextPrimary,
                 style = BentoTypography.titleMedium
             )
@@ -262,7 +264,7 @@ fun AutoOpenCard(
             Spacer(Modifier.height(4.dp))
             
             Text(
-                text = "Open app automatically if single search result",
+                text = stringResource(R.string.auto_open_desc),
                 color = BentoColors.TextMuted,
                 style = BentoTypography.bodyMedium
             )
@@ -310,7 +312,7 @@ fun SortAppsByCard(
     ) {
         Column {
             Text(
-                text = "SORT APPS BY",
+                text = stringResource(R.string.sort_apps_by),
                 color = BentoColors.TextLabel,
                 style = BentoTypography.labelLarge
             )
@@ -320,9 +322,9 @@ fun SortAppsByCard(
             // Large gradient text for sort type
             Text(
                 text = when (sortOrder) {
-                    AppSortOrder.NAME -> "Name"
-                    AppSortOrder.USAGE -> "Usage"
-                    AppSortOrder.CATEGORY -> "Category"
+                    AppSortOrder.NAME -> stringResource(R.string.sort_name)
+                    AppSortOrder.USAGE -> stringResource(R.string.sort_usage)
+                    AppSortOrder.CATEGORY -> stringResource(R.string.sort_category)
                 },
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Black,
@@ -335,9 +337,9 @@ fun SortAppsByCard(
             
             Text(
                 text = when (sortOrder) {
-                    AppSortOrder.NAME -> "Alphabetically sorted"
-                    AppSortOrder.USAGE -> "Most used apps appear first"
-                    AppSortOrder.CATEGORY -> "Grouped by category"
+                    AppSortOrder.NAME -> stringResource(R.string.sort_name_desc)
+                    AppSortOrder.USAGE -> stringResource(R.string.sort_usage_desc)
+                    AppSortOrder.CATEGORY -> stringResource(R.string.sort_category_desc)
                 },
                 color = BentoColors.TextMuted,
                 style = BentoTypography.bodyMedium

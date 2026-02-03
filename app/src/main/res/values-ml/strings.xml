@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">സ്വൈപ് ലോഞ്ചർ</string>
+    
+    <!-- Shortcut labels -->
+    <string name="shortcut_handwriting_short">വരയ്ക്കുക</string>
+    <string name="shortcut_handwriting_long">കൈയെഴുത്ത് മോഡ്</string>
+    <string name="shortcut_index_short">ഇൻഡെക്സ്</string>
+    <string name="shortcut_index_long">ഇൻഡെക്സ് മോഡ്</string>
+    <string name="shortcut_keyboard_short">ടൈപ്പ്</string>
+    <string name="shortcut_keyboard_long">കീബോർഡ് മോഡ്</string>
+    <string name="shortcut_voice_short">വോയ്സ്</string>
+    <string name="shortcut_voice_long">പറയുന്ന മോഡ്</string>
+    
+    <!-- Settings Screen - Header -->
+    <string name="set_as_default_assistant">ഡിഫോൾട്ട് അസിസ്റ്റന്റായി സെറ്റ് ചെയ്യുക</string>
+    <string name="try_swyp_launcher">ലോഞ്ചർ ട്രൈ ചെയ്യൂ</string>
+    <string name="test_ui_features">UIയും ഫീച്ചറുകളും കണ്ടു നോക്കൂ</string>
+    <string name="launch_now">ലോഞ്ചർ തുറക്കൂ</string>
+    
+    <!-- Settings Screen - Launch Modes -->
+    <string name="launch_modes">ലോഞ്ച് മോഡുകൾ</string>
+    <string name="modes_selected">മോഡുകൾ ഓൺ ആണ്</string>
+    <string name="select_app_launch_modes">എങ്ങനെയെല്ലാം ആപ്പ് തുറക്കാൻ സാധിക്കണം?</string>
+    <string name="long_press_drag_reorder">ക്രമം മാറ്റാൻ ഹാൻഡിലിൽ അമർത്തിപ്പിടിച്ച് നീക്കുക</string>
+    
+    <!-- Settings Screen - App Shortcuts -->
+    <string name="app_shortcuts">ആപ്പ് ഷോർട്ട്‌കട്ടുകൾ</string>
+    <string name="active_shortcut">ഷോർട്ട്‌കട്ട് ഉണ്ട്</string>
+    <string name="active_shortcuts">ഷോർട്ട്‌കട്ടുകൾ ഉണ്ട്</string>
+    
+    <!-- Settings Screen - Appearance -->
+    <string name="appearance">കാണേണ്ടത് എങ്ങനെ</string>
+    <string name="grid_size">ഗ്രിഡ് വലുപ്പം</string>
+    <string name="corner_radius">ഉരുണ്ട കോണുകൾ എത്രത്തോളം</string>
+    <string name="live_preview">തത്സമയ പ്രിവ്യൂ</string>
+    
+    <!-- Settings Screen - Sort Apps -->
+    <string name="sort_apps_by">ആപ്പുകൾ കാണിക്കുന്നത്</string>
+    <string name="app_sort_order">ആപ്പ് ക്രമം</string>
+    <string name="sort_name">പേര്</string>
+    <string name="sort_usage">ഉപയോഗം</string>
+    <string name="sort_category">വിഭാഗം</string>
+    <string name="sort_name_desc">അക്ഷരമാല ക്രമത്തിൽ</string>
+    <string name="sort_usage_desc">കൂടുതൽ ഉപയോഗിക്കുന്നത് ആദ്യം</string>
+    <string name="sort_category_desc">തരം തിരിച്ച്</string>
+    <string name="by_name_az">പേര് അനുസരിച്ച് (A-Z)</string>
+    <string name="by_usage">ഉപയോഗം അനുസരിച്ച്</string>
+    <string name="by_category">വിഭാഗം അനുസരിച്ച്</string>
+    <string name="grouped_by_app_category">കൂടുതൽ ഉപയോഗിക്കുന്നത് ആദ്യം</string>
+    
+    <!-- Settings Screen - Auto-open -->
+    <string name="auto_open_app">ആപ്പ് സ്വയം തുറക്കുക</string>
+    <string name="auto_open_desc">ഒരു സെർച്ച് റിസൾട്ട് മാത്രമാണെങ്കിൽ ഉടൻ തുറക്കുക</string>
+    
+    <!-- Settings Screen - Visual Effects -->
+    <string name="visual_effects">വിഷ്വൽ ഇഫക്റ്റുകൾ</string>
+    <string name="background_blur">ബാക്ക്ഗ്രൗണ്ട് ബ്ലർ</string>
+    <string name="blur_intensity">ബ്ലറിന്റെ തീവ്രത</string>
+    
+    <!-- Settings Screen - Language -->
+    <string name="language">ഭാഷ</string>
+    <string name="app_language">ആപ്പ് ഭാഷ</string>
+    <string name="system_default">സിസ്റ്റം ഡിഫോൾട്ട്</string>
+    <string name="select_language">ഭാഷ തിരഞ്ഞെടുക്കുക</string>
+    
+    <!-- Settings Screen - Footer -->
+    <string name="privacy_policy">സ്വകാര്യതാ നയം</string>
+    <string name="source_code">സോഴ്സ് കോഡ്</string>
+    <string name="license">ലൈസൻസ്</string>
+    <string name="version_format">പതിപ്പ് %1$s</string>
+    
+    <!-- Dialog buttons -->
+    <string name="cancel">ഇപ്പൊ വേണ്ട</string>
+    <string name="save">സേവ് ചെയ്യുക</string>
+    <string name="replace">പകരം വെക്കുക</string>
+    
+    <!-- Hidden Apps Screen -->
+    <string name="hidden_apps">ഒളിപ്പിച്ചു വെച്ച ആപ്പുകൾ</string>
+    <string name="back">പിന്നിലേക്ക്</string>
+    <string name="no_hidden_apps">നിലവിൽ ഒന്നും ഒളിപ്പിച്ചു വെച്ചിട്ടില്ല</string>
+    
+    <!-- App Shortcuts Screen -->
+    <string name="new_shortcut">പുതിയ ഷോർട്ട്‌കട്ട്</string>
+    <string name="create">സൃഷ്ടിക്കുക</string>
+    <string name="no_shortcuts_yet">ഷോർട്ട്‌കട്ടുകൾ ഇല്ല</string>
+    <string name="shortcuts_empty_desc">ഷോർട്ട്‌കട്ട് സെറ്റ് ചെയ്‌താൽ അത് അടിക്കുമ്പോൾ ആ ആപ്പുകൾ കാണിക്കും</string>
+    <string name="delete">കളഞ്ഞേക്കൂ</string>
+    
+    <!-- Shortcut Editor Screen -->
+    <string name="edit_shortcut">ഷോർട്ട്‌കട്ടിൽ മാറ്റം വരുത്തുക</string>
+    <string name="close">അടയ്ക്കുക</string>
+    <string name="magic_word">ഷോർട്ട്‌കട്ട് വാക്ക്</string>
+    <string name="magic_word_placeholder">ഷോർട്ട്‌കട്ട് ടൈപ്പ് ചെയ്യുക (കുറഞ്ഞത് 2 അക്ഷരം)</string>
+    <string name="magic_word_hint_empty">സെലക്ട് ചെയ്ത ആപ്പുകൾ ഫലങ്ങളായി കാണാൻ ലോഞ്ചറിൽ ഇത് ടൈപ്പ് ചെയ്യണം</string>
+    <string name="magic_word_hint_format">സെലക്ട് ചെയ്ത ആപ്പുകൾ ഫലങ്ങളായി കാണാൻ ലോഞ്ചറിൽ \'%1$s\' എന്ന് ടൈപ്പ് ചെയ്യണം</string>
+    <string name="apps_to_show_count">കാണിക്കേണ്ട ആപ്പുകൾ (%1$d)</string>
+    <string name="select_apps_to_show">കാണിക്കേണ്ട ആപ്പുകൾ തിരഞ്ഞെടുക്കുക</string>
+    <string name="search">തിരയുക</string>
+    <string name="search_apps_placeholder">ഇവിടെ സേർച്ച് ചെയ്യൂ...</string>
+    <string name="clear">മായ്ക്കുക</string>
+    <string name="save_shortcut">ഷോർട്ട്‌കട്ട് സേവ് ചെയ്യുക</string>
+    <string name="remove">നീക്കം ചെയ്യുക</string>
+    <string name="selected">തിരഞ്ഞെടുത്തു</string>
+    <string name="please_type_magic_word">ദയവായി ഇവിടെ എന്തെങ്കിലും ടൈപ്പ് ചെയ്യുക</string>
+    <string name="shortcut_min_chars">ഷോർട്ട്‌കട്ടിന്‌ കുറഞ്ഞത് 2 അക്ഷരമെങ്കിലും വേണം</string>
+    <string name="select_at_least_one_app">ദയവായി ഒരു ആപ്പെങ്കിലും തിരഞ്ഞെടുക്കുക</string>
+    <string name="shortcut_exists_title">ഇതേ പേരിൽ ഒരു ഷോർട്ട്‌കട്ട് നിലവിലുണ്ട്</string>
+    <string name="shortcut_exists_message">\"%1$s\" എന്ന പേരിൽ ഒരു ഷോർട്ട്‌കട്ട് നിലവിലുണ്ട്, പകരം ഇത് വെക്കണോ?</string>
+    
+    <!-- Context Menu -->
+    <string name="app_info">ആപ്പ് വിവരം</string>
+    <string name="hide_app">ഒളിപ്പിക്കുക</string>
+    <string name="unhide_app">കാണിക്കുക</string>
+    <string name="uninstall">കളയുക</string>
+    <string name="set_a_shortcut">ഒരു ഷോർട്ട്‌കട്ട് സെറ്റ് ചെയ്യുക</string>
+    <string name="view_in_app_store">ആപ്പ് സ്റ്റോറിൽ കാണുക</string>
+    <string name="cannot_uninstall">കളയാൻ കഴിയില്ല</string>
+    <string name="cannot_uninstall_message">ഈ ആപ്പ് കളയാൻ കഴിയില്ല, പകരം ഒളിപ്പിച്ചു വെക്കണോ?</string>
+    <string name="hide">ഒളിപ്പിക്കുക</string>
+    
+    <!-- Mode Names -->
+    <string name="mode_handwriting">കൈയെഴുത്ത്</string>
+    <string name="mode_keyboard">കീബോർഡ്</string>
+    <string name="mode_voice">വോയ്സ്</string>
+    <string name="mode_index">ഇൻഡെക്സ്</string>
+    
+    <!-- Usage Stats Permission -->
+    <string name="usage_access_required">App usage ആവശ്യമാണ്</string>
+    <string name="usage_access_message">ഉപയോഗം അനുസരിച്ച് ആപ്പുകൾ അടുക്കാൻ, സ്വൈപ് ലോഞ്ചറിന് ഉപയോഗ സ്ഥിതിവിവരക്കണക്കുകളിലേക്കുള്ള ആക്സസ് ആവശ്യമാണ്. ഈ അനുമതി നൽകാൻ നിങ്ങളെ സെറ്റിംഗ്സ് സ്ക്രീനിലേക്ക് കൊണ്ടുപോകും.\n(അവിടെ സ്വൈപ് ലോഞ്ചർ തിരഞ്ഞെടുത്ത് app usage കാണാൻ അനുവദിക്കുക)</string>
+    <string name="grant_permission">അനുമതി നൽകുക</string>
+    
+    <!-- Voice Mode -->
+    <string name="say_app_name">ഒരു ആപ്പിന്റെ പേര് പറയുക…</string>
+    <string name="listening">കേൾക്കുന്നു…</string>
+    <string name="tap_to_speak">സംസാരിക്കാൻ മൈക്കിൽ ടാപ്പ് ചെയ്യുക</string>
+    
+    <!-- Donate Section -->
+    <string name="support_development">വികസനത്തെ പിന്തുണയ്ക്കുക</string>
+    <string name="buy_me_coffee">ഈ ആപ്പിനെ സഹായിക്കൂ</string>
+    <string name="donate_message">ഈ ആപ്പ് നിങ്ങളുടെ സമയം ലാഭിക്കുന്നെങ്കിൽ, എനിക്ക് ഒരു കാപ്പി വാങ്ങിത്തരൂ. നിങ്ങളുടെ പിന്തുണ എന്റെ സൗജന്യ സൈഡ് പ്രോജക്ടുകൾക്ക് ഊർജ്ജം പകരുന്നു.</string>
+    
+    <!-- Additional UI strings -->
+    <string name="launch">ലോഞ്ച്</string>
+    <string name="active_shortcut_singular">ആക്ടീവ് ഷോർട്ട്‌കട്ട്</string>
+    <string name="active_shortcuts_plural">ആക്ടീവ് ഷോർട്ട്‌കട്ടുകൾ</string>
+    <string name="blur_background">ബ്ലർ ബാക്ക്ഗ്രൗണ്ട്</string>
+    <string name="blur_background_desc">അർദ്ധ സുതാര്യമായ ഫ്രോസ്റ്റഡ് ഗ്ലാസ് ലുക്ക്</string>
+    <string name="apps_per_row">ഓരോ വരിയിലും എത്ര ആപ്പുകൾ</string>
+    <string name="app">ആപ്പ്</string>
+    <string name="drag_to_reorder">ക്രമം മാറ്റാൻ വലിച്ചു നീക്കുക</string>
+    <string name="set_up_now">ഇപ്പോൾ തന്നെ സെറ്റ് ചെയ്യൂ</string>
+    <string name="skip_for_now">തൽക്കാലം വേണ്ട</string>
+    <string name="how_to_enable">എങ്ങനെ പ്രവർത്തനക്ഷമമാക്കാം:</string>
+    <string name="assistant_instruction">അടുത്ത സ്ക്രീനിൽ \'ഡിഫോൾട്ട് ഡിജിറ്റൽ അസിസ്റ്റന്റ് ആപ്പ്\' ക്ലിക്ക് ചെയ്ത് \'സ്വൈപ് ലോഞ്ചർ\' തിരഞ്ഞെടുക്കുക</string>
+    <string name="to_launch_using_gesture">നാവിഗേഷൻ ജെസ്ച്ചർ, പവർ ബട്ടൺ എന്നിവ ഉപയോഗിച്ച് ലോഞ്ച് ചെയ്യാൻ</string>
+</resources>

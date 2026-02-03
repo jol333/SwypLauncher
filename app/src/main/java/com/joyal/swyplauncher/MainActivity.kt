@@ -5,7 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.provider.Settings
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateDpAsState
@@ -54,9 +54,10 @@ import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import javax.inject.Inject
+import androidx.compose.ui.res.stringResource
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var preferencesRepository: PreferencesRepository
@@ -188,7 +189,7 @@ fun SortOrderDialogContent(
     var showPermissionDialog by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.padding(24.dp)) {
-        Text("App sort order", style = MaterialTheme.typography.titleLarge, color = BentoColors.TextPrimary)
+        Text(stringResource(R.string.app_sort_order), style = MaterialTheme.typography.titleLarge, color = BentoColors.TextPrimary)
         Spacer(Modifier.height(16.dp))
 
         com.joyal.swyplauncher.domain.repository.AppSortOrder.entries.forEach { order ->
@@ -224,17 +225,17 @@ fun SortOrderDialogContent(
                     Column {
                         Text(
                             text = when (order) {
-                                com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> "By name (A-Z)"
-                                com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> "By usage"
-                                com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> "By category"
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> stringResource(R.string.by_name_az)
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> stringResource(R.string.by_usage)
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> stringResource(R.string.by_category)
                             },
                             style = MaterialTheme.typography.bodyLarge
                         )
                         Text(
                             text = when (order) {
-                                com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> "Alphabetically sorted"
-                                com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> "Most used apps appear first"
-                                com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> "Grouped by app category"
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> stringResource(R.string.sort_name_desc)
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> stringResource(R.string.sort_usage_desc)
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> stringResource(R.string.grouped_by_app_category)
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -251,7 +252,7 @@ fun SortOrderDialogContent(
             horizontalArrangement = Arrangement.End
         ) {
             androidx.compose.material3.TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     }
@@ -303,10 +304,10 @@ fun ModeOrderDialogContent(
     val context = LocalContext.current
 
     Column(modifier = Modifier.padding(24.dp)) {
-        Text("Select app launch modes", style = MaterialTheme.typography.titleLarge, color = BentoColors.TextPrimary)
+        Text(stringResource(R.string.select_app_launch_modes), style = MaterialTheme.typography.titleLarge, color = BentoColors.TextPrimary)
         Spacer(Modifier.height(8.dp))
         Text(
-            "Long press & drag handle to reorder",
+            stringResource(R.string.long_press_drag_reorder),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -353,7 +354,7 @@ fun ModeOrderDialogContent(
                             ) {
                                 Icon(
                                     Icons.Outlined.DragHandle,
-                                    contentDescription = "Drag to reorder",
+                                    contentDescription = stringResource(R.string.drag_to_reorder),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
@@ -427,7 +428,7 @@ fun ModeOrderDialogContent(
             horizontalArrangement = Arrangement.End
         ) {
             androidx.compose.material3.TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
             Spacer(Modifier.width(8.dp))
             androidx.compose.material3.TextButton(
@@ -441,7 +442,7 @@ fun ModeOrderDialogContent(
                     onDismiss()
                 }
             ) {
-                Text("Save")
+                Text(stringResource(R.string.save))
             }
         }
     }
