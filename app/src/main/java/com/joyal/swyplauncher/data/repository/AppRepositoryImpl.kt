@@ -13,6 +13,7 @@ class AppRepositoryImpl @Inject constructor(
     private val appDataSource: AppDataSource
 ) : AppRepository {
     override suspend fun getInstalledApps(): List<AppInfo> = appDataSource.getInstalledApps()
+    override fun getCachedInstalledApps(): List<AppInfo> = appDataSource.getCachedInstalledApps()
     override fun observeAppChanges(): Flow<AppChangeEvent> = appDataSource.observeAppChanges()
     override suspend fun launchApp(packageName: String, activityName: String?): Result<Unit> = 
         appDataSource.launchApp(packageName, activityName)

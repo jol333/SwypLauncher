@@ -1,0 +1,516 @@
+# ========================================
+# Built Application Files
+# ========================================
+*.apk
+*.aab
+*.ap_
+*.app
+
+# ========================================
+# Files for the ART/Dalvik VM
+# ========================================
+*.dex
+
+# ========================================
+# Java Class Files
+# ========================================
+*.class
+
+# ========================================
+# Generated Files
+# ========================================
+bin/
+gen/
+out/
+build/
+release/
+
+# ========================================
+# Gradle Files
+# ========================================
+.gradle/
+.gradle-cache/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+!gradle/wrapper/gradle-wrapper.jar
+gradle/libs.versions.toml.lock
+
+# ========================================
+# Local Configuration Files
+# ========================================
+local.properties
+
+# ========================================
+# IntelliJ IDEA / Android Studio
+# ========================================
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# ========================================
+# VS Code
+# ========================================
+.vscode/
+*.code-workspace
+
+# ========================================
+# Kotlin
+# ========================================
+.kotlin/
+.kotlin-dsl/
+.kotlin-multiplatform/
+.kotlin-cache/
+kotlin-classes/
+
+# ========================================
+# macOS
+# ========================================
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# ========================================
+# Windows
+# ========================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# ========================================
+# Linux
+# ========================================
+*~
+.directory
+.Trash-*
+.nfs*
+
+# ========================================
+# Log Files
+# ========================================
+*.log
+
+# ========================================
+# Android Profiling
+# ========================================
+captures/
+*.hprof
+*.hprof.index
+profiler/
+
+# ========================================
+# Android Signing & Security
+# ========================================
+*.jks
+*.keystore
+*.pem
+*.p12
+*.cer
+*.crt
+*.der
+*.pfx
+
+# ========================================
+# Secrets & Environment
+# ========================================
+local.properties
+secrets.properties
+api-keys.properties
+.env
+.env.local
+.env.*.local
+.snyk
+
+# ========================================
+# Google Services & Firebase
+# ========================================
+google-services.json
+FirebaseApp.json
+firebaseAppDistributionConfig.json
+.firebase/
+
+# ========================================
+# Freeline
+# ========================================
+freeline.py
+freeline/
+freeline_project_description.json
+
+# ========================================
+# Version Control
+# ========================================
+.svn/
+.hg/
+.bzr/
+
+# ========================================
+# Backup Files
+# ========================================
+*.bak
+
+# ========================================
+# External native build folder
+# ========================================
+externalNativeBuild/
+.cxx/
+.externalNativeBuild
+obj/
+
+# ========================================
+# Lint
+# ========================================
+lint/
+lint-results*.xml
+lint-results*.html
+lint-baseline.xml
+
+# ========================================
+# Misc
+# ========================================
+*.swp
+*.swo
+*.tmp
+*.temp
+*.pid
+*.seed
+*.pid.lock
+
+# ========================================
+# Navigation Editor
+# ========================================
+.navigation/
+.navigation-args/
+
+# ========================================
+# Module-specific build directories
+# ========================================
+*/build/
+*/release/
+*/.gradle/
+
+# ========================================
+# Custom/Other IDE Tools
+# ========================================
+.kiro/
+.claude/
+.codex/
+.adb/
+.wifi-adb/
+
+# ========================================
+# Package Files
+# ========================================
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+!gradle/wrapper/gradle-wrapper.jar
+
+# ========================================
+# Crashlytics
+# ========================================
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# ========================================
+# Node (React Native)
+# ========================================
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# ========================================
+# User-specific configurations
+# ========================================
+.project
+.classpath
+.settings/
+.loadpath
+.factorypath
+
+# ========================================
+# Testing Frameworks & Coverage
+# ========================================
+.junit/
+junit*.properties
+test-results/
+test_output/
+*.exec
+*.gcda
+*.gcno
+*.gcov
+coverage/
+.coverage
+.coverage.*
+jacoco.exec
+*.lcov
+jacoco/
+jacoco-report/
+.kover/
+kover-report/
+.robolectric/
+espresso/
+
+# ========================================
+# Jetpack Compose
+# ========================================
+.compose/
+compose-compiler-report/
+compose-metrics/
+compose_compiler_dump/
+
+# ========================================
+# Room Database
+# ========================================
+schemas/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# ========================================
+# CI/CD
+# ========================================
+.circleci/local/
+.github/workflows/*.cache
+jenkins/
+.travis/
+bitrise.yml.backup
+.gitlab-ci-local/
+
+# ========================================
+# Dependency Management
+# ========================================
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/
+libs.versions.toml.lock
+
+# ========================================
+# Code Quality & Analysis
+# ========================================
+detekt-baseline.xml
+detekt-report/
+.ktlint/
+ktlint-report/
+.sonar/
+.sonarqube/
+sonar-project.properties
+pmd/
+*.pmd
+checkstyle/
+spotbugs/
+
+# ========================================
+# Documentation
+# ========================================
+dokka/
+docs/api/
+javadoc/
+
+# ========================================
+# Benchmarking & Profiling
+# ========================================
+macrobenchmark-output/
+*.trace
+baselineprofiles/
+baseline-prof.txt
+generated-baseline-profiles/
+*.prof
+*.nps
+leakcanary/
+
+# ========================================
+# Emulator & Device Files
+# ========================================
+*.avd/
+.android/
+avd/
+*.img
+*.qcow2
+screenshots/
+device-screenshots/
+
+# ========================================
+# Kotlin Multiplatform (iOS)
+# ========================================
+xcuserdata/
+*.xcworkspace/
+Pods/
+DerivedData/
+
+# ========================================
+# Protobuf
+# ========================================
+*.proto.tmp
+generatedProto/
+
+# ========================================
+# GraphQL
+# ========================================
+.graphqlconfig
+graphql.schema.json
+graphql-schema.json
+
+# ========================================
+# Generated Sources
+# ========================================
+generated/
+kotlinx-serialization/
+databinding/
+viewbinding/
+BuildConfig.java
+BuildConfig.kt
+R.java
+R.kt
+
+# ========================================
+# Annotation Processing
+# ========================================
+.apt/
+apt_generated/
+.apt_generated/
+annotationProcessor/
+kapt/
+kaptKotlin/
+.dagger/
+.hilt/
+
+# ========================================
+# Build Tools & AGP
+# ========================================
+.android-build-tools/
+app-inspection/
+.live-edit/
+build-attribution/
+dependency-analysis/
+dependency-graph/
+dependencyGraph/
+incremental/
+transforms/
+model/
+
+# ========================================
+# ML Kit & TensorFlow
+# ========================================
+*.tflite
+*.pb
+ml_models/
+
+# ========================================
+# AR Core / Scene Form
+# ========================================
+*.sfb
+sceneform_sdk/
+
+# ========================================
+# Play Services
+# ========================================
+play-services-*.aar
+
+# ========================================
+# App Bundle
+# ========================================
+bundle-analysis/
+bundle-report/
+
+# ========================================
+# Build Output
+# ========================================
+desugaring/
+multidex/
+r8-output/
+proguard-output/
+mapping.txt
+seeds.txt
+usage.txt
+resources.txt
+missing_rules.txt
+
+# ========================================
+# Caching Directories
+# ========================================
+.cache/
+caches/
+tmp/
+temp/
+.build-scan/
+.gradle-enterprise/
+build-cache/
+.build-cache/
+
+# ========================================
+# Platform-Specific Modules
+# ========================================
+auto/media/
+wear/release/
+tv/release/
+automotive/release/
+chromeos/
+foldable-testing/
+privacy-sandbox/
+
+# ========================================
+# Testing Artifacts
+# ========================================
+screenshot-tests/
+golden-images/
+screenshot-failures/
+animation-tests/
+accessibility-reports/
+
+# ========================================
+# Binary Resources
+# ========================================
+*.blob
+*.bin
+
+# ========================================
+# Localization
+# ========================================
+strings-backup/
+translations-cache/
+
+# ========================================
+# Feature Modules
+# ========================================
+assetpacks/build/
+dynamic-features/build/
+
+# ========================================
+# Third-party Libraries
+# ========================================
+private-libs/
+vendor/

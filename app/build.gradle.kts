@@ -3,14 +3,21 @@ import java.io.FileInputStream
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.baselineprofile)
+}
+
+// AGP 9.0: Configure Kotlin via kotlin extension instead of kotlinOptions
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_11)
+    }
 }
 
 android {
@@ -28,8 +35,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
-        // Limit bundled languages to only those we support
-        resourceConfigurations += listOf("en", "ml")
+        // Limit bundled languages to only those we support - moved to androidResources block
     }
 
     // Load keystore properties if available
@@ -83,11 +89,13 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
     buildFeatures {
         compose = true
+    }
+    
+    // AGP 9.0: Use androidResources for locale filtering
+    androidResources {
+        localeFilters += listOf("en", "ml")
     }
 }
 

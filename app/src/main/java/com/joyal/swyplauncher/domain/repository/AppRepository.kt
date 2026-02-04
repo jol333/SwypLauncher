@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface AppRepository {
     suspend fun getInstalledApps(): List<AppInfo>
+    fun getCachedInstalledApps(): List<AppInfo>
     fun observeAppChanges(): Flow<AppChangeEvent>
     suspend fun launchApp(packageName: String, activityName: String? = null): Result<Unit>
 }

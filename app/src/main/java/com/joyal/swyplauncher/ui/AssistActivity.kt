@@ -67,7 +67,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -121,6 +120,7 @@ import kotlin.math.roundToInt
 @AndroidEntryPoint
 class AssistActivity : AppCompatActivity() {
     private val prewarmLauncherViewModel: LauncherViewModel by viewModels()
+    private var hasResumedOnce = false
 
     @Inject
     lateinit var preferencesRepository: com.joyal.swyplauncher.domain.repository.PreferencesRepository
@@ -181,7 +181,14 @@ class AssistActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         // Kill activity when it's no longer visible
-        finish()
+        if (hasResumedOnce && !isChangingConfigurations) {
+            finish()
+        }
+    }
+
+    override fun onPostResume() {
+        super.onPostResume()
+        hasResumedOnce = true
     }
 
     @androidx.annotation.RequiresApi(Build.VERSION_CODES.S)
@@ -509,6 +516,7 @@ fun AssistantScreen(
                     val backgroundColor = if (blurEnabled)
                         Color(0xAA000000) // Semi-transparent for frosted glass effect
                     else Color.Black // Opaque when blur is disabled
+                    val noiseBrush = if (blurEnabled) rememberNoiseBrush() else null
 
                     InvertedCorners(
                         cornerRadius = cornerRadius,
@@ -521,50 +529,13 @@ fun AssistantScreen(
                             .fillMaxWidth()
                             .weight(1f)
                             .then(
-                                if (blurEnabled) {
-                                    Modifier.drawWithCache {
-                                        val noiseSize = 128
-                                        val noiseBitmap = android.graphics.Bitmap.createBitmap(
-                                            noiseSize,
-                                            noiseSize,
-                                            android.graphics.Bitmap.Config.ARGB_8888
+                                if (blurEnabled && noiseBrush != null) {
+                                    Modifier.drawBehind {
+                                        drawRect(
+                                            brush = noiseBrush,
+                                            alpha = 0.15f, // Thick/visible noise for frosted glass
+                                            blendMode = BlendMode.Screen
                                         )
-                                        val canvas = android.graphics.Canvas(noiseBitmap)
-                                        val paint = android.graphics.Paint()
-                                        val random =
-                                            java.util.Random(42) // Fixed seed for consistent pattern
-
-                                        for (x in 0 until noiseSize) {
-                                            for (y in 0 until noiseSize) {
-                                                val brightness =
-                                                    random.nextInt(128) + 128 // 128-255 range for lighter noise
-                                                val alpha =
-                                                    random.nextInt(60) + 30 // 30-90 range for visibility
-                                                paint.color = android.graphics.Color.argb(
-                                                    alpha,
-                                                    brightness,
-                                                    brightness,
-                                                    brightness
-                                                )
-                                                canvas.drawPoint(x.toFloat(), y.toFloat(), paint)
-                                            }
-                                        }
-
-                                        val imageBitmap = noiseBitmap.asImageBitmap()
-                                        val shader = ImageShader(
-                                            imageBitmap,
-                                            TileMode.Repeated,
-                                            TileMode.Repeated
-                                        )
-                                        val shaderBrush = ShaderBrush(shader)
-
-                                        onDrawBehind {
-                                            drawRect(
-                                                brush = shaderBrush,
-                                                alpha = 0.15f, // Thick/visible noise for frosted glass
-                                                blendMode = BlendMode.Screen
-                                            )
-                                        }
                                     }
                                 } else Modifier
                             ),
@@ -858,6 +829,44 @@ fun UsageStatsPermissionPromptDialog(
             }
         }
     )
+}
+
+@Composable
+private fun rememberNoiseBrush(): ShaderBrush {
+    return remember {
+        val noiseSize = 128
+        val noiseBitmap = android.graphics.Bitmap.createBitmap(
+            noiseSize,
+            noiseSize,
+            android.graphics.Bitmap.Config.ARGB_8888
+        )
+        val canvas = android.graphics.Canvas(noiseBitmap)
+        val paint = android.graphics.Paint()
+        val random = java.util.Random(42) // Fixed seed for consistent pattern
+
+        for (x in 0 until noiseSize) {
+            for (y in 0 until noiseSize) {
+                val brightness = random.nextInt(128) + 128 // 128-255 range for lighter noise
+                val alpha = random.nextInt(60) + 30 // 30-90 range for visibility
+                paint.color = android.graphics.Color.argb(
+                    alpha,
+                    brightness,
+                    brightness,
+                    brightness
+                )
+                canvas.drawPoint(x.toFloat(), y.toFloat(), paint)
+            }
+        }
+
+        val imageBitmap = noiseBitmap.asImageBitmap()
+        ShaderBrush(
+            ImageShader(
+                imageBitmap,
+                TileMode.Repeated,
+                TileMode.Repeated
+            )
+        )
+    }
 }
 
 

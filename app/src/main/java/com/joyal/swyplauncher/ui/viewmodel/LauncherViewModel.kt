@@ -3,6 +3,7 @@ package com.joyal.swyplauncher.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.domain.usecase.GetCachedInstalledAppsUseCase
 import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
 import com.joyal.swyplauncher.domain.usecase.GetSmartAppListUseCase
 import com.joyal.swyplauncher.domain.usecase.LaunchAppUseCase
@@ -10,6 +11,8 @@ import com.joyal.swyplauncher.domain.usecase.ObserveAppChangesUseCase
 import com.joyal.swyplauncher.domain.usecase.RecordAppUsageUseCase
 import com.joyal.swyplauncher.ui.state.LauncherUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LauncherViewModel @Inject constructor(
     private val getInstalledAppsUseCase: GetInstalledAppsUseCase,
+    private val getCachedInstalledAppsUseCase: GetCachedInstalledAppsUseCase,
     private val launchAppUseCase: LaunchAppUseCase,
     private val observeAppChangesUseCase: ObserveAppChangesUseCase,
     private val getSmartAppListUseCase: GetSmartAppListUseCase,
@@ -44,6 +48,16 @@ class LauncherViewModel @Inject constructor(
     private val _appSortOrder = MutableStateFlow(preferencesRepository.getAppSortOrder())
     val appSortOrder: StateFlow<com.joyal.swyplauncher.domain.repository.AppSortOrder> = _appSortOrder.asStateFlow()
 
+    private var loadJob: Job? = null
+    private var cachedUsageMap: Map<String, Int> = emptyMap()
+
+    private data class AppLoadResult(
+        val apps: List<AppInfo>,
+        val smartApps: List<AppInfo>,
+        val newlyInstalledPackage: String?,
+        val usageMap: Map<String, Int>
+    )
+
     init {
         loadApps()
         observeAppChanges()
@@ -56,51 +70,33 @@ class LauncherViewModel @Inject constructor(
     }
 
     private fun loadApps() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            val cachedApps = getCachedInstalledAppsUseCase()
+            val hasCached = cachedApps.isNotEmpty()
+            val cachedUsage = cachedUsageMap.takeIf { it.isNotEmpty() }
+
+            if (hasCached) {
+                val cachedDispatcher = if (cachedUsage != null) Dispatchers.Default else Dispatchers.IO
+                val cachedResult = withContext(cachedDispatcher) {
+                    buildAppLoadResult(cachedApps, cachedUsage)
+                }
+                cachedUsageMap = cachedResult.usageMap
+                applyAppLoadResult(cachedResult, isLoading = false)
+            } else {
+                _uiState.update { it.copy(isLoading = true, error = null) }
+            }
+
             try {
-                val (apps, smartApps, newlyInstalledPackage) = withContext(Dispatchers.IO) {
+                val freshResult = withContext(Dispatchers.IO) {
                     val allApps = getInstalledAppsUseCase()
-                    val hiddenApps = preferencesRepository.getHiddenApps()
-                    val filteredApps = allApps.filter { it.getIdentifier() !in hiddenApps }
-                    
-                    // Apply sort order
-                    val sortOrder = preferencesRepository.getAppSortOrder()
-                    val usageMap = if (sortOrder == com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE) {
-                        recordAppUsageUseCase.getUsageMap()
-                    } else emptyMap()
-                    val apps = com.joyal.swyplauncher.ui.util.sortApps(filteredApps, sortOrder, usageMap)
-                    
-                    val gridSize = preferencesRepository.getGridSize()
-                    val smart = getSmartAppListUseCase(apps, gridSize)
-                    
-                    // Check if first smart app is newly installed (within 24 hours and not opened)
-                    val now = System.currentTimeMillis()
-                    val twentyFourHoursAgo = now - (24 * 60 * 60 * 1000)
-                    val newlyInstalled = smart.firstOrNull()?.let { firstApp ->
-                        if (firstApp.installTime > twentyFourHoursAgo && 
-                            !recordAppUsageUseCase.hasBeenOpened(firstApp.packageName, firstApp.activityName)) {
-                            firstApp.getIdentifier()
-                        } else null
-                    }
-                    
-                    Triple(apps, smart, newlyInstalled)
+                    buildAppLoadResult(allApps, usageMapOverride = null)
                 }
-                _uiState.update {
-                    it.copy(
-                        apps = apps,
-                        handwritingFilteredApps = apps,
-                        handwritingSmartApps = smartApps,
-                        indexFilteredApps = apps,
-                        indexSmartApps = smartApps,
-                        keyboardFilteredApps = apps,
-                        keyboardSmartApps = smartApps,
-                        voiceFilteredApps = apps,
-                        voiceSmartApps = smartApps,
-                        newlyInstalledAppPackage = newlyInstalledPackage,
-                        isLoading = false
-                    )
-                }
+                cachedUsageMap = freshResult.usageMap
+                applyAppLoadResult(freshResult, isLoading = false)
+            } catch (e: CancellationException) {
+                // Ignore cancellation when a newer load supersedes this one
+                return@launch
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
@@ -109,6 +105,48 @@ class LauncherViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    private suspend fun buildAppLoadResult(
+        allApps: List<AppInfo>,
+        usageMapOverride: Map<String, Int>? = null
+    ): AppLoadResult {
+        val hiddenApps = preferencesRepository.getHiddenApps()
+        val filteredApps = allApps.filter { it.getIdentifier() !in hiddenApps }
+
+        val usageMap = usageMapOverride ?: recordAppUsageUseCase.getUsageMap()
+        val sortOrder = preferencesRepository.getAppSortOrder()
+        val apps = com.joyal.swyplauncher.ui.util.sortApps(filteredApps, sortOrder, usageMap)
+
+        val gridSize = preferencesRepository.getGridSize()
+        val smart = getSmartAppListUseCase(apps, gridSize, usageMap)
+        val newlyInstalled = getNewlyInstalledPackage(smart)
+
+        return AppLoadResult(
+            apps = apps,
+            smartApps = smart,
+            newlyInstalledPackage = newlyInstalled,
+            usageMap = usageMap
+        )
+    }
+
+    private fun applyAppLoadResult(result: AppLoadResult, isLoading: Boolean) {
+        _uiState.update {
+            it.copy(
+                apps = result.apps,
+                handwritingFilteredApps = result.apps,
+                handwritingSmartApps = result.smartApps,
+                indexFilteredApps = result.apps,
+                indexSmartApps = result.smartApps,
+                keyboardFilteredApps = result.apps,
+                keyboardSmartApps = result.smartApps,
+                voiceFilteredApps = result.apps,
+                voiceSmartApps = result.smartApps,
+                newlyInstalledAppPackage = result.newlyInstalledPackage,
+                isLoading = isLoading,
+                error = null
+            )
         }
     }
 

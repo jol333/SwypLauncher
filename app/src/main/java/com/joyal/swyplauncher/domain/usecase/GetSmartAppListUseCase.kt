@@ -15,7 +15,11 @@ class GetSmartAppListUseCase @Inject constructor(
      * - No duplicates
      * - If not enough recent/most used, fill with alphabetically sorted apps
      */
-    suspend operator fun invoke(allApps: List<AppInfo>, limit: Int = 4): List<AppInfo> {
+    suspend operator fun invoke(
+        allApps: List<AppInfo>,
+        limit: Int = 4,
+        usageMapOverride: Map<String, Int>? = null
+    ): List<AppInfo> {
         if (allApps.isEmpty()) return emptyList()
         
         val now = System.currentTimeMillis()
@@ -31,7 +35,7 @@ class GetSmartAppListUseCase @Inject constructor(
         val recentIdentifiers = appUsageRepository.getRecentlyUsedApps(limit = 2)
         
         // Get usage map (uses system stats if permission granted, falls back to manual tracking)
-        val usageMap = appUsageRepository.getUsageMap()
+        val usageMap = usageMapOverride ?: appUsageRepository.getUsageMap()
         
         // Sort apps by usage (system stats or manual tracking)
         val mostUsedApps = allApps

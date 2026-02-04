@@ -22,16 +22,18 @@ class AppDataSource @Inject constructor(
 ) : com.joyal.swyplauncher.domain.repository.AppRepository {
     private val packageManager: PackageManager = context.packageManager
 
-    // Cache installed apps for 5 seconds to reduce expensive PackageManager queries
+    // Cache installed apps for 5 minutes to reduce expensive PackageManager queries
     private var cachedApps: List<AppInfo>? = null
     private var lastCacheTime: Long = 0
     private val cacheMutex = Mutex()
-    private val CACHE_VALIDITY_MS = 5000L // 5 seconds
+    private val CACHE_VALIDITY_MS = 5 * 60 * 1000L // 5 minutes
 
     fun invalidateCache() {
         cachedApps = null
         lastCacheTime = 0
     }
+
+    override fun getCachedInstalledApps(): List<AppInfo> = cachedApps ?: emptyList()
 
     override suspend fun getInstalledApps(): List<AppInfo> = cacheMutex.withLock {
         val now = System.currentTimeMillis()
@@ -128,6 +130,14 @@ class AppDataSource @Inject constructor(
                             trySend(AppChangeEvent.AppUninstalled(packageName))
                         }
                     }
+                    Intent.ACTION_PACKAGE_REPLACED,
+                    Intent.ACTION_PACKAGE_CHANGED -> {
+                        val packageName = intent.data?.schemeSpecificPart
+                        if (packageName != null) {
+                            invalidateCache() // Invalidate cache when apps update/change
+                            trySend(AppChangeEvent.AppInstalled(packageName))
+                        }
+                    }
                 }
             }
         }
@@ -135,6 +145,8 @@ class AppDataSource @Inject constructor(
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_PACKAGE_ADDED)
             addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_REPLACED)
+            addAction(Intent.ACTION_PACKAGE_CHANGED)
             addDataScheme("package")
         }
 
