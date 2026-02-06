@@ -57,6 +57,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -268,7 +269,7 @@ fun VoiceModeScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "Microphone permission required",
+                                text = stringResource(com.joyal.swyplauncher.R.string.mic_permission_required),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -281,13 +282,13 @@ fun VoiceModeScreen(
                                         }
                                     context.startActivity(intent)
                                 }) {
-                                    Text("Open Settings")
+                                    Text(stringResource(com.joyal.swyplauncher.R.string.open_settings))
                                 }
                             } else {
                                 Button(onClick = {
                                     permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                                 }) {
-                                    Text("Enable Microphone")
+                                    Text(stringResource(com.joyal.swyplauncher.R.string.enable_mic))
                                 }
                             }
                         }
@@ -297,13 +298,13 @@ fun VoiceModeScreen(
                         VoiceWaveAnimation(modifier = Modifier.size(60.dp))
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = "Listening...",
+                            text = stringResource(com.joyal.swyplauncher.R.string.listening_status),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Button(onClick = { voiceViewModel.stopListening() }) {
-                            Text("Stop")
+                            Text(stringResource(com.joyal.swyplauncher.R.string.stop))
                         }
                     }
 
@@ -321,7 +322,7 @@ fun VoiceModeScreen(
                                 )
                             }
                             Button(onClick = { voiceViewModel.startListening() }) {
-                                Text("Start Listening")
+                                Text(stringResource(com.joyal.swyplauncher.R.string.start_listening))
                             }
                         }
                     }
@@ -339,7 +340,7 @@ fun VoiceModeScreen(
         ) {
             if (voiceState.transcription.isNotEmpty()) {
                 Text(
-                    text = "Recognized: ${voiceState.transcription}",
+                    text = "${stringResource(com.joyal.swyplauncher.R.string.recognized)} ${voiceState.transcription}",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
@@ -356,7 +357,7 @@ fun VoiceModeScreen(
                     }
                 ) {
                     Text(
-                        text = "CLEAR",
+                        text = stringResource(com.joyal.swyplauncher.R.string.clear_action),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -566,7 +567,7 @@ fun VoiceModeScreen(
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             Text(
-                                text = "No apps found",
+                                text = stringResource(com.joyal.swyplauncher.R.string.no_apps_found),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -591,12 +592,12 @@ fun VoiceModeScreen(
                                     ) {
                                         Icon(
                                             painter = painterResource(id = com.joyal.swyplauncher.R.drawable.google_search),
-                                            contentDescription = "Search on Google",
+                                            contentDescription = stringResource(com.joyal.swyplauncher.R.string.search_google_desc),
                                             modifier = Modifier.size(20.dp),
                                             tint = Color.Unspecified
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Google")
+                                        Text(stringResource(com.joyal.swyplauncher.R.string.google))
                                     }
                                     OutlinedButton(
                                         onClick = {
@@ -615,12 +616,12 @@ fun VoiceModeScreen(
                                     ) {
                                         Icon(
                                             painter = painterResource(id = com.joyal.swyplauncher.R.drawable.play_store),
-                                            contentDescription = "Search on Play Store",
+                                            contentDescription = stringResource(com.joyal.swyplauncher.R.string.search_play_store_desc),
                                             modifier = Modifier.size(20.dp),
                                             tint = Color.Unspecified
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Play Store")
+                                        Text(stringResource(com.joyal.swyplauncher.R.string.play_store))
                                     }
                                 }
                             }

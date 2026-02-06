@@ -9,4 +9,5 @@ interface AppRepository {
     fun getCachedInstalledApps(): List<AppInfo>
     fun observeAppChanges(): Flow<AppChangeEvent>
     suspend fun launchApp(packageName: String, activityName: String? = null): Result<Unit>
+    fun invalidateCache()
 }

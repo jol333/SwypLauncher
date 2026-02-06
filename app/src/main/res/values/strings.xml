@@ -153,4 +153,40 @@
     <string name="how_to_enable">How to enable:</string>
     <string name="assistant_instruction">Click on \'Default digital assistant app\' in the next screen and choose \'Swyp Launcher\'</string>
     <string name="to_launch_using_gesture">To launch using navigation gesture and power button</string>
+
+    <!-- Handwriting Mode -->
+    <string name="handwriting_ready">Ready to recognize handwriting</string>
+    <string name="downloading_model">Downloading handwriting recognition model...</string>
+    <string name="scribble_here">Scribble here</string>
+    <string name="recognized">Recognized:</string>
+    <string name="undo">Undo</string>
+    <string name="clear_action">CLEAR</string>
+    <string name="retry">Retry</string>
+
+    <!-- Voice Mode -->
+    <string name="mic_permission_required">Microphone permission required</string>
+    <string name="open_settings">Open Settings</string>
+    <string name="enable_mic">Enable Microphone</string>
+    <string name="listening_status">Listening...</string>
+    <string name="stop">Stop</string>
+    <string name="start_listening">Start Listening</string>
+
+    <!-- Keyboard Mode -->
+    <string name="search_apps_hint">Search apps...</string>
+    
+    <!-- Shared -->
+    <string name="no_apps_found">No apps found</string>
+    <string name="google">Google</string>
+    <string name="play_store">Play Store</string>
+    <string name="search_google_desc">Search on Google</string>
+    <string name="search_play_store_desc">Search on Play Store</string>
+    
+    <!-- Voice Error Messages -->
+    <string name="voice_error_stopped">Voice recognition stopped</string>
+    <string name="voice_error_no_speech">No speech detected. Please try again</string>
+    <string name="voice_error_network">Network issue. Please check your connection</string>
+    <string name="voice_error_permission">Microphone permission needed</string>
+    <string name="voice_error_busy">Microphone is busy. Please try again</string>
+    <string name="voice_error_not_available">Voice recognition not available</string>
+    <string name="voice_error_no_match">Couldn\'t understand. Please try again</string>
 </resources>

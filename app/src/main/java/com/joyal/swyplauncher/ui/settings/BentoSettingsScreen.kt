@@ -84,7 +84,8 @@ fun BentoSettingsScreen(
     preferencesRepository: PreferencesRepository? = null,
     installedApps: List<AppInfo> = emptyList(),
     screenEntryTimestamp: Long = 0L,
-    shortcutsCount: Int = 0
+    shortcutsCount: Int = 0,
+    onLanguageChanged: () -> Unit = {}
 ) {
     val prefs by prefsFlow.collectAsState()
     var gridSize by remember { mutableStateOf(prefs.getInt("grid_size", 4)) }
@@ -681,6 +682,7 @@ fun BentoSettingsScreen(
                         currentLanguage = language
                         preferencesRepository?.setAppLanguage(language)
                         com.joyal.swyplauncher.util.LocaleManager.applyLanguage(language)
+                        onLanguageChanged()
                         showLanguageDialog = false
                     }
                 )

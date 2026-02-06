@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -170,11 +171,11 @@ fun KeyboardModeScreen(
                     shape = MaterialTheme.shapes.extraLarge
                 )
                 .focusRequester(focusRequester),
-            placeholder = { Text("Search apps...") },
+            placeholder = { Text(stringResource(com.joyal.swyplauncher.R.string.search_apps_hint)) },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = "Search"
+                    contentDescription = stringResource(com.joyal.swyplauncher.R.string.search)
                 )
             },
             trailingIcon = {
@@ -182,7 +183,7 @@ fun KeyboardModeScreen(
                     IconButton(onClick = { keyboardViewModel.clearSearchQuery() }) {
                         Icon(
                             imageVector = Icons.Default.Clear,
-                            contentDescription = "Clear"
+                            contentDescription = stringResource(com.joyal.swyplauncher.R.string.clear)
                         )
                     }
                 }
@@ -387,7 +388,7 @@ fun KeyboardModeScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text(
-                            text = "No apps found",
+                            text = stringResource(com.joyal.swyplauncher.R.string.no_apps_found),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -412,7 +413,7 @@ fun KeyboardModeScreen(
                                 ) {
                                     Icon(
                                         painter = painterResource(id = com.joyal.swyplauncher.R.drawable.google_search),
-                                        contentDescription = "Search on Google",
+                                        contentDescription = stringResource(com.joyal.swyplauncher.R.string.search_google_desc),
                                         modifier = Modifier.size(20.dp),
                                         tint = Color.Unspecified
                                     )
@@ -421,7 +422,7 @@ fun KeyboardModeScreen(
                                             8.dp
                                         )
                                     )
-                                    Text("Google")
+                                    Text(stringResource(com.joyal.swyplauncher.R.string.google))
                                 }
                                 OutlinedButton(
                                     onClick = {
@@ -440,7 +441,7 @@ fun KeyboardModeScreen(
                                 ) {
                                     Icon(
                                         painter = painterResource(id = com.joyal.swyplauncher.R.drawable.play_store),
-                                        contentDescription = "Search on Play Store",
+                                        contentDescription = stringResource(com.joyal.swyplauncher.R.string.search_play_store_desc),
                                         modifier = Modifier.size(20.dp),
                                         tint = Color.Unspecified
                                     )
@@ -449,7 +450,7 @@ fun KeyboardModeScreen(
                                             8.dp
                                         )
                                     )
-                                    Text("Play Store")
+                                    Text(stringResource(com.joyal.swyplauncher.R.string.play_store))
                                 }
                             }
                         }

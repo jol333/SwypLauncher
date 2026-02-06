@@ -18,7 +18,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AppDataSource @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : com.joyal.swyplauncher.domain.repository.AppRepository {
     private val packageManager: PackageManager = context.packageManager
 
@@ -28,7 +28,7 @@ class AppDataSource @Inject constructor(
     private val cacheMutex = Mutex()
     private val CACHE_VALIDITY_MS = 5 * 60 * 1000L // 5 minutes
 
-    fun invalidateCache() {
+    override fun invalidateCache() {
         cachedApps = null
         lastCacheTime = 0
     }

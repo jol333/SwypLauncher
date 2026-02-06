@@ -45,11 +45,9 @@ class AssistantVoiceInteractionSessionService : VoiceInteractionSessionService()
                 }
             }
             
-            // Hide the voice interaction session window with a slight delay to ensure it doesn't
-            // interfere with the activity launch, while still clearing the way quickly.
-            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                hide()
-            }, 50)
+            // Hide the voice interaction session window immediately after activity launch
+            // to ensure fast gesture response without blocking subsequent invocations
+            hide()
         }
 
         override fun onHide() {

@@ -132,9 +132,12 @@ class LauncherViewModel @Inject constructor(
     }
 
     private fun applyAppLoadResult(result: AppLoadResult, isLoading: Boolean) {
+        // Pre-compute available letters for Index mode performance
+        val letters = result.apps.map { it.firstLetter }.distinct().sorted()
         _uiState.update {
             it.copy(
                 apps = result.apps,
+                availableLetters = letters,
                 handwritingFilteredApps = result.apps,
                 handwritingSmartApps = result.smartApps,
                 indexFilteredApps = result.apps,
@@ -305,10 +308,7 @@ class LauncherViewModel @Inject constructor(
     }
 
     fun getAvailableLetters(): List<Char> {
-        return _uiState.value.apps
-            .map { it.firstLetter }
-            .distinct()
-            .sorted()
+        return _uiState.value.availableLetters
     }
 
     enum class LauncherMode {

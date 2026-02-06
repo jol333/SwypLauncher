@@ -2,7 +2,6 @@ package com.joyal.swyplauncher.ui.screens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -31,7 +30,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -70,9 +68,8 @@ fun IndexModeScreen(
     val gridSize by launcherViewModel.gridSize.collectAsState()
     val cornerRadius by launcherViewModel.cornerRadius.collectAsState()
     val sortOrder by launcherViewModel.appSortOrder.collectAsState()
-    val availableLetters = remember(launcherState.apps) {
-        launcherViewModel.getAvailableLetters()
-    }
+    // Use pre-computed availableLetters from UI state for instant display
+    val availableLetters = launcherState.availableLetters
 
     val selectedLetter = indexState.selectedLetter
     val isExpanded = indexState.isExpanded
@@ -102,23 +99,12 @@ fun IndexModeScreen(
         onDismiss()
     }
 
-    Crossfade(
-        targetState = launcherState.isLoading,
-        animationSpec = tween(300)
-    ) { loading ->
-        if (loading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(start = 16.dp, top = 16.dp, end = 16.dp)
-            ) {
+    // Render content immediately with cached data - no loading spinner
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(start = 16.dp, top = 16.dp, end = 16.dp)
+    ) {
                 // Animated index section with seamless transition
                 val lazyListState = rememberLazyListState()
                 val configuration = LocalConfiguration.current
@@ -369,8 +355,6 @@ fun IndexModeScreen(
                     }
                 }
             }
-        }
-    }
 }
 
 

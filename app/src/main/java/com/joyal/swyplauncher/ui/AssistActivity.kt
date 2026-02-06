@@ -172,9 +172,11 @@ class AssistActivity : AppCompatActivity() {
             }
         }
 
-        // Setup window blur after setContent (DecorView must be initialized first)
+        // Defer window blur setup to after composition to reduce startup blocking time
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            setupWindowBlur()
+            android.os.Handler(mainLooper).post {
+                setupWindowBlur()
+            }
         }
     }
 

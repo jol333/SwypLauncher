@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.model.LauncherMode
+import com.joyal.swyplauncher.domain.repository.AppRepository
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
 import com.joyal.swyplauncher.ui.settings.BentoSettingsScreen
@@ -64,6 +65,9 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var getInstalledAppsUseCase: GetInstalledAppsUseCase
+
+    @Inject
+    lateinit var appRepository: AppRepository
 
     private val isAssistantConfigured = mutableStateOf(false)
     private val installedApps = mutableStateOf<List<AppInfo>>(emptyList())
@@ -114,7 +118,11 @@ class MainActivity : AppCompatActivity() {
                     preferencesRepository = preferencesRepository,
                     installedApps = installedApps.value,
                     screenEntryTimestamp = screenEntryTimestamp.value,
-                    shortcutsCount = shortcutsCount.value
+                    shortcutsCount = shortcutsCount.value,
+                    onLanguageChanged = {
+                        // Invalidate app cache. The activity recreation will trigger a reload with the correct locale.
+                        appRepository.invalidateCache()
+                    }
                 )
             }
         }
@@ -155,21 +163,18 @@ fun UsageAccessPermissionDialog(
 ) {
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Usage Access Required") },
+        title = { Text(stringResource(R.string.usage_access_required)) },
         text = {
-            Text(
-                "To sort apps by usage, Swyp Launcher needs access to usage statistics. You'll be taken to the settings screen to grant this permission. \n" +
-                        "(Select Swyp Launcher and permit usage access)"
-            )
+            Text(stringResource(R.string.usage_access_message))
         },
         confirmButton = {
             androidx.compose.material3.TextButton(onClick = onGrantPermission) {
-                Text("Grant Permission")
+                Text(stringResource(R.string.grant_permission))
             }
         },
         dismissButton = {
             androidx.compose.material3.TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

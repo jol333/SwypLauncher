@@ -4,6 +4,7 @@ import com.joyal.swyplauncher.domain.model.AppInfo
 
 data class LauncherUiState(
     val apps: List<AppInfo> = emptyList(),
+    val availableLetters: List<Char> = emptyList(), // Pre-computed for Index mode performance
     // Separate filtered results for each mode
     val handwritingFilteredApps: List<AppInfo> = emptyList(),
     val handwritingSmartApps: List<AppInfo> = emptyList(),

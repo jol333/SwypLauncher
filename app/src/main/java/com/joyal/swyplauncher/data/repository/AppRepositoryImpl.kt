@@ -17,4 +17,5 @@ class AppRepositoryImpl @Inject constructor(
     override fun observeAppChanges(): Flow<AppChangeEvent> = appDataSource.observeAppChanges()
     override suspend fun launchApp(packageName: String, activityName: String?): Result<Unit> = 
         appDataSource.launchApp(packageName, activityName)
+    override fun invalidateCache() = appDataSource.invalidateCache()
 }

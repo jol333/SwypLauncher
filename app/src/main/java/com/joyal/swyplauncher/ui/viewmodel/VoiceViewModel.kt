@@ -6,7 +6,10 @@ import com.joyal.swyplauncher.data.source.SpeechRecognitionResult
 import com.joyal.swyplauncher.domain.model.RecognitionResult
 import com.joyal.swyplauncher.domain.usecase.RecognizeSpeechUseCase
 import com.joyal.swyplauncher.ui.state.VoiceUiState
+import com.joyal.swyplauncher.R
+import android.content.Context
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class VoiceViewModel @Inject constructor(
-    private val recognizeSpeechUseCase: RecognizeSpeechUseCase
+    private val recognizeSpeechUseCase: RecognizeSpeechUseCase,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(VoiceUiState())
@@ -138,15 +142,15 @@ class VoiceViewModel @Inject constructor(
     
     private fun getUserFriendlyErrorMessage(technicalMessage: String?): String {
         return when {
-            technicalMessage == null -> "Voice recognition stopped"
-            technicalMessage.contains("cancelled", ignoreCase = true) -> "Voice recognition stopped"
-            technicalMessage.contains("timeout", ignoreCase = true) -> "No speech detected. Please try again"
-            technicalMessage.contains("network", ignoreCase = true) -> "Network issue. Please check your connection"
-            technicalMessage.contains("permission", ignoreCase = true) -> "Microphone permission needed"
-            technicalMessage.contains("busy", ignoreCase = true) -> "Microphone is busy. Please try again"
-            technicalMessage.contains("not available", ignoreCase = true) -> "Voice recognition not available"
-            technicalMessage.contains("no match", ignoreCase = true) -> "Couldn't understand. Please try again"
-            else -> "Voice recognition stopped"
+            technicalMessage == null -> context.getString(R.string.voice_error_stopped)
+            technicalMessage.contains("cancelled", ignoreCase = true) -> context.getString(R.string.voice_error_stopped)
+            technicalMessage.contains("timeout", ignoreCase = true) -> context.getString(R.string.voice_error_no_speech)
+            technicalMessage.contains("network", ignoreCase = true) -> context.getString(R.string.voice_error_network)
+            technicalMessage.contains("permission", ignoreCase = true) -> context.getString(R.string.voice_error_permission)
+            technicalMessage.contains("busy", ignoreCase = true) -> context.getString(R.string.voice_error_busy)
+            technicalMessage.contains("not available", ignoreCase = true) -> context.getString(R.string.voice_error_not_available)
+            technicalMessage.contains("no match", ignoreCase = true) -> context.getString(R.string.voice_error_no_match)
+            else -> context.getString(R.string.voice_error_stopped)
         }
     }
 

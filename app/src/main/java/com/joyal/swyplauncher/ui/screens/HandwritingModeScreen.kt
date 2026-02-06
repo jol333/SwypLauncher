@@ -64,6 +64,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -153,7 +154,7 @@ fun HandwritingModeScreen(
     // Show toast only once when initialization completes for the first time
     LaunchedEffect(handwritingState.isInitialized, handwritingState.hasShownInitToast) {
         if (handwritingState.isInitialized && !handwritingState.hasShownInitToast) {
-            Toast.makeText(context, "Ready to recognize handwriting", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.handwriting_ready), Toast.LENGTH_SHORT).show()
             handwritingViewModel.onInitializationToastShown()
         }
     }
@@ -390,7 +391,7 @@ fun HandwritingModeScreen(
                             modifier = Modifier.padding(16.dp)
                         )
                         Text(
-                            text = "Downloading handwriting recognition model...",
+                            text = stringResource(R.string.downloading_model),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -414,7 +415,7 @@ fun HandwritingModeScreen(
                             androidx.compose.material3.Button(
                                 onClick = { handwritingViewModel.retryInitialization() }
                             ) {
-                                Text("Retry")
+                                Text(stringResource(R.string.retry))
                             }
                         }
                     } else {
@@ -436,7 +437,7 @@ fun HandwritingModeScreen(
                             imageVector = androidx.compose.ui.graphics.vector.ImageVector.vectorResource(
                                 R.drawable.ic_scribble_here
                             ),
-                            contentDescription = "Scribble here",
+                            contentDescription = stringResource(R.string.scribble_here),
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .padding(top = 24.dp)
@@ -459,7 +460,7 @@ fun HandwritingModeScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Recognized: ${handwritingState.recognizedText}",
+                text = "${stringResource(R.string.recognized)} ${handwritingState.recognizedText}",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(start = 12.dp)
@@ -475,7 +476,7 @@ fun HandwritingModeScreen(
                     ),
                     tooltip = {
                         PlainTooltip {
-                            Text("Undo")
+                            Text(stringResource(R.string.undo))
                         }
                     },
                     state = rememberTooltipState()
@@ -499,7 +500,7 @@ fun HandwritingModeScreen(
                             imageVector = androidx.compose.ui.graphics.vector.ImageVector.vectorResource(
                                 R.drawable.ic_undo
                             ),
-                            contentDescription = "Undo",
+                            contentDescription = stringResource(R.string.undo),
                             tint = if (handwritingState.strokes.isNotEmpty())
                                 MaterialTheme.colorScheme.primary
                             else
@@ -520,7 +521,7 @@ fun HandwritingModeScreen(
                     enabled = handwritingState.strokes.isNotEmpty()
                 ) {
                     Text(
-                        text = "CLEAR",
+                        text = stringResource(R.string.clear_action),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -695,7 +696,7 @@ fun HandwritingModeScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = "No apps found",
+                        text = stringResource(R.string.no_apps_found),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -720,12 +721,12 @@ fun HandwritingModeScreen(
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.google_search),
-                                    contentDescription = "Search on Google",
+                                    contentDescription = stringResource(R.string.search_google_desc),
                                     modifier = Modifier.size(20.dp),
                                     tint = Color.Unspecified
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Google")
+                                Text(stringResource(R.string.google))
                             }
                             androidx.compose.material3.OutlinedButton(
                                 onClick = {
@@ -744,12 +745,12 @@ fun HandwritingModeScreen(
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.play_store),
-                                    contentDescription = "Search on Play Store",
+                                    contentDescription = stringResource(R.string.search_play_store_desc),
                                     modifier = Modifier.size(20.dp),
                                     tint = Color.Unspecified
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Play Store")
+                                Text(stringResource(R.string.play_store))
                             }
                         }
                     }

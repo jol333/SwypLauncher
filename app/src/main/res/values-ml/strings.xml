@@ -126,8 +126,8 @@
     <string name="mode_index">ഇൻഡെക്സ്</string>
     
     <!-- Usage Stats Permission -->
-    <string name="usage_access_required">App usage ആവശ്യമാണ്</string>
-    <string name="usage_access_message">ഉപയോഗം അനുസരിച്ച് ആപ്പുകൾ അടുക്കാൻ, സ്വൈപ് ലോഞ്ചറിന് ഉപയോഗ സ്ഥിതിവിവരക്കണക്കുകളിലേക്കുള്ള ആക്സസ് ആവശ്യമാണ്. ഈ അനുമതി നൽകാൻ നിങ്ങളെ സെറ്റിംഗ്സ് സ്ക്രീനിലേക്ക് കൊണ്ടുപോകും.\n(അവിടെ സ്വൈപ് ലോഞ്ചർ തിരഞ്ഞെടുത്ത് app usage കാണാൻ അനുവദിക്കുക)</string>
+    <string name="usage_access_required">App usage access ആവശ്യമാണ്</string>
+    <string name="usage_access_message">ഉപയോഗം അനുസരിച്ച് ആപ്പുകൾ അടുക്കാൻ, സ്വൈപ് ലോഞ്ചറിന് ഉപയോഗ സ്ഥിതിവിവരക്കണക്കുകളിലേക്കുള്ള ആക്സസ് ആവശ്യമാണ്. ഈ അനുമതി നൽകാൻ നിങ്ങളെ സെറ്റിംഗ്സ് സ്ക്രീനിലേക്ക് കൊണ്ടുപോകും. അവിടെ സ്വൈപ് ലോഞ്ചർ തിരഞ്ഞെടുത്ത് app usage കാണാൻ അനുവദിക്കുക</string>
     <string name="grant_permission">അനുമതി നൽകുക</string>
     
     <!-- Voice Mode -->
@@ -154,4 +154,39 @@
     <string name="how_to_enable">എങ്ങനെ പ്രവർത്തനക്ഷമമാക്കാം:</string>
     <string name="assistant_instruction">അടുത്ത സ്ക്രീനിൽ \'ഡിഫോൾട്ട് ഡിജിറ്റൽ അസിസ്റ്റന്റ് ആപ്പ്\' ക്ലിക്ക് ചെയ്ത് \'സ്വൈപ് ലോഞ്ചർ\' തിരഞ്ഞെടുക്കുക</string>
     <string name="to_launch_using_gesture">നാവിഗേഷൻ ജെസ്ച്ചർ, പവർ ബട്ടൺ എന്നിവ ഉപയോഗിച്ച് ലോഞ്ച് ചെയ്യാൻ</string>
+
+    <!-- Handwriting Mode -->
+    <string name="handwriting_ready">കൈയെഴുത്ത് തിരിച്ചറിയാൻ തയ്യാറാണ്</string>
+    <string name="downloading_model">കൈയെഴുത്ത് തിരിച്ചറിയൽ മോഡൽ ഡൗൺലോഡ് ചെയ്യുന്നു...</string>
+    <string name="scribble_here">ഇവിടെ വരയ്‌ക്കുക</string>
+    <string name="recognized">തിരിച്ചറിഞ്ഞത്:</string>
+    <string name="undo">പിൻവലിക്കുക</string>
+    <string name="clear_action">മായ്ക്കുക</string>
+    <string name="retry">വീണ്ടും ശ്രമിക്കുക</string>
+
+    <!-- Voice Mode -->
+    <string name="mic_permission_required">മൈക്രോഫോൺ അനുമതി ആവശ്യമാണ്</string>
+    <string name="open_settings">ക്രമീകരണങ്ങൾ തുറക്കുക</string>
+    <string name="enable_mic">മൈക്രോഫോൺ പ്രവർത്തനക്ഷമമാക്കുക</string>
+    <string name="listening_status">കേൾക്കുന്നു...</string>
+    <string name="stop">നിർത്തുക</string>
+    <string name="start_listening">കേൾക്കാൻ തുടങ്ങുക</string>
+
+    <!-- Keyboard Mode -->
+    <string name="search_apps_hint">ആപ്പുകൾ തിരയുക...</string>
+
+    <!-- Shared -->
+    <string name="no_apps_found">ആപ്പുകളൊന്നും കണ്ടെത്തിയില്ല</string>
+    <string name="google">ഗൂഗിൾ</string>
+    <string name="play_store">പ്ലേ സ്റ്റോർ</string>
+    <string name="search_google_desc">ഗൂഗിളിൽ തിരയുക</string>
+    <string name="search_play_store_desc">പ്ലേ സ്റ്റോറിൽ തിരയുക</string>
+    <!-- Voice Error Messages -->
+    <string name="voice_error_stopped">വോയ്സ് റെക്കഗ്നീഷൻ നിർത്തി</string>
+    <string name="voice_error_no_speech">ഒന്നും കേട്ടില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക</string>
+    <string name="voice_error_network">നെറ്റ്‌വർക്ക് പ്രശ്നം. ദയവായി കണക്ഷൻ പരിശോധിക്കുക</string>
+    <string name="voice_error_permission">മൈക്രോഫോൺ അനുമതി ആവശ്യമാണ്</string>
+    <string name="voice_error_busy">മൈക്രോഫോൺ തിരക്കിലാണ്. ദയവായി വീണ്ടും ശ്രമിക്കുക</string>
+    <string name="voice_error_not_available">വോയ്സ് റെക്കഗ്നീഷൻ ലഭ്യമല്ല</string>
+    <string name="voice_error_no_match">മനസ്സിലായില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക</string>
 </resources>
