@@ -16,7 +16,7 @@ object LocaleManager {
     /**
      * Supported language codes in the app.
      */
-    private val supportedLanguageCodes = setOf("en", "ml")
+    private val supportedLanguageCodes = setOf("en", "ml", "zh", "es", "pt", "de", "hi")
 
     /**
      * Apply the selected language to the app.

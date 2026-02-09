@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Swyp Launcher</string>
+    
+    <!-- Shortcut labels -->
+    <string name="shortcut_handwriting_short">Draw</string>
+    <string name="shortcut_handwriting_long">Handwriting मोड</string>
+    <string name="shortcut_index_short">Index</string>
+    <string name="shortcut_index_long">Index मोड</string>
+    <string name="shortcut_keyboard_short">Type</string>
+    <string name="shortcut_keyboard_long">Keyboard मोड</string>
+    <string name="shortcut_voice_short">Voice</string>
+    <string name="shortcut_voice_long">Voice मोड</string>
+    
+    <!-- Settings Screen - Header -->
+    <string name="set_as_default_assistant">Default assistant सेट करें</string>
+    <string name="try_swyp_launcher">Swyp Launcher ट्राइ करें</string>
+    <string name="test_ui_features">UI और फीचर्स चेक करें</string>
+    <string name="launch_now">अभी लॉन्च करें</string>
+    
+    <!-- Settings Screen - Launch Modes -->
+    <string name="launch_modes">लॉन्च मोड्स</string>
+    <string name="modes_selected">मोड्स सिलेक्टेड</string>
+    <string name="select_app_launch_modes">App लॉन्च के तरीके चुनें</string>
+    <string name="long_press_drag_reorder">ऑर्डर बदलने के लिए दबाकर ड्रैग करें</string>
+    
+    <!-- Settings Screen - App Shortcuts -->
+    <string name="app_shortcuts">App शॉर्टकट्स</string>
+    <string name="active_shortcut">एक्टिव शॉर्टकट</string>
+    <string name="active_shortcuts">एक्टिव शॉर्टकट्स</string>
+    
+    <!-- Settings Screen - Appearance -->
+    <string name="appearance">दिखावट</string>
+    <string name="grid_size">ग्रिड साइज़</string>
+    <string name="corner_radius">कोनों की गोलाई (Corner Radius)</string>
+    <string name="live_preview">लाइव प्रिव्यू</string>
+    
+    <!-- Settings Screen - Sort Apps -->
+    <string name="sort_apps_by">Apps को ऐसे सॉर्ट करें</string>
+    <string name="app_sort_order">App का क्रम</string>
+    <string name="sort_name">नाम</string>
+    <string name="sort_usage">इस्तेमाल (Usage)</string>
+    <string name="sort_category">कैटेगरी</string>
+    <string name="sort_name_desc">अक्षर के हिसाब से (Alphabetically)</string>
+    <string name="sort_usage_desc">सबसे ज़्यादा यूज़ होने वाले पहले</string>
+    <string name="sort_category_desc">कैटेगरी के हिसाब से ग्रुप</string>
+    <string name="by_name_az">नाम से (A-Z)</string>
+    <string name="by_usage">इस्तेमाल से (Usage)</string>
+    <string name="by_category">कैटेगरी से</string>
+    <string name="grouped_by_app_category">App कैटेगरी के हिसाब से ग्रुप</string>
+    
+    <!-- Settings Screen - Auto-open -->
+    <string name="auto_open_app">App अपने आप खोलें</string>
+    <string name="auto_open_desc">अगर एक ही रिजल्ट हो तो अपने आप खोलें</string>
+    
+    <!-- Settings Screen - Visual Effects -->
+    <string name="visual_effects">विजुअल इफेक्ट्स</string>
+    <string name="background_blur">बैकग्राउंड ब्लर</string>
+    <string name="blur_intensity">ब्लर की तीव्रता</string>
+    
+    <!-- Settings Screen - Language -->
+    <string name="language">भाषा</string>
+    <string name="app_language">App की भाषा</string>
+    <string name="system_default">सिस्टम डिफ़ॉल्ट</string>
+    <string name="select_language">भाषा चुनें</string>
+    
+    <!-- Settings Screen - Footer -->
+    <string name="privacy_policy">प्राइवेसी पॉलिसी</string>
+    <string name="source_code">सोर्स कोड</string>
+    <string name="license">लाइसेंस</string>
+    <string name="version_format">वर्ज़न %1$s</string>
+    
+    <!-- Dialog buttons -->
+    <string name="cancel">कैंसिल</string>
+    <string name="save">सेव</string>
+    <string name="replace">रिप्लेस</string>
+    
+    <!-- Hidden Apps Screen -->
+    <string name="hidden_apps">छिपे हुए Apps</string>
+    <string name="back">वापस</string>
+    <string name="no_hidden_apps">कोई छिपा हुआ App नहीं है</string>
+    
+    <!-- App Shortcuts Screen -->
+    <string name="new_shortcut">नया शॉर्टकट</string>
+    <string name="create">बनाएं</string>
+    <string name="no_shortcuts_yet">अभी कोई शॉर्टकट नहीं है</string>
+    <string name="shortcuts_empty_desc">सर्च में कुछ खास Apps दिखाने के लिए अपने कमांड्स बनाएं</string>
+    <string name="delete">डिलीटे</string>
+    
+    <!-- Shortcut Editor Screen -->
+    <string name="edit_shortcut">शॉर्टकट एडिट करें</string>
+    <string name="close">बंद करें</string>
+    <string name="magic_word">मैजिक वर्ड (शॉर्टकट)</string>
+    <string name="magic_word_placeholder">शॉर्टकट टाइप करें (कम से कम 2 अक्षर)</string>
+    <string name="magic_word_hint_empty">ये Apps देखने के लिए लॉन्चर में ये शब्द टाइप करें।</string>
+    <string name="magic_word_hint_format">ये Apps देखने के लिए लॉन्चर में \'%1$s\' टाइप करें।</string>
+    <string name="apps_to_show_count">दिखाने के लिए Apps (%1$d)</string>
+    <string name="select_apps_to_show">दिखाने के लिए Apps चुनें</string>
+    <string name="search">सर्च</string>
+    <string name="search_apps_placeholder">Apps सर्च करें...</string>
+    <string name="clear">साफ़ करें</string>
+    <string name="save_shortcut">शॉर्टकट सेव करें</string>
+    <string name="remove">हटाएं</string>
+    <string name="selected">सिलेक्टेड</string>
+    <string name="please_type_magic_word">कृपया कोई मैजिक वर्ड टाइप करें</string>
+    <string name="shortcut_min_chars">शॉर्टकट नाम कम से कम 2 अक्षरों का होना चाहिए</string>
+    <string name="select_at_least_one_app">कृपया कम से कम एक App चुनें</string>
+    <string name="shortcut_exists_title">शॉर्टकट पहले से मौजूद है</string>
+    <string name="shortcut_exists_message">"%1$s" नाम का शॉर्टकट पहले से है। क्या आप इसे बदलना चाहते हैं?</string>
+    
+    <!-- Context Menu -->
+    <string name="app_info">App की जानकारी</string>
+    <string name="hide_app">छिपाएं (Hide)</string>
+    <string name="unhide_app">दिखाएं (Unhide)</string>
+    <string name="uninstall">अनइंस्टॉल</string>
+    <string name="set_a_shortcut">शॉर्टकट सेट करें</string>
+    <string name="view_in_app_store">App Store में देखें</string>
+    <string name="cannot_uninstall">अनइंस्टॉल नहीं कर सकते</string>
+    <string name="cannot_uninstall_message">यह App अनइंस्टॉल नहीं किया जा सकता। क्या आप इसे छिपाना (Hide) चाहेंगे?</string>
+    <string name="hide">छिपाएं</string>
+    
+    <!-- Mode Names -->
+    <string name="mode_handwriting">Handwriting</string>
+    <string name="mode_keyboard">Keyboard</string>
+    <string name="mode_voice">Voice</string>
+    <string name="mode_index">Index</string>
+    
+    <!-- Usage Stats Permission -->
+    <string name="usage_access_required">Usage Access चाहिए</string>
+    <string name="usage_access_message">इस्तेमाल (Usage) के हिसाब से Apps को सॉर्ट करने के लिए, Swyp Launcher को आपके यूज़ेज स्टैटिस्टिक्स की ज़रूरत है। यह परमिशन देने के लिए आपको सेटिंग्स में ले जाएगा।\n(Swyp Launcher चुनें और यूसेज एक्सेस दें)</string>
+    <string name="grant_permission">परमिशन दें</string>
+    
+    <!-- Voice Mode -->
+    <string name="say_app_name">किसी App का नाम बोलें…</string>
+    <string name="listening">सुन रहा हूँ…</string>
+    <string name="tap_to_speak">बोलने के लिए माइक पर टैप करें</string>
+    
+    <!-- Donate Section -->
+    <string name="support_development">डेवलपमेंट को सपोर्ट करें</string>
+    <string name="buy_me_coffee">कॉफ़ी पिलाएं (Buy me a coffee)</string>
+    <string name="donate_message">अगर यह App आपका समय बचाता है, तो मुझे एक कॉफ़ी पिलाने पर विचार करें। आपका सपोर्ट मेरे फ्री प्रोजेक्ट्स को जारी रखने में मदद करता है।</string>
+    
+    <!-- Additional UI strings -->
+    <string name="launch">लॉन्च</string>
+    <string name="active_shortcut_singular">एक्टिव शॉर्टकट</string>
+    <string name="active_shortcuts_plural">एक्टिव शॉर्टकट्स</string>
+    <string name="blur_background">बैकग्राउंड ब्लर करें</string>
+    <string name="blur_background_desc">अर्ध-पारदर्शी फ्रॉस्टेड ग्लास लुक</string>
+    <string name="apps_per_row">Apps प्रति लाइन</string>
+    <string name="app">App</string>
+    <string name="drag_to_reorder">रीऑर्डर करने के लिए ड्रैग करें</string>
+    <string name="set_up_now">अभी सेट करें</string>
+    <string name="skip_for_now">अभी रहने दें</string>
+    <string name="how_to_enable">इनेबल कैसे करें:</string>
+    <string name="assistant_instruction">अगली स्क्रीन पर \'Default digital assistant app\' पर क्लिक करें और \'Swyp Launcher\' चुनें</string>
+    <string name="to_launch_using_gesture">नेविगेशन जेस्चर और पावर बटन से लॉन्च करने के लिए</string>
+    
+    <!-- Handwriting Mode -->
+    <string name="handwriting_ready">लिखावट पहचानने के लिए तैयार</string>
+    <string name="downloading_model">मॉडल डाउनलोड हो रहा है...</string>
+    <string name="scribble_here">यहाँ लिखें</string>
+    <string name="recognized">पहचाना गया:</string>
+    <string name="undo">अंडू (Undo)</string>
+    <string name="clear_action">साफ़ करें</string>
+    <string name="retry">फिर कोशिश करें</string>
+    
+    <!-- Voice Mode -->
+    <string name="mic_permission_required">माइक की परमिशन चाहिए</string>
+    <string name="open_settings">सेटिंग्स खोलें</string>
+    <string name="enable_mic">माइक इनेबल करें</string>
+    <string name="listening_status">सुन रहा हूँ...</string>
+    <string name="stop">रोकें</string>
+    <string name="start_listening">सुनना शुरू करें</string>
+    
+    <!-- Keyboard Mode -->
+    <string name="search_apps_hint">Apps सर्च करें...</string>
+    
+    <!-- Shared -->
+    <string name="no_apps_found">कोई App नहीं मिला</string>
+    <string name="google">Google</string>
+    <string name="play_store">Play Store</string>
+    <string name="search_google_desc">Google पर सर्च करें</string>
+    <string name="search_play_store_desc">Play Store पर सर्च करें</string>
+    
+    <!-- Voice Error Messages -->
+    <string name="voice_error_stopped">वॉइस रिकग्निशन रुक गया</string>
+    <string name="voice_error_no_speech">कुछ सुनाई नहीं दिया। कृपया फिर कोशिश करें</string>
+    <string name="voice_error_network">नेटवर्क की दिक्कत है। कृपया अपना कनेक्शन चेक करें</string>
+    <string name="voice_error_permission">माइक की परमिशन चाहिए</string>
+    <string name="voice_error_busy">माइक बिज़ी है। कृपया फिर कोशिश करें</string>
+    <string name="voice_error_not_available">वॉइस रिकग्निशन उपलब्ध नहीं है</string>
+    <string name="voice_error_no_match">समझ नहीं आया। कृपया फिर कोशिश करें</string>
+</resources>

@@ -10,7 +10,12 @@ package com.joyal.swyplauncher.domain.model
 enum class AppLanguage(val code: String, val displayName: String, val nativeName: String) {
     SYSTEM("system", "System Default", "System Default"),
     ENGLISH("en", "English", "English"),
-    MALAYALAM("ml", "Malayalam", "മലയാളം");
+    MALAYALAM("ml", "Malayalam", "മലയാളം"),
+    SIMPLIFIED_CHINESE("zh", "Chinese (Simplified)", "简体中文"),
+    SPANISH("es", "Spanish", "Español"),
+    PORTUGUESE_BRAZIL("pt", "Portuguese (Brazil)", "Português (Brasil)"),
+    GERMAN("de", "German", "Deutsch"),
+    HINDI("hi", "Hindi", "हिन्दी");
 
     companion object {
         /**

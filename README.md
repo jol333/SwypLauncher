@@ -113,6 +113,14 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for gu
 3. Test thoroughly on Android 14+
 4. Submit a pull request
 
+## Adding a New Language
+
+1. Add enum entry in `domain/model/AppLanguage.kt` with language code and display names
+   - Use base language codes (e.g., `zh`, `pt`) to match all regional variants
+2. Add language code to `supportedLanguageCodes` in `util/LocaleManager.kt` and `localeFilters` in `app/build.gradle.kts` (in `androidResources` block)
+3. Create `res/values-{code}/strings.xml` with translated strings. Use `values-zh` for `zh`, `values-pt` for `pt`, etc.
+4. Add `<locale android:name="{code}"/>` to `res/xml/locales_config.xml`
+
 ## License
 
 This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](LICENSE.md) file for details.

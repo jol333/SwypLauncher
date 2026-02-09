@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Swyp Launcher</string>
+    
+    <!-- Shortcut labels -->
+    <string name="shortcut_handwriting_short">绘画</string>
+    <string name="shortcut_handwriting_long">手写模式</string>
+    <string name="shortcut_index_short">索引</string>
+    <string name="shortcut_index_long">索引模式</string>
+    <string name="shortcut_keyboard_short">输入</string>
+    <string name="shortcut_keyboard_long">键盘模式</string>
+    <string name="shortcut_voice_short">语音</string>
+    <string name="shortcut_voice_long">语音模式</string>
+    
+    <!-- Settings Screen - Header -->
+    <string name="set_as_default_assistant">设为默认助手</string>
+    <string name="try_swyp_launcher">试用 Swyp Launcher</string>
+    <string name="test_ui_features">体验界面和功能</string>
+    <string name="launch_now">立即启动</string>
+    
+    <!-- Settings Screen - Launch Modes -->
+    <string name="launch_modes">启动模式</string>
+    <string name="modes_selected">已选模式</string>
+    <string name="select_app_launch_modes">选择应用启动方式</string>
+    <string name="long_press_drag_reorder">长按拖动排序</string>
+    
+    <!-- Settings Screen - App Shortcuts -->
+    <string name="app_shortcuts">应用快捷方式</string>
+    <string name="active_shortcut">启用快捷方式</string>
+    <string name="active_shortcuts">启用快捷方式</string>
+    
+    <!-- Settings Screen - Appearance -->
+    <string name="appearance">外观</string>
+    <string name="grid_size">网格大小</string>
+    <string name="corner_radius">圆角半径</string>
+    <string name="live_preview">实时预览</string>
+    
+    <!-- Settings Screen - Sort Apps -->
+    <string name="sort_apps_by">应用排序</string>
+    <string name="app_sort_order">应用排序方式</string>
+    <string name="sort_name">名称</string>
+    <string name="sort_usage">使用频率</string>
+    <string name="sort_category">类别</string>
+    <string name="sort_name_desc">按字母顺序</string>
+    <string name="sort_usage_desc">常用应用优先</string>
+    <string name="sort_category_desc">按类别分组</string>
+    <string name="by_name_az">按名称 (A-Z)</string>
+    <string name="by_usage">按使用频率</string>
+    <string name="by_category">按类别</string>
+    <string name="grouped_by_app_category">按应用类别分组</string>
+    
+    <!-- Settings Screen - Auto-open -->
+    <string name="auto_open_app">自动打开应用</string>
+    <string name="auto_open_desc">仅有一个搜索结果时自动打开</string>
+    
+    <!-- Settings Screen - Visual Effects -->
+    <string name="visual_effects">视觉效果</string>
+    <string name="background_blur">背景模糊</string>
+    <string name="blur_intensity">模糊强度</string>
+    
+    <!-- Settings Screen - Language -->
+    <string name="language">语言</string>
+    <string name="app_language">应用语言</string>
+    <string name="system_default">系统默认</string>
+    <string name="select_language">选择语言</string>
+    
+    <!-- Settings Screen - Footer -->
+    <string name="privacy_policy">隐私政策</string>
+    <string name="source_code">源代码</string>
+    <string name="license">许可证</string>
+    <string name="version_format">版本 %1$s</string>
+    
+    <!-- Dialog buttons -->
+    <string name="cancel">取消</string>
+    <string name="save">保存</string>
+    <string name="replace">替换</string>
+    
+    <!-- Hidden Apps Screen -->
+    <string name="hidden_apps">隐藏应用</string>
+    <string name="back">返回</string>
+    <string name="no_hidden_apps">无隐藏应用</string>
+    
+    <!-- App Shortcuts Screen -->
+    <string name="new_shortcut">新建快捷方式</string>
+    <string name="create">创建</string>
+    <string name="no_shortcuts_yet">暂无快捷方式</string>
+    <string name="shortcuts_empty_desc">创建自定义指令以在搜索结果中显示特定应用</string>
+    <string name="delete">删除</string>
+    
+    <!-- Shortcut Editor Screen -->
+    <string name="edit_shortcut">编辑快捷方式</string>
+    <string name="close">关闭</string>
+    <string name="magic_word">快捷指令</string>
+    <string name="magic_word_placeholder">输入指令 (至少 2 个字符)</string>
+    <string name="magic_word_hint_empty">在启动器中输入此词以显示选定应用。</string>
+    <string name="magic_word_hint_format">在启动器中输入“%1$s”以显示选定应用。</string>
+    <string name="apps_to_show_count">显示应用 (%1$d)</string>
+    <string name="select_apps_to_show">选择要显示的应用</string>
+    <string name="search">搜索</string>
+    <string name="search_apps_placeholder">搜索应用...</string>
+    <string name="clear">清除</string>
+    <string name="save_shortcut">保存快捷方式</string>
+    <string name="remove">移除</string>
+    <string name="selected">已选</string>
+    <string name="please_type_magic_word">请输入快捷指令</string>
+    <string name="shortcut_min_chars">快捷指令至少需要 2 个字符</string>
+    <string name="select_at_least_one_app">请至少选择一个应用</string>
+    <string name="shortcut_exists_title">快捷方式已存在</string>
+    <string name="shortcut_exists_message">名称为“%1$s”的快捷方式已存在。是否替换？</string>
+    
+    <!-- Context Menu -->
+    <string name="app_info">应用信息</string>
+    <string name="hide_app">隐藏</string>
+    <string name="unhide_app">取消隐藏</string>
+    <string name="uninstall">卸载</string>
+    <string name="set_a_shortcut">设置快捷方式</string>
+    <string name="view_in_app_store">在应用商店查看</string>
+    <string name="cannot_uninstall">无法卸载</string>
+    <string name="cannot_uninstall_message">此应用无法卸载。是否隐藏？</string>
+    <string name="hide">隐藏</string>
+    
+    <!-- Mode Names -->
+    <string name="mode_handwriting">手写</string>
+    <string name="mode_keyboard">键盘</string>
+    <string name="mode_voice">语音</string>
+    <string name="mode_index">索引</string>
+    
+    <!-- Usage Stats Permission -->
+    <string name="usage_access_required">需要使用情况访问权限</string>
+    <string name="usage_access_message">要按使用频率排序应用，Swyp Launcher 需要访问使用统计信息。您将跳转到设置屏幕以授予此权限。\n(选择 Swyp Launcher 并允许使用情况访问)</string>
+    <string name="grant_permission">授予权限</string>
+    
+    <!-- Voice Mode -->
+    <string name="say_app_name">说出应用名称…</string>
+    <string name="listening">正在聆听…</string>
+    <string name="tap_to_speak">点击麦克风说话</string>
+    
+    <!-- Donate Section -->
+    <string name="support_development">支持开发</string>
+    <string name="buy_me_coffee">请我喝杯咖啡</string>
+    <string name="donate_message">如果这个应用节省了您的时间，考虑请我喝杯咖啡吧。您的支持将资助我的免费业余项目。</string>
+    
+    <!-- Additional UI strings -->
+    <string name="launch">启动</string>
+    <string name="active_shortcut_singular">个启用快捷方式</string>
+    <string name="active_shortcuts_plural">个启用快捷方式</string>
+    <string name="blur_background">背景模糊</string>
+    <string name="blur_background_desc">半透明磨砂玻璃效果</string>
+    <string name="apps_per_row">每行应用数</string>
+    <string name="app">应用</string>
+    <string name="drag_to_reorder">拖动排序</string>
+    <string name="set_up_now">立即设置</string>
+    <string name="skip_for_now">暂不设置</string>
+    <string name="how_to_enable">如何启用：</string>
+    <string name="assistant_instruction">在下一屏幕点击“默认数字助理应用”并选择“Swyp Launcher”</string>
+    <string name="to_launch_using_gesture">使用导航手势和电源键启动</string>
+    
+    <!-- Handwriting Mode -->
+    <string name="handwriting_ready">手写识别就绪</string>
+    <string name="downloading_model">正在下载手写识别模型...</string>
+    <string name="scribble_here">在此涂写</string>
+    <string name="recognized">识别结果：</string>
+    <string name="undo">撤销</string>
+    <string name="clear_action">清除</string>
+    <string name="retry">重试</string>
+    
+    <!-- Voice Mode -->
+    <string name="mic_permission_required">需要麦克风权限</string>
+    <string name="open_settings">打开设置</string>
+    <string name="enable_mic">启用麦克风</string>
+    <string name="listening_status">正在聆听...</string>
+    <string name="stop">停止</string>
+    <string name="start_listening">开始聆听</string>
+    
+    <!-- Keyboard Mode -->
+    <string name="search_apps_hint">搜索应用...</string>
+    
+    <!-- Shared -->
+    <string name="no_apps_found">未找到应用</string>
+    <string name="google">Google</string>
+    <string name="play_store">Play 商店</string>
+    <string name="search_google_desc">在 Google 上搜索</string>
+    <string name="search_play_store_desc">在 Play 商店搜索</string>
+    
+    <!-- Voice Error Messages -->
+    <string name="voice_error_stopped">语音识别已停止</string>
+    <string name="voice_error_no_speech">未检测到语音。请重试</string>
+    <string name="voice_error_network">网络问题。请检查连接</string>
+    <string name="voice_error_permission">需要麦克风权限</string>
+    <string name="voice_error_busy">麦克风忙。请重试</string>
+    <string name="voice_error_not_available">语音识别不可用</string>
+    <string name="voice_error_no_match">无法理解。请重试</string>
+</resources>

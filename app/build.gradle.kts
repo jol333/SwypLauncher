@@ -95,7 +95,7 @@ android {
     
     // AGP 9.0: Use androidResources for locale filtering
     androidResources {
-        localeFilters += listOf("en", "ml")
+        localeFilters += listOf("en", "ml", "zh", "es", "pt", "de", "hi")
     }
 }
 

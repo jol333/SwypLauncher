@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Swyp Launcher</string>
+    
+    <!-- Shortcut labels -->
+    <string name="shortcut_handwriting_short">Desenhar</string>
+    <string name="shortcut_handwriting_long">Modo Escrita</string>
+    <string name="shortcut_index_short">Índice</string>
+    <string name="shortcut_index_long">Modo Índice</string>
+    <string name="shortcut_keyboard_short">Teclado</string>
+    <string name="shortcut_keyboard_long">Modo Teclado</string>
+    <string name="shortcut_voice_short">Voz</string>
+    <string name="shortcut_voice_long">Modo de Voz</string>
+    
+    <!-- Settings Screen - Header -->
+    <string name="set_as_default_assistant">Definir como assistente padrão</string>
+    <string name="try_swyp_launcher">Experimente o Swyp Launcher</string>
+    <string name="test_ui_features">Teste o visual e recursos</string>
+    <string name="launch_now">Abrir agora</string>
+    
+    <!-- Settings Screen - Launch Modes -->
+    <string name="launch_modes">MODOS DE INICIALIZAÇÃO</string>
+    <string name="modes_selected">Modos selecionados</string>
+    <string name="select_app_launch_modes">Escolha como abrir apps</string>
+    <string name="long_press_drag_reorder">Toque e segure para reordenar</string>
+    
+    <!-- Settings Screen - App Shortcuts -->
+    <string name="app_shortcuts">ATALHOS DE APP</string>
+    <string name="active_shortcut">Atalho ativo</string>
+    <string name="active_shortcuts">Atalhos ativos</string>
+    
+    <!-- Settings Screen - Appearance -->
+    <string name="appearance">APARÊNCIA</string>
+    <string name="grid_size">Tamanho da grade</string>
+    <string name="corner_radius">Arredondamento</string>
+    <string name="live_preview">Prévia ao vivo</string>
+    
+    <!-- Settings Screen - Sort Apps -->
+    <string name="sort_apps_by">ORDENAR APPS POR</string>
+    <string name="app_sort_order">Ordem dos apps</string>
+    <string name="sort_name">Nome</string>
+    <string name="sort_usage">Uso</string>
+    <string name="sort_category">Categoria</string>
+    <string name="sort_name_desc">Ordem alfabética</string>
+    <string name="sort_usage_desc">Apps mais usados primeiro</string>
+    <string name="sort_category_desc">Agrupado por categoria</string>
+    <string name="by_name_az">Por nome (A-Z)</string>
+    <string name="by_usage">Por uso</string>
+    <string name="by_category">Por categoria</string>
+    <string name="grouped_by_app_category">Agrupado por categoria de app</string>
+    
+    <!-- Settings Screen - Auto-open -->
+    <string name="auto_open_app">Abrir automaticamente</string>
+    <string name="auto_open_desc">Abrir app se houver apenas um resultado</string>
+    
+    <!-- Settings Screen - Visual Effects -->
+    <string name="visual_effects">EFEITOS VISUAIS</string>
+    <string name="background_blur">Desfoque de fundo</string>
+    <string name="blur_intensity">Intensidade do desfoque</string>
+    
+    <!-- Settings Screen - Language -->
+    <string name="language">IDIOMA</string>
+    <string name="app_language">Idioma do app</string>
+    <string name="system_default">Padrão do sistema</string>
+    <string name="select_language">Selecione o idioma</string>
+    
+    <!-- Settings Screen - Footer -->
+    <string name="privacy_policy">Política de Privacidade</string>
+    <string name="source_code">Código Fonte</string>
+    <string name="license">Licença</string>
+    <string name="version_format">Versão %1$s</string>
+    
+    <!-- Dialog buttons -->
+    <string name="cancel">Cancelar</string>
+    <string name="save">Salvar</string>
+    <string name="replace">Substituir</string>
+    
+    <!-- Hidden Apps Screen -->
+    <string name="hidden_apps">Apps Ocultos</string>
+    <string name="back">Voltar</string>
+    <string name="no_hidden_apps">Nenhum app oculto</string>
+    
+    <!-- App Shortcuts Screen -->
+    <string name="new_shortcut">Novo atalho</string>
+    <string name="create">Criar</string>
+    <string name="no_shortcuts_yet">Sem atalhos ainda</string>
+    <string name="shortcuts_empty_desc">Crie comandos para mostrar apps específicos na busca</string>
+    <string name="delete">Excluir</string>
+    
+    <!-- Shortcut Editor Screen -->
+    <string name="edit_shortcut">Editar atalho</string>
+    <string name="close">Fechar</string>
+    <string name="magic_word">PALAVRA MÁGICA</string>
+    <string name="magic_word_placeholder">Digite o atalho (min 2 letras)</string>
+    <string name="magic_word_hint_empty">Digite esta palavra no launcher para ver estes apps.</string>
+    <string name="magic_word_hint_format">Digite \'%1$s\' no launcher para ver estes apps.</string>
+    <string name="apps_to_show_count">APPS PARA MOSTRAR (%1$d)</string>
+    <string name="select_apps_to_show">SELECIONE APPS PARA MOSTRAR</string>
+    <string name="search">Buscar</string>
+    <string name="search_apps_placeholder">Buscar apps para adicionar...</string>
+    <string name="clear">Limpar</string>
+    <string name="save_shortcut">Salvar atalho</string>
+    <string name="remove">Remover</string>
+    <string name="selected">Selecionado</string>
+    <string name="please_type_magic_word">Por favor digite uma palavra mágica</string>
+    <string name="shortcut_min_chars">O atalho deve ter pelo menos 2 caracteres</string>
+    <string name="select_at_least_one_app">Por favor selecione pelo menos um app</string>
+    <string name="shortcut_exists_title">Atalho já existe</string>
+    <string name="shortcut_exists_message">Um atalho com o nome \"%1$s\" já existe. Deseja substituir?</string>
+    
+    <!-- Context Menu -->
+    <string name="app_info">Info do app</string>
+    <string name="hide_app">Ocultar</string>
+    <string name="unhide_app">Mostrar</string>
+    <string name="uninstall">Desinstalar</string>
+    <string name="set_a_shortcut">Criar atalho</string>
+    <string name="view_in_app_store">Ver na loja</string>
+    <string name="cannot_uninstall">Não pode desinstalar</string>
+    <string name="cannot_uninstall_message">Este app não pode ser desinstalado. Quer ocultar ele?</string>
+    <string name="hide">Ocultar</string>
+    
+    <!-- Mode Names -->
+    <string name="mode_handwriting">Escrita</string>
+    <string name="mode_keyboard">Teclado</string>
+    <string name="mode_voice">Voz</string>
+    <string name="mode_index">Índice</string>
+    
+    <!-- Usage Stats Permission -->
+    <string name="usage_access_required">Acesso de uso necessário</string>
+    <string name="usage_access_message">Para ordenar por uso, o Swyp Launcher precisa ver suas estatísticas de uso. Você será levado às configurações para permitir isso.\n(Selecione Swyp Launcher e permita o acesso de uso)</string>
+    <string name="grant_permission">Dar Permissão</string>
+    
+    <!-- Voice Mode -->
+    <string name="say_app_name">Diga o nome de um app…</string>
+    <string name="listening">Ouvindo…</string>
+    <string name="tap_to_speak">Toque no microfone para falar</string>
+    
+    <!-- Donate Section -->
+    <string name="support_development">Apoie o desenvolvimento</string>
+    <string name="buy_me_coffee">Me pague um café</string>
+    <string name="donate_message">Se este app te ajuda, considere me pagar um café. Seu apoio ajuda a manter meus projetos gratuitos.</string>
+    
+    <!-- Additional UI strings -->
+    <string name="launch">Abrir</string>
+    <string name="active_shortcut_singular">Atalho ativo</string>
+    <string name="active_shortcuts_plural">Atalhos ativos</string>
+    <string name="blur_background">Desfocar fundo</string>
+    <string name="blur_background_desc">Efeito de vidro fosco translúcido</string>
+    <string name="apps_per_row">Apps por linha</string>
+    <string name="app">App</string>
+    <string name="drag_to_reorder">Arraste para reordenar</string>
+    <string name="set_up_now">Configurar agora</string>
+    <string name="skip_for_now">Pular por enquanto</string>
+    <string name="how_to_enable">Como ativar:</string>
+    <string name="assistant_instruction">Clique em \'App assistente digital padrão\' na próxima tela e escolha \'Swyp Launcher\'</string>
+    <string name="to_launch_using_gesture">Para abrir usando gesto de navegação e botão de energia</string>
+    
+    <!-- Handwriting Mode -->
+    <string name="handwriting_ready">Pronto para escrever</string>
+    <string name="downloading_model">Baixando modelo de reconhecimento...</string>
+    <string name="scribble_here">Rabisque aqui</string>
+    <string name="recognized">Reconhecido:</string>
+    <string name="undo">Desfazer</string>
+    <string name="clear_action">LIMPAR</string>
+    <string name="retry">Tentar de novo</string>
+    
+    <!-- Voice Mode -->
+    <string name="mic_permission_required">Permissão de microfone necessária</string>
+    <string name="open_settings">Abrir Configurações</string>
+    <string name="enable_mic">Ativar Microfone</string>
+    <string name="listening_status">Ouvindo...</string>
+    <string name="stop">Parar</string>
+    <string name="start_listening">Começar a Ouvir</string>
+    
+    <!-- Keyboard Mode -->
+    <string name="search_apps_hint">Buscar apps...</string>
+    
+    <!-- Shared -->
+    <string name="no_apps_found">Nenhum app encontrado</string>
+    <string name="google">Google</string>
+    <string name="play_store">Play Store</string>
+    <string name="search_google_desc">Buscar no Google</string>
+    <string name="search_play_store_desc">Buscar na Play Store</string>
+    
+    <!-- Voice Error Messages -->
+    <string name="voice_error_stopped">Reconhecimento de voz parou</string>
+    <string name="voice_error_no_speech">Nada detectado. Tente de novo por favor</string>
+    <string name="voice_error_network">Problema na rede. Verifique sua conexão</string>
+    <string name="voice_error_permission">Precisa de permissão do microfone</string>
+    <string name="voice_error_busy">Microfone ocupado. Tente de novo por favor</string>
+    <string name="voice_error_not_available">Reconhecimento de voz indisponível</string>
+    <string name="voice_error_no_match">Não entendi. Tente de novo por favor</string>
+</resources>
