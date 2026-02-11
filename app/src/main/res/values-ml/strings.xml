@@ -189,4 +189,14 @@
     <string name="voice_error_busy">മൈക്രോഫോൺ തിരക്കിലാണ്. ദയവായി വീണ്ടും ശ്രമിക്കുക</string>
     <string name="voice_error_not_available">വോയ്സ് റെക്കഗ്നീഷൻ ലഭ്യമല്ല</string>
     <string name="voice_error_no_match">മനസ്സിലായില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക</string>
+    <!-- Settings Screen - Launch Options -->
+    <string name="launch_options_card">തുറക്കാനുള്ള വഴികൾ</string>
+    <string name="launch_options_popup_title">തുറക്കാനുള്ള വഴികൾ തിരഞ്ഞെടുക്കുക</string>
+    <string name="access_assistant">സ്വൈപ് ലോഞ്ചർ പല വഴികളിലൂടെ തുറക്കാം</string>
+    <string name="default_digital_assistant">ഡിഫോൾട്ട് അസിസ്റ്റന്റായി സെറ്റ് ചെയ്യുക</string>
+    <string name="add_home_screen_widget">ഹോം സ്ക്രീൻ വിഡ്ജെറ്റ് ചേർക്കുക</string>
+    <string name="add_shortcut_home">ഷോർട്ട് കട്ട് ചേർക്കുക</string>
+    <string name="quick_settings_tile">ക്വിക്ക് സെറ്റിംഗ്സ് ടൈൽ</string>
+    <string name="widget_description">ലോഞ്ചർ മോഡുകളിലേക്ക് എളുപ്പവഴി</string>
+    <string name="swyp_launcher_tile_label">സ്വൈപ് ലോഞ്ചർ</string>
 </resources>

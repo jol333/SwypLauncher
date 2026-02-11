@@ -90,6 +90,30 @@
                 <action android:name="android.speech.RecognitionService" />
             </intent-filter>
         </service>
+
+        <!-- Home Screen Widget -->
+        <receiver
+            android:name=".widget.SwypLauncherWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/swyp_widget_info" />
+        </receiver>
+
+        <!-- Quick Settings Tile -->
+        <service
+            android:name=".service.SwypLauncherTileService"
+            android:icon="@drawable/ic_quick_tile"
+            android:label="@string/swyp_launcher_tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

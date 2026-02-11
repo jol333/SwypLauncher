@@ -190,4 +190,14 @@
     <string name="voice_error_busy">麦克风忙。请重试</string>
     <string name="voice_error_not_available">语音识别不可用</string>
     <string name="voice_error_no_match">无法理解。请重试</string>
+    <!-- Settings Screen - Launch Options -->
+    <string name="launch_options_card">打开方式</string>
+    <string name="launch_options_popup_title">选择打开方式</string>
+    <string name="access_assistant">可以通过多种方式打开 Swyp Launcher</string>
+    <string name="default_digital_assistant">设为默认助手</string>
+    <string name="add_home_screen_widget">添加主屏幕小部件</string>
+    <string name="add_shortcut_home">添加快捷方式</string>
+    <string name="quick_settings_tile">快速设置磁贴</string>
+    <string name="widget_description">快速访问 Swyp Launcher</string>
+    <string name="swyp_launcher_tile_label">Swyp Launcher</string>
 </resources>

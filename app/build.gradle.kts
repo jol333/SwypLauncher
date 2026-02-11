@@ -141,6 +141,10 @@ dependencies {
     
     // Reorderable (now using version catalog)
     implementation(libs.reorderable)
+    
+    // Glance (App Widgets)
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
 
     // Baseline Profile & Startup Tracing
     implementation(libs.androidx.profileinstaller)

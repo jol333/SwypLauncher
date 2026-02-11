@@ -69,6 +69,17 @@
     <string name="license">License</string>
     <string name="version_format">Version %1$s</string>
     
+    <!-- Settings Screen - Launch Options -->
+    <string name="launch_options_card">WAYS TO OPEN</string>
+    <string name="launch_options_popup_title">Select ways to open</string>
+    <string name="access_assistant">You can access Swyp Launcher in multiple ways</string>
+    <string name="default_digital_assistant">Set as default assistant</string>
+    <string name="add_home_screen_widget">Add home screen widget</string>
+    <string name="add_shortcut_home">Add shortcut</string>
+    <string name="quick_settings_tile">Quick settings tile</string>
+    <string name="widget_description">Quick access to Swyp Launcher modes</string>
+    <string name="swyp_launcher_tile_label">Swyp Launcher</string>
+
     <!-- Dialog buttons -->
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>

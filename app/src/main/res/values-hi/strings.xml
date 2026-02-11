@@ -190,4 +190,14 @@
     <string name="voice_error_busy">माइक बिज़ी है। कृपया फिर कोशिश करें</string>
     <string name="voice_error_not_available">वॉइस रिकग्निशन उपलब्ध नहीं है</string>
     <string name="voice_error_no_match">समझ नहीं आया। कृपया फिर कोशिश करें</string>
+    <!-- Settings Screen - Launch Options -->
+    <string name="launch_options_card">खोलने के तरीके</string>
+    <string name="launch_options_popup_title">खोलने के तरीके चुनें</string>
+    <string name="access_assistant">Swyp Launcher को कई तरीकों से खोला जा सकता है</string>
+    <string name="default_digital_assistant">डिफ़ॉल्ट असिस्टेंट सेट करें</string>
+    <string name="add_home_screen_widget">होम स्क्रीन विजेट जोड़ें</string>
+    <string name="add_shortcut_home">शॉर्टकट जोड़ें</string>
+    <string name="quick_settings_tile">क्विक सेटिंग्स टाइल</string>
+    <string name="widget_description">Swyp Launcher मोड्स तक तुरंत पहुँचें</string>
+    <string name="swyp_launcher_tile_label">Swyp Launcher</string>
 </resources>

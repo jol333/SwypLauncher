@@ -24,7 +24,7 @@ import kotlin.coroutines.resume
 
 @Singleton
 class MLKitDataSource @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val preferencesRepository: com.joyal.swyplauncher.domain.repository.PreferencesRepository
 ) : com.joyal.swyplauncher.domain.repository.MLKitRepository {
     private var digitalInkRecognizer: DigitalInkRecognizer? = null

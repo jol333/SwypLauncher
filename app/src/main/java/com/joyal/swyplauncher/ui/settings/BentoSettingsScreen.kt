@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ElectricBolt
+import androidx.compose.material.icons.outlined.RocketLaunch
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -99,6 +100,7 @@ fun BentoSettingsScreen(
         )
     }
     var showModeOrderDialog by remember { mutableStateOf(false) }
+    var showLaunchOptionsDialog by remember { mutableStateOf(false) }
     var showSortOrderDialog by remember { mutableStateOf(false) }
     // Track if user dismissed the bottom sheet in this session
     // Using screenEntryTimestamp as key forces reset each time user enters settings
@@ -166,6 +168,7 @@ fun BentoSettingsScreen(
     var launchModesCardBounds by remember { mutableStateOf(Rect.Zero) }
     var sortAppsCardBounds by remember { mutableStateOf(Rect.Zero) }
     var languageCardBounds by remember { mutableStateOf(Rect.Zero) }
+    var launchOptionsCardBounds by remember { mutableStateOf(Rect.Zero) }
 
     // Container transform animation progress (0 = card, 1 = popup)
     val modeOrderProgress by animateFloatAsState(
@@ -195,6 +198,15 @@ fun BentoSettingsScreen(
         label = "languageProgress"
     )
 
+    val launchOptionsProgress by animateFloatAsState(
+        targetValue = if (showLaunchOptionsDialog) 1f else 0f,
+        animationSpec = spring(
+            dampingRatio = 0.65f,
+            stiffness = 280f
+        ),
+        label = "launchOptionsProgress"
+    )
+
     // Spatial awareness: Adjacent cards push away when dialog opens
     val density = LocalDensity.current
     val appShortcutsOffset by animateFloatAsState(
@@ -222,9 +234,16 @@ fun BentoSettingsScreen(
     
     // Language card offset when dialog opens
     val languageOffset by animateFloatAsState(
-        targetValue = if (showLanguageDialog) with(density) { 8.dp.toPx() } else 0f,
+        targetValue = if (showLanguageDialog || showLaunchOptionsDialog) with(density) { 8.dp.toPx() } else 0f,
         animationSpec = expressiveSpatialSpring,
         label = "languageOffset"
+    )
+
+    // Launch options card offset when dialog opens
+    val launchOptionsOffset by animateFloatAsState(
+        targetValue = if (showLaunchOptionsDialog || showLanguageDialog) with(density) { (-8).dp.toPx() } else 0f,
+        animationSpec = expressiveSpatialSpring,
+        label = "launchOptionsOffset"
     )
 
 
@@ -234,7 +253,7 @@ fun BentoSettingsScreen(
             .fillMaxSize()
             .background(BentoColors.BackgroundDark)
     ) {
-        val blurRadius = (modeOrderProgress * 10f + sortOrderProgress * 10f + languageProgress * 10f).dp
+        val blurRadius = (modeOrderProgress * 10f + sortOrderProgress * 10f + languageProgress * 10f + launchOptionsProgress * 10f).dp
 
         LazyColumn(
             state = listState,
@@ -433,20 +452,38 @@ fun BentoSettingsScreen(
                 )
             }
             
-            // Language Card
+            // Language & Launch Options Row
             item {
-                LanguageCard(
-                    currentLanguage = currentLanguage,
-                    onClick = { showLanguageDialog = true },
+                Row(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                         .offset(y = (-32).dp)
-                        .onGloballyPositioned { coordinates ->
-                            languageCardBounds = coordinates.boundsInRoot()
-                        }
-                        .alpha(1f - languageProgress),
-                    offsetX = languageOffset
-                )
+                        .height(IntrinsicSize.Max),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    LanguageCard(
+                        currentLanguage = currentLanguage,
+                        onClick = { showLanguageDialog = true },
+                        modifier = Modifier
+                            .weight(1f)
+                            .onGloballyPositioned { coordinates ->
+                                languageCardBounds = coordinates.boundsInRoot()
+                            }
+                            .alpha(1f - languageProgress),
+                        offsetX = languageOffset
+                    )
+                    LaunchOptionsCard(
+                        onClick = { showLaunchOptionsDialog = true },
+                        modifier = Modifier
+                            .weight(1f)
+                            .onGloballyPositioned { coordinates ->
+                                launchOptionsCardBounds = coordinates.boundsInRoot()
+                            }
+                            .alpha(1f - launchOptionsProgress),
+                        offsetX = launchOptionsOffset
+                    )
+                }
             }
 
             // Donate Section & Footer
@@ -685,6 +722,45 @@ fun BentoSettingsScreen(
                         onLanguageChanged()
                         showLanguageDialog = false
                     }
+                )
+            }
+        )
+
+        // Container transform overlay for LaunchOptionsDialog
+        ContainerTransformPopup(
+            isVisible = showLaunchOptionsDialog || launchOptionsProgress > 0f,
+            progress = launchOptionsProgress,
+            cardBounds = launchOptionsCardBounds,
+            onDismiss = { showLaunchOptionsDialog = false },
+            cardContent = {
+                Column {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.RocketLaunch,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = BentoColors.AccentGreen
+                        )
+                        Text(
+                            text = stringResource(R.string.launch_options_card),
+                            color = BentoColors.TextLabel,
+                            style = BentoTypography.labelLarge
+                        )
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = stringResource(R.string.access_assistant),
+                        color = BentoColors.TextMuted,
+                        style = BentoTypography.bodyMedium
+                    )
+                }
+            },
+            popupContent = {
+                LaunchOptionsDialogContent(
+                    onDismiss = { showLaunchOptionsDialog = false }
                 )
             }
         )

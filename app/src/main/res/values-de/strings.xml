@@ -190,4 +190,14 @@
     <string name="voice_error_busy">Mikrofon ist beschäftigt. Bitte versuche es erneut</string>
     <string name="voice_error_not_available">Spracherkennung nicht verfügbar</string>
     <string name="voice_error_no_match">Konnte ich nicht verstehen. Bitte versuche es erneut</string>
+    <!-- Settings Screen - Launch Options -->
+    <string name="launch_options_card">WEGE ZUM ÖFFNEN</string>
+    <string name="launch_options_popup_title">Öffnungsmethoden wählen</string>
+    <string name="access_assistant">Du kannst Swyp Launcher auf verschiedene Weisen öffnen</string>
+    <string name="default_digital_assistant">Als Standard-Assistent festlegen</string>
+    <string name="add_home_screen_widget">Widget hinzufügen</string>
+    <string name="add_shortcut_home">Verknüpfung hinzufügen</string>
+    <string name="quick_settings_tile">Kachel für Schnelleinstellungen</string>
+    <string name="widget_description">Schnappzugriff auf Swyp Launcher</string>
+    <string name="swyp_launcher_tile_label">Swyp Launcher</string>
 </resources>

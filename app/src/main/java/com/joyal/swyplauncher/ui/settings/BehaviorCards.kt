@@ -8,12 +8,16 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.SwapVert
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -311,11 +315,22 @@ fun SortAppsByCard(
             .padding(24.dp)
     ) {
         Column {
-            Text(
-                text = stringResource(R.string.sort_apps_by),
-                color = BentoColors.TextLabel,
-                style = BentoTypography.labelLarge
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.SwapVert,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = BentoColors.AccentGreen
+                )
+                Text(
+                    text = stringResource(R.string.sort_apps_by),
+                    color = BentoColors.TextLabel,
+                    style = BentoTypography.labelLarge
+                )
+            }
             
             Spacer(Modifier.weight(1f))
             

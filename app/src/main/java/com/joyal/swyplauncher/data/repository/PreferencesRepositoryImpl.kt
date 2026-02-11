@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 @Singleton
 class PreferencesRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : PreferencesRepository {
 
     private val prefs: SharedPreferences = context.getSharedPreferences(
