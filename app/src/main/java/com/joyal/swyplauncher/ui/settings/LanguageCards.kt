@@ -12,6 +12,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -120,7 +122,11 @@ fun LanguageDialogContent(
     onDismiss: () -> Unit,
     onSelect: (AppLanguage) -> Unit
 ) {
-    Column(modifier = Modifier.padding(24.dp)) {
+    Column(
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp)
+    ) {
         Text(
             stringResource(R.string.select_language),
             style = MaterialTheme.typography.titleLarge,

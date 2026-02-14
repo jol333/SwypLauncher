@@ -7,4 +7,10 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Widget colors (light/day mode) -->
+    <color name="widget_background">#F2F2F2</color>
+    <color name="widget_icon_container">#E0E0E0</color>
+    <color name="widget_text_color">#1C1B1F</color>
+    <color name="widget_icon_tint">#1C1B1F</color>
 </resources>

@@ -20,7 +20,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material3.Checkbox
@@ -193,7 +195,7 @@ fun SortOrderDialogContent(
 ) {
     var showPermissionDialog by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.padding(24.dp)) {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(24.dp)) {
         Text(stringResource(R.string.app_sort_order), style = MaterialTheme.typography.titleLarge, color = BentoColors.TextPrimary)
         Spacer(Modifier.height(16.dp))
 
@@ -308,7 +310,7 @@ fun ModeOrderDialogContent(
     }
     val context = LocalContext.current
 
-    Column(modifier = Modifier.padding(24.dp)) {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(24.dp)) {
         Text(stringResource(R.string.select_app_launch_modes), style = MaterialTheme.typography.titleLarge, color = BentoColors.TextPrimary)
         Spacer(Modifier.height(8.dp))
         Text(

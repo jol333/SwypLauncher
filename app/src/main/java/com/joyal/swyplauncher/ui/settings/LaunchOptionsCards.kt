@@ -23,6 +23,8 @@ import androidx.compose.material.icons.outlined.Assistant
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.DashboardCustomize
 import androidx.compose.material.icons.outlined.RocketLaunch
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material.icons.rounded.AppShortcut
 import androidx.compose.material3.Icon
@@ -148,7 +150,11 @@ fun LaunchOptionsDialogContent(
         }
     }
 
-    Column(modifier = Modifier.padding(24.dp)) {
+    Column(
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp)
+    ) {
         Text(
             stringResource(R.string.launch_options_popup_title),
             style = MaterialTheme.typography.titleLarge,
