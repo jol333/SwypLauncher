@@ -18,7 +18,7 @@
     <string name="launch_now">Launch now</string>
     
     <!-- Settings Screen - Launch Modes -->
-    <string name="launch_modes">LAUNCH MODES</string>
+    <string name="launch_modes">LAUNCHER MODES</string>
     <string name="modes_selected">Modes selected</string>
     <string name="select_app_launch_modes">Select app launch modes</string>
     <string name="long_press_drag_reorder">Long press &amp; drag handle to reorder</string>

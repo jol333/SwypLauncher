@@ -71,8 +71,7 @@ fun LaunchOptionsCard(
                 transformOrigin = TransformOrigin(1f, 0.5f)
                 cameraDistance = 12f * density
             }
-            .heightIn(min = 180.dp)
-            .fillMaxHeight()
+            .height(192.dp)
             .clip(RoundedCornerShape(24.dp))
             .background(
                 brush = Brush.verticalGradient(
@@ -93,7 +92,9 @@ fun LaunchOptionsCard(
             }
             .padding(24.dp)
     ) {
-        Column {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)

@@ -197,6 +197,6 @@
     <string name="add_home_screen_widget">ഹോം സ്ക്രീൻ വിഡ്ജെറ്റ് ചേർക്കുക</string>
     <string name="add_shortcut_home">ഷോർട്ട് കട്ട് ചേർക്കുക</string>
     <string name="quick_settings_tile">ക്വിക്ക് സെറ്റിംഗ്സ് ടൈൽ</string>
-    <string name="widget_description">ലോഞ്ചർ മോഡുകളിലേക്ക് എളുപ്പവഴി</string>
+    <string name="widget_description">ഇത് വഴി എളുപ്പത്തിൽ Swyp Launcher തുറക്കാം</string>
     <string name="swyp_launcher_tile_label">സ്വൈപ് ലോഞ്ചർ</string>
 </resources>

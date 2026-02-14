@@ -344,7 +344,7 @@ fun SortAppsByCard(
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Black,
                 color = BentoColors.AccentGreen,
-                modifier = Modifier.offset(x = (-4).dp),
+                // modifier = Modifier.offset(x = (-4).dp),
                 maxLines = 1,
                 softWrap = false,
                 overflow = androidx.compose.ui.text.style.TextOverflow.Visible

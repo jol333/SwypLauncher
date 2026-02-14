@@ -210,12 +210,12 @@ fun BentoSettingsScreen(
     // Spatial awareness: Adjacent cards push away when dialog opens
     val density = LocalDensity.current
     val appShortcutsOffset by animateFloatAsState(
-        targetValue = if (showModeOrderDialog) with(density) { 15.dp.toPx() } else 0f,
+        targetValue = if (showLanguageDialog) with(density) { 15.dp.toPx() } else 0f,
         animationSpec = expressiveSpatialSpring,
         label = "appShortcutsOffset"
     )
     val launchModesOffset by animateFloatAsState(
-        targetValue = if (showModeOrderDialog) with(density) { (-8).dp.toPx() } else 0f,
+        targetValue = if (showModeOrderDialog) with(density) { (-8).dp.toPx() } else if (showLaunchOptionsDialog) with(density) { (-15).dp.toPx() } else 0f,
         animationSpec = expressiveSpatialSpring,
         label = "launchModesOffset"
     )
@@ -234,14 +234,14 @@ fun BentoSettingsScreen(
     
     // Language card offset when dialog opens
     val languageOffset by animateFloatAsState(
-        targetValue = if (showLanguageDialog || showLaunchOptionsDialog) with(density) { 8.dp.toPx() } else 0f,
+        targetValue = if (showLanguageDialog) with(density) { 8.dp.toPx() } else 0f,
         animationSpec = expressiveSpatialSpring,
         label = "languageOffset"
     )
 
     // Launch options card offset when dialog opens
     val launchOptionsOffset by animateFloatAsState(
-        targetValue = if (showLaunchOptionsDialog || showLanguageDialog) with(density) { (-8).dp.toPx() } else 0f,
+        targetValue = if (showLaunchOptionsDialog) with(density) { 8.dp.toPx() } else if (showModeOrderDialog) with(density) { 15.dp.toPx() } else 0f,
         animationSpec = expressiveSpatialSpring,
         label = "launchOptionsOffset"
     )
@@ -340,7 +340,7 @@ fun BentoSettingsScreen(
                 )
             }
 
-            // Launch Modes & App Shortcuts Row
+            // Launch Modes & Ways to open Row
             item {
                 Row(
                     modifier = Modifier
@@ -360,18 +360,15 @@ fun BentoSettingsScreen(
                             .alpha(1f - modeOrderProgress), // Fade out as popup morphs in
                         offsetX = launchModesOffset
                     )
-                    AppShortcutsCard(
-                        count = shortcutsCount,
-                        onClick = {
-                            context.startActivity(
-                                Intent(
-                                    context,
-                                    com.joyal.swyplauncher.ShortcutsActivity::class.java
-                                )
-                            )
-                        },
-                        modifier = Modifier.weight(1f),
-                        offsetX = appShortcutsOffset
+                    LaunchOptionsCard(
+                        onClick = { showLaunchOptionsDialog = true },
+                        modifier = Modifier
+                            .weight(1f)
+                            .onGloballyPositioned { coordinates ->
+                                launchOptionsCardBounds = coordinates.boundsInRoot()
+                            }
+                            .alpha(1f - launchOptionsProgress),
+                        offsetX = launchOptionsOffset
                     )
                 }
             }
@@ -452,7 +449,7 @@ fun BentoSettingsScreen(
                 )
             }
             
-            // Language & Launch Options Row
+            // Language & App Shortcuts Row
             item {
                 Row(
                     modifier = Modifier
@@ -473,15 +470,18 @@ fun BentoSettingsScreen(
                             .alpha(1f - languageProgress),
                         offsetX = languageOffset
                     )
-                    LaunchOptionsCard(
-                        onClick = { showLaunchOptionsDialog = true },
-                        modifier = Modifier
-                            .weight(1f)
-                            .onGloballyPositioned { coordinates ->
-                                launchOptionsCardBounds = coordinates.boundsInRoot()
-                            }
-                            .alpha(1f - launchOptionsProgress),
-                        offsetX = launchOptionsOffset
+                    AppShortcutsCard(
+                        count = shortcutsCount,
+                        onClick = {
+                            context.startActivity(
+                                Intent(
+                                    context,
+                                    com.joyal.swyplauncher.ShortcutsActivity::class.java
+                                )
+                            )
+                        },
+                        modifier = Modifier.weight(1f),
+                        offsetX = appShortcutsOffset
                     )
                 }
             }
@@ -650,7 +650,7 @@ fun BentoSettingsScreen(
                         color = BentoColors.AccentGreen,
                         maxLines = 1,
                         softWrap = false,
-                        modifier = Modifier.offset(x = (-4).dp)
+                        // modifier = Modifier.offset(x = (-4).dp)
                     )
                     Text(
                         text = when (appSortOrder) {
@@ -698,7 +698,7 @@ fun BentoSettingsScreen(
                         color = BentoColors.AccentGreen,
                         maxLines = 1,
                         softWrap = false,
-                        modifier = Modifier.offset(x = (-4).dp)
+                        // modifier = Modifier.offset(x = (-4).dp)
                     )
                     Text(
                         text = if (currentLanguage == com.joyal.swyplauncher.domain.model.AppLanguage.SYSTEM) {
