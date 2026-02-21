@@ -269,7 +269,7 @@ fun AutoOpenCard(
             
             Text(
                 text = stringResource(R.string.auto_open_desc),
-                color = BentoColors.TextMuted,
+                color = BentoColors.TextSecondary,
                 style = BentoTypography.bodyMedium
             )
         }
@@ -314,51 +314,54 @@ fun SortAppsByCard(
             }
             .padding(24.dp)
     ) {
-        Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.SwapVert,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = BentoColors.AccentGreen
-                )
-                Text(
-                    text = stringResource(R.string.sort_apps_by),
-                    color = BentoColors.TextLabel,
-                    style = BentoTypography.labelLarge
-                )
-            }
-            
-            Spacer(Modifier.weight(1f))
-            
-            // Large gradient text for sort type
-            Text(
-                text = when (sortOrder) {
-                    AppSortOrder.NAME -> stringResource(R.string.sort_name)
-                    AppSortOrder.USAGE -> stringResource(R.string.sort_usage)
-                    AppSortOrder.CATEGORY -> stringResource(R.string.sort_category)
-                },
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Black,
-                color = BentoColors.AccentGreen,
-                // modifier = Modifier.offset(x = (-4).dp),
-                maxLines = 1,
-                softWrap = false,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Visible
+        SortAppsByCardContent(sortOrder = sortOrder)
+    }
+}
+
+@Composable
+fun SortAppsByCardContent(sortOrder: AppSortOrder) {
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.SwapVert,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = BentoColors.AccentGreen
             )
-            
             Text(
-                text = when (sortOrder) {
-                    AppSortOrder.NAME -> stringResource(R.string.sort_name_desc)
-                    AppSortOrder.USAGE -> stringResource(R.string.sort_usage_desc)
-                    AppSortOrder.CATEGORY -> stringResource(R.string.sort_category_desc)
-                },
-                color = BentoColors.TextMuted,
-                style = BentoTypography.bodyMedium
+                text = stringResource(R.string.sort_apps_by),
+                color = BentoColors.TextLabel,
+                style = BentoTypography.labelLarge
             )
         }
+        
+        Spacer(Modifier.weight(1f))
+        
+        // Large gradient text for sort type
+        Text(
+            text = when (sortOrder) {
+                AppSortOrder.NAME -> stringResource(R.string.sort_name)
+                AppSortOrder.USAGE -> stringResource(R.string.sort_usage)
+                AppSortOrder.CATEGORY -> stringResource(R.string.sort_category)
+            },
+            style = BentoTypography.displayLarge,
+            color = BentoColors.AccentGreen,
+            maxLines = 1,
+            softWrap = false,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Visible
+        )
+        
+        Text(
+            text = when (sortOrder) {
+                AppSortOrder.NAME -> stringResource(R.string.sort_name_desc)
+                AppSortOrder.USAGE -> stringResource(R.string.sort_usage_desc)
+                AppSortOrder.CATEGORY -> stringResource(R.string.sort_category_desc)
+            },
+            color = BentoColors.TextSecondary,
+            style = BentoTypography.bodyMedium
+        )
     }
 }

@@ -34,7 +34,7 @@ fun TrySwypLauncherCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(Color(0xFF111113)) // Base color
+            .background(BentoColors.BackgroundDark) // Base color
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
@@ -53,7 +53,7 @@ fun TrySwypLauncherCard(
             )
             .border(
                 width = 1.dp,
-                color = Color(0x1AFFFFFF), // rgba(255, 255, 255, 0.1)
+                color = BentoColors.BorderLight, // rgba(255, 255, 255, 0.1)
                 shape = RoundedCornerShape(24.dp)
             )
             .padding(24.dp)
@@ -73,6 +73,7 @@ fun TrySwypLauncherCard(
                         color = BentoColors.TextPrimary,
                         style = BentoTypography.titleLarge
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = stringResource(R.string.test_ui_features),
                         color = BentoColors.TextSecondary,
@@ -147,40 +148,45 @@ fun LaunchModesCard(
             .clickable { onClick() }
             .padding(24.dp)
     ) {
-        Column {
-            // Header with icon
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.TouchApp,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = BentoColors.AccentGreen
-                )
-                Text(
-                    text = stringResource(R.string.launch_modes),
-                    color = BentoColors.TextLabel,
-                    style = BentoTypography.labelLarge
-                )
-            }
-            
-            Spacer(Modifier.weight(1f))
-            
-            // Large count
-            Text(
-                text = count.toString(),
-                color = BentoColors.AccentGreen,
-                style = BentoTypography.displayLarge
+        LaunchModesCardContent(count = count)
+    }
+}
+
+@Composable
+fun LaunchModesCardContent(count: Int) {
+    Column {
+        // Header with icon
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.TouchApp,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = BentoColors.AccentGreen
             )
-            
             Text(
-                text = stringResource(R.string.modes_selected),
-                color = BentoColors.TextSecondary,
-                style = BentoTypography.bodyMedium
+                text = stringResource(R.string.launch_modes),
+                color = BentoColors.TextLabel,
+                style = BentoTypography.labelLarge
             )
         }
+        
+        Spacer(Modifier.weight(1f))
+        
+        // Large count
+        Text(
+            text = count.toString(),
+            color = BentoColors.AccentGreen,
+            style = BentoTypography.displayLarge
+        )
+        
+        Text(
+            text = stringResource(R.string.modes_selected),
+            color = BentoColors.TextSecondary,
+            style = BentoTypography.bodyMedium
+        )
     }
 }
 

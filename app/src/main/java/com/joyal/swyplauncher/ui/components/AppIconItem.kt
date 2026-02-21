@@ -51,7 +51,7 @@ fun AppIconItem(
     onDismissMenu: () -> Unit = {},
     onHide: () -> Unit = {},
     onAddShortcut: (() -> Unit)? = null,
-    cornerRadiusPercent: Float = 0.75f
+    cornerRadiusPercent: Float = 0.85f
 ) {
     val context = LocalContext.current
     // Calculate corner radius: 0% = 0dp (square), 100% = 28dp (circle, half of icon size)

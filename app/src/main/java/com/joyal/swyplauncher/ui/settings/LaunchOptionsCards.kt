@@ -92,34 +92,39 @@ fun LaunchOptionsCard(
             }
             .padding(24.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
+        LaunchOptionsCardContent()
+    }
+}
+
+@Composable
+fun LaunchOptionsCardContent() {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.RocketLaunch,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = BentoColors.AccentGreen
-                )
-                Text(
-                    text = stringResource(R.string.launch_options_card),
-                    color = BentoColors.TextLabel,
-                    style = BentoTypography.labelLarge
-                )
-            }
-
-            Spacer(Modifier.weight(1f))
-
+            Icon(
+                imageVector = Icons.Outlined.RocketLaunch,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = BentoColors.AccentGreen
+            )
             Text(
-                text = stringResource(R.string.access_assistant),
-                color = BentoColors.TextMuted,
-                style = BentoTypography.bodyMedium
+                text = stringResource(R.string.launch_options_card),
+                color = BentoColors.TextLabel,
+                style = BentoTypography.labelLarge
             )
         }
+
+        Spacer(Modifier.weight(1f))
+
+        Text(
+            text = stringResource(R.string.access_assistant),
+            color = BentoColors.TextSecondary,
+            style = BentoTypography.bodyMedium
+        )
     }
 }
 

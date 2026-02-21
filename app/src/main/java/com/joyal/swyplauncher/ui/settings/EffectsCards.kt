@@ -129,7 +129,7 @@ fun VisualEffectsCard(
                     )
                     Text(
                         text = stringResource(R.string.blur_background_desc),
-                        color = BentoColors.TextMuted,
+                        color = BentoColors.TextSecondary,
                         style = BentoTypography.bodyMedium
                     )
                 }

@@ -222,8 +222,8 @@ fun AppearanceCard(
                 BentoSlider(
                     value = sliderCornerRadius,
                     onValueChange = { newValue ->
-                        // Snap to 75% (squircle default)
-                        val snappedValue = if (kotlin.math.abs(newValue - 0.75f) < 0.05f) 0.75f else newValue
+                        // Snap to 85% (squircle default)
+                        val snappedValue = if (kotlin.math.abs(newValue - 0.85f) < 0.05f) 0.85f else newValue
                         
                         if (kotlin.math.abs(snappedValue - lastRadiusHaptic) >= 0.05f) {
                             view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_TICK)

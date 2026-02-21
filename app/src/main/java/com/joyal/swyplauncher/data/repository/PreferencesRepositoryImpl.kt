@@ -73,7 +73,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         prefs.edit().putInt(KEY_GRID_SIZE, size).apply()
     }
 
-    override fun getCornerRadius(): Float = prefs.getFloat(KEY_CORNER_RADIUS, 0.75f)
+    override fun getCornerRadius(): Float = prefs.getFloat(KEY_CORNER_RADIUS, 0.85f)
 
     override fun setCornerRadius(radius: Float) {
         prefs.edit().putFloat(KEY_CORNER_RADIUS, radius).apply()

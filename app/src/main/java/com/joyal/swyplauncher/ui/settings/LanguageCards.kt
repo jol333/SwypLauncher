@@ -69,49 +69,52 @@ fun LanguageCard(
             }
             .padding(24.dp)
     ) {
-        Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Translate,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = BentoColors.AccentGreen
-                )
-                Text(
-                    text = stringResource(R.string.language),
-                    color = BentoColors.TextLabel,
-                    style = BentoTypography.labelLarge
-                )
-            }
-            
-            Spacer(Modifier.weight(1f))
-            
-            // Show native language name prominently
-            Text(
-                text = currentLanguage.nativeName,
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Black,
-                color = BentoColors.AccentGreen,
-                // modifier = Modifier.offset(x = (-4).dp),
-                maxLines = 1,
-                softWrap = false,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Visible
+        LanguageCardContent(currentLanguage = currentLanguage)
+    }
+}
+
+@Composable
+fun LanguageCardContent(currentLanguage: AppLanguage) {
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Translate,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = BentoColors.AccentGreen
             )
-            
-            // Show English name as secondary text (except for System Default)
             Text(
-                text = if (currentLanguage == AppLanguage.SYSTEM) {
-                    stringResource(R.string.system_default)
-                } else {
-                    currentLanguage.displayName
-                },
-                color = BentoColors.TextMuted,
-                style = BentoTypography.bodyMedium
+                text = stringResource(R.string.language),
+                color = BentoColors.TextLabel,
+                style = BentoTypography.labelLarge
             )
         }
+        
+        Spacer(Modifier.weight(1f))
+        
+        // Show native language name prominently
+        Text(
+            text = currentLanguage.nativeName,
+            style = BentoTypography.displayLarge,
+            color = BentoColors.AccentGreen,
+            maxLines = 1,
+            softWrap = false,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Visible
+        )
+        
+        // Show English name as secondary text (except for System Default)
+        Text(
+            text = if (currentLanguage == AppLanguage.SYSTEM) {
+                stringResource(R.string.system_default)
+            } else {
+                currentLanguage.displayName
+            },
+            color = BentoColors.TextSecondary,
+            style = BentoTypography.bodyMedium
+        )
     }
 }
 

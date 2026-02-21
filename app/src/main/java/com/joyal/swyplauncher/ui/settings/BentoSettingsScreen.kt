@@ -32,7 +32,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ElectricBolt
 import androidx.compose.material.icons.outlined.RocketLaunch
+import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material.icons.outlined.TouchApp
+import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -90,7 +92,7 @@ fun BentoSettingsScreen(
 ) {
     val prefs by prefsFlow.collectAsState()
     var gridSize by remember { mutableStateOf(prefs.getInt("grid_size", 4)) }
-    var cornerRadius by remember { mutableStateOf(prefs.getFloat("corner_radius", 0.75f)) }
+    var cornerRadius by remember { mutableStateOf(prefs.getFloat("corner_radius", 0.85f)) }
     var autoOpenSingleResult by remember {
         mutableStateOf(
             prefs.getBoolean(
@@ -310,7 +312,7 @@ fun BentoSettingsScreen(
                                 )
                                 Text(
                                     text = stringResource(R.string.set_as_default_assistant),
-                                    color = Color.White,
+                                    color = BentoColors.TextPrimary,
                                     style = BentoTypography.bodyMedium,
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                 )
@@ -508,34 +510,34 @@ fun BentoSettingsScreen(
                         ) {
                             Text(
                                 text = "Privacy Policy",
-                                style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
-                                color = Color.Gray,
+                                style = BentoTypography.labelSmall,
+                                color = BentoColors.TextMuted,
                                 modifier = Modifier.clickable {
                                     uriHandler.openUri("https://github.com/jol333/swyplauncher/blob/main/PRIVACY_POLICY.md")
                                 }
                             )
                             Text(
                                 text = "•",
-                                style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
-                                color = Color.Gray
+                                style = BentoTypography.labelSmall,
+                                color = BentoColors.TextMuted
                             )
                             Text(
                                 text = "Source Code",
-                                style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
-                                color = Color.Gray,
+                                style = BentoTypography.labelSmall,
+                                color = BentoColors.TextMuted,
                                 modifier = Modifier.clickable {
                                     uriHandler.openUri("https://github.com/jol333/swyplauncher")
                                 }
                             )
                             Text(
                                 text = "•",
-                                style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
-                                color = Color.Gray
+                                style = BentoTypography.labelSmall,
+                                color = BentoColors.TextMuted
                             )
                             Text(
                                 text = "License",
-                                style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
-                                color = Color.Gray,
+                                style = BentoTypography.labelSmall,
+                                color = BentoColors.TextMuted,
                                 modifier = Modifier.clickable {
                                     uriHandler.openUri("https://github.com/jol333/SwypLauncher/blob/main/LICENSE.md")
                                 }
@@ -557,8 +559,8 @@ fun BentoSettingsScreen(
 
                         Text(
                             text = "Version $versionName",
-                            style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
-                            color = Color.Gray.copy(alpha = 0.5f)
+                            style = BentoTypography.labelSmall,
+                            color = BentoColors.TextMuted.copy(alpha = 0.5f)
                         )
                     }
 
@@ -585,35 +587,7 @@ fun BentoSettingsScreen(
             cardBounds = launchModesCardBounds,
             onDismiss = { showModeOrderDialog = false },
             cardContent = {
-                Column {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.TouchApp,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = BentoColors.AccentGreen
-                        )
-                        Text(
-                            text = stringResource(R.string.launch_modes),
-                            color = BentoColors.TextLabel,
-                            style = BentoTypography.labelLarge
-                        )
-                    }
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        text = enabledModesCount.toString(),
-                        color = BentoColors.AccentGreen,
-                        style = BentoTypography.displayLarge
-                    )
-                    Text(
-                        text = stringResource(R.string.modes_selected),
-                        color = BentoColors.TextSecondary,
-                        style = BentoTypography.bodyMedium
-                    )
-                }
+                com.joyal.swyplauncher.ui.settings.LaunchModesCardContent(count = enabledModesCount)
             },
             popupContent = {
                 com.joyal.swyplauncher.ModeOrderDialogContent(
@@ -632,36 +606,7 @@ fun BentoSettingsScreen(
             cardBounds = sortAppsCardBounds,
             onDismiss = { showSortOrderDialog = false },
             cardContent = {
-                Column {
-                    Text(
-                        text = stringResource(R.string.sort_apps_by),
-                        color = BentoColors.TextLabel,
-                        style = BentoTypography.labelLarge
-                    )
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        text = when (appSortOrder) {
-                            com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> stringResource(R.string.sort_name)
-                            com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> stringResource(R.string.sort_usage)
-                            com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> stringResource(R.string.sort_category)
-                        },
-                        fontSize = 48.sp,
-                        fontWeight = FontWeight.Black,
-                        color = BentoColors.AccentGreen,
-                        maxLines = 1,
-                        softWrap = false,
-                        // modifier = Modifier.offset(x = (-4).dp)
-                    )
-                    Text(
-                        text = when (appSortOrder) {
-                            com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> stringResource(R.string.sort_name_desc)
-                            com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> stringResource(R.string.sort_usage_desc)
-                            com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> stringResource(R.string.sort_category_desc)
-                        },
-                        color = BentoColors.TextMuted,
-                        style = BentoTypography.bodyMedium
-                    )
-                }
+                com.joyal.swyplauncher.ui.settings.SortAppsByCardContent(sortOrder = appSortOrder)
             },
             popupContent = {
                 com.joyal.swyplauncher.SortOrderDialogContent(
@@ -684,32 +629,7 @@ fun BentoSettingsScreen(
             cardBounds = languageCardBounds,
             onDismiss = { showLanguageDialog = false },
             cardContent = {
-                Column {
-                    Text(
-                        text = stringResource(R.string.language),
-                        color = BentoColors.TextLabel,
-                        style = BentoTypography.labelLarge
-                    )
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        text = currentLanguage.nativeName,
-                        fontSize = 36.sp,
-                        fontWeight = FontWeight.Black,
-                        color = BentoColors.AccentGreen,
-                        maxLines = 1,
-                        softWrap = false,
-                        // modifier = Modifier.offset(x = (-4).dp)
-                    )
-                    Text(
-                        text = if (currentLanguage == com.joyal.swyplauncher.domain.model.AppLanguage.SYSTEM) {
-                            stringResource(R.string.system_default)
-                        } else {
-                            currentLanguage.displayName
-                        },
-                        color = BentoColors.TextMuted,
-                        style = BentoTypography.bodyMedium
-                    )
-                }
+                com.joyal.swyplauncher.ui.settings.LanguageCardContent(currentLanguage = currentLanguage)
             },
             popupContent = {
                 LanguageDialogContent(
@@ -733,30 +653,7 @@ fun BentoSettingsScreen(
             cardBounds = launchOptionsCardBounds,
             onDismiss = { showLaunchOptionsDialog = false },
             cardContent = {
-                Column {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.RocketLaunch,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = BentoColors.AccentGreen
-                        )
-                        Text(
-                            text = stringResource(R.string.launch_options_card),
-                            color = BentoColors.TextLabel,
-                            style = BentoTypography.labelLarge
-                        )
-                    }
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        text = stringResource(R.string.access_assistant),
-                        color = BentoColors.TextMuted,
-                        style = BentoTypography.bodyMedium
-                    )
-                }
+                com.joyal.swyplauncher.ui.settings.LaunchOptionsCardContent()
             },
             popupContent = {
                 LaunchOptionsDialogContent(
