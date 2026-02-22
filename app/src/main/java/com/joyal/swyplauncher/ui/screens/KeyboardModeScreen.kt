@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +25,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,6 +83,7 @@ fun KeyboardModeScreen(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val gridState = rememberLazyGridState()
+    val context = LocalContext.current
     // Track if we were searching, to detect clear events and reset scroll
     var wasSearching by remember { mutableStateOf(false) }
 
@@ -230,7 +234,14 @@ fun KeyboardModeScreen(
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .clickable {
+                                val clipboardManager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                val clip = android.content.ClipData.newPlainText("Copied Result", launcherState.keyboardCalculatorResult)
+                                clipboardManager.setPrimaryClip(clip)
+                            }
+                            .padding(16.dp)
                     ) {
                         Text(
                             text = com.joyal.swyplauncher.util.CalculatorUtil.normalizeForDisplay(
@@ -375,7 +386,6 @@ fun KeyboardModeScreen(
                     }
                 }
             } else if (searchQuery.isNotEmpty()) {
-                val context = LocalContext.current
                 val isHiddenApp = launcherState.hiddenApps.any {
                     it.label.equals(searchQuery, ignoreCase = true)
                 }
@@ -393,64 +403,107 @@ fun KeyboardModeScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         if (!isHiddenApp) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                OutlinedButton(
-                                    onClick = {
-                                        val intent =
-                                            android.content.Intent(android.content.Intent.ACTION_VIEW)
-                                                .apply {
-                                                    data = android.net.Uri.parse(
-                                                        "https://www.google.com/search?q=${
-                                                            android.net.Uri.encode(searchQuery)
-                                                        }"
-                                                    )
-                                                }
-                                        context.startActivity(intent)
-                                        onDismiss()
-                                    }
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Icon(
-                                        painter = painterResource(id = com.joyal.swyplauncher.R.drawable.google_search),
-                                        contentDescription = stringResource(com.joyal.swyplauncher.R.string.search_google_desc),
-                                        modifier = Modifier.size(20.dp),
-                                        tint = Color.Unspecified
-                                    )
-                                    Spacer(
-                                        modifier = Modifier.width(
-                                            8.dp
+                                    OutlinedButton(
+                                        onClick = {
+                                            val intent =
+                                                android.content.Intent(android.content.Intent.ACTION_VIEW)
+                                                    .apply {
+                                                        data = android.net.Uri.parse(
+                                                            "https://www.google.com/search?q=${
+                                                                android.net.Uri.encode(searchQuery)
+                                                            }"
+                                                        )
+                                                    }
+                                            context.startActivity(intent)
+                                            onDismiss()
+                                        }
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = com.joyal.swyplauncher.R.drawable.google_search),
+                                            contentDescription = stringResource(com.joyal.swyplauncher.R.string.search_google_desc),
+                                            modifier = Modifier.size(20.dp),
+                                            tint = Color.Unspecified
                                         )
-                                    )
-                                    Text(stringResource(com.joyal.swyplauncher.R.string.google))
+                                        Spacer(
+                                            modifier = Modifier.width(
+                                                8.dp
+                                            )
+                                        )
+                                        Text(stringResource(com.joyal.swyplauncher.R.string.google))
+                                    }
+                                    OutlinedButton(
+                                        onClick = {
+                                            val intent =
+                                                android.content.Intent(android.content.Intent.ACTION_VIEW)
+                                                    .apply {
+                                                        data = android.net.Uri.parse(
+                                                            "https://play.google.com/store/search?q=${
+                                                                android.net.Uri.encode(searchQuery)
+                                                            }&c=apps"
+                                                        )
+                                                    }
+                                            context.startActivity(intent)
+                                            onDismiss()
+                                        }
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = com.joyal.swyplauncher.R.drawable.play_store),
+                                            contentDescription = stringResource(com.joyal.swyplauncher.R.string.search_play_store_desc),
+                                            modifier = Modifier.size(20.dp),
+                                            tint = Color.Unspecified
+                                        )
+                                        Spacer(
+                                            modifier = Modifier.width(
+                                                8.dp
+                                            )
+                                        )
+                                        Text(stringResource(com.joyal.swyplauncher.R.string.play_store))
+                                    }
                                 }
-                                OutlinedButton(
-                                    onClick = {
-                                        val intent =
-                                            android.content.Intent(android.content.Intent.ACTION_VIEW)
-                                                .apply {
-                                                    data = android.net.Uri.parse(
-                                                        "https://play.google.com/store/search?q=${
-                                                            android.net.Uri.encode(searchQuery)
-                                                        }&c=apps"
-                                                    )
-                                                }
-                                        context.startActivity(intent)
-                                        onDismiss()
-                                    }
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Icon(
-                                        painter = painterResource(id = com.joyal.swyplauncher.R.drawable.play_store),
-                                        contentDescription = stringResource(com.joyal.swyplauncher.R.string.search_play_store_desc),
-                                        modifier = Modifier.size(20.dp),
-                                        tint = Color.Unspecified
-                                    )
-                                    Spacer(
-                                        modifier = Modifier.width(
-                                            8.dp
+                                    OutlinedButton(
+                                        onClick = {
+                                            val clipboardManager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                            val clip = android.content.ClipData.newPlainText("Copied Text", searchQuery)
+                                            clipboardManager.setPrimaryClip(clip)
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.ContentCopy,
+                                            contentDescription = stringResource(com.joyal.swyplauncher.R.string.copy_to_clipboard_desc),
+                                            modifier = Modifier.size(20.dp),
+                                            tint = MaterialTheme.colorScheme.onSurface
                                         )
-                                    )
-                                    Text(stringResource(com.joyal.swyplauncher.R.string.play_store))
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(stringResource(com.joyal.swyplauncher.R.string.copy), color = MaterialTheme.colorScheme.onSurface)
+                                    }
+                                    OutlinedButton(
+                                        onClick = {
+                                            val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                                type = "text/plain"
+                                                putExtra(android.content.Intent.EXTRA_TEXT, searchQuery)
+                                            }
+                                            context.startActivity(android.content.Intent.createChooser(intent, context.getString(com.joyal.swyplauncher.R.string.share)))
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Share,
+                                            contentDescription = stringResource(com.joyal.swyplauncher.R.string.share_text_desc),
+                                            modifier = Modifier.size(20.dp),
+                                            tint = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(stringResource(com.joyal.swyplauncher.R.string.share), color = MaterialTheme.colorScheme.onSurface)
+                                    }
                                 }
                             }
                         }

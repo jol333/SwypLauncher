@@ -199,4 +199,9 @@
     <string name="quick_settings_tile">ക്വിക്ക് സെറ്റിംഗ്സ് ടൈൽ</string>
     <string name="widget_description">ഇത് വഴി എളുപ്പത്തിൽ Swyp Launcher തുറക്കാം</string>
     <string name="swyp_launcher_tile_label">സ്വൈപ് ലോഞ്ചർ</string>
+    <string name="copy">കോപ്പി ചെയ്യൂ</string>
+    <string name="share">ഷെയർ ചെയ്യൂ</string>
+    <string name="copy_to_clipboard_desc">ക്ലിപ്പ്ബോർഡിലേക്ക് പകർത്തുക</string>
+    <string name="share_text_desc">ടെക്സ്റ്റ് പങ്കിടുക</string>
+
 </resources>

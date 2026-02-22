@@ -192,6 +192,12 @@
     <string name="search_google_desc">Search on Google</string>
     <string name="search_play_store_desc">Search on Play Store</string>
     
+    <string name="copy">Copy</string>
+    <string name="share">Share</string>
+    <string name="copy_to_clipboard_desc">Copy to clipboard</string>
+    <string name="share_text_desc">Share text</string>
+
+    
     <!-- Voice Error Messages -->
     <string name="voice_error_stopped">Voice recognition stopped</string>
     <string name="voice_error_no_speech">No speech detected. Please try again</string>

@@ -200,4 +200,9 @@
     <string name="quick_settings_tile">क्विक सेटिंग्स टाइल</string>
     <string name="widget_description">Swyp Launcher मोड्स तक तुरंत पहुँचें</string>
     <string name="swyp_launcher_tile_label">Swyp Launcher</string>
+    <string name="copy">कॉपी करें</string>
+    <string name="share">शेयर करें</string>
+    <string name="copy_to_clipboard_desc">क्लिपबोर्ड पर कॉपी करें</string>
+    <string name="share_text_desc">टेक्स्ट शेयर करें</string>
+
 </resources>

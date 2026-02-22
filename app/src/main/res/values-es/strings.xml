@@ -200,4 +200,9 @@
     <string name="quick_settings_tile">Mosaico de ajustes rápidos</string>
     <string name="widget_description">Acceso rápido a Swyp Launcher</string>
     <string name="swyp_launcher_tile_label">Swyp Launcher</string>
+    <string name="copy">Copiar</string>
+    <string name="share">Compartir</string>
+    <string name="copy_to_clipboard_desc">Copiar al portapapeles</string>
+    <string name="share_text_desc">Compartir texto</string>
+
 </resources>

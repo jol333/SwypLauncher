@@ -200,4 +200,9 @@
     <string name="quick_settings_tile">快速设置磁贴</string>
     <string name="widget_description">快速访问 Swyp Launcher</string>
     <string name="swyp_launcher_tile_label">Swyp Launcher</string>
+    <string name="copy">复制</string>
+    <string name="share">分享</string>
+    <string name="copy_to_clipboard_desc">复制到剪贴板</string>
+    <string name="share_text_desc">分享文本</string>
+
 </resources>
