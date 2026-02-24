@@ -31,6 +31,34 @@
 -keep class com.joyal.swyplauncher.domain.model.** { *; }
 
 # ============================================
+# Room - Keep generated database and DAO implementations
+# WorkManager (used by Glance) depends on Room internally
+# ============================================
+-keep class * extends androidx.room.RoomDatabase { *; }
+-keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao interface * { *; }
+-keep class * extends androidx.room.RoomDatabase$Callback { *; }
+-keepclassmembers class * extends androidx.room.RoomDatabase {
+    abstract *** *Dao();
+}
+# Keep Room's generated _Impl classes
+-keep class **_Impl { *; }
+
+# ============================================
+# WorkManager - Keep WorkDatabase and related classes
+# ============================================
+-keep class androidx.work.impl.** { *; }
+-keep class androidx.work.WorkerParameters { *; }
+-keep class * extends androidx.work.Worker { *; }
+-keep class * extends androidx.work.ListenableWorker { *; }
+
+# ============================================
+# AndroidX Startup - Keep InitializationProvider
+# ============================================
+-keep class androidx.startup.InitializationProvider { *; }
+-keep class * extends androidx.startup.Initializer { *; }
+
+# ============================================
 # Material Icons Extended - Strip unused icons
 # R8 will automatically remove unused icon classes when minification is enabled.
 # These rules help ensure proper stripping:

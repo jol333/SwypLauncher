@@ -2,6 +2,48 @@
 
 All notable changes to Swyp Launcher will be documented in this file.
 
+## [1.4.1] - 2026-02-24
+
+### Added
+- Implemented copy and share options for empty search, with localization updates
+- Added responsive widget layouts and improved dialog scrollability
+
+### Changed
+- Standardized secondary text color and adjusted default app icon corner radius
+- Reorganized settings cards layout and refined spatial animations
+
+---
+
+## [1.4.0] - 2026-02-12
+
+### Added
+- Added home screen widget and quick settings tile support
+
+---
+
+## [1.3.0] - 2026-02-09
+
+### Added
+- Added multi-language support (Portuguese, Spanish, Chinese, Hindi, German, Malayalam)
+- Implemented per-app language selection with a dedicated settings UI
+
+### Changed
+- Implemented app caching layer and optimized app list retrieval, including cache invalidation on language change
+- Upgraded Gradle, AGP, Kotlin, and KSP versions
+
+---
+
+## [1.2.0] - 2026-01-08
+
+### Added
+- Added dynamic jelly wobble effect and morph effect for pop-ups in settings screen
+- Added baseline profile generation module to optimize build performance
+
+### Changed
+- Refactored blur effect handling and improved dynamic layout sizing
+
+---
+
 ## [1.1.0] - 2025-12-30
 
 ### Changed
