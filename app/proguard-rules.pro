@@ -82,11 +82,13 @@
 }
 
 # ============================================
-# Kotlin - Remove intrinsics checks in release
+# Kotlin - Remove safe intrinsics checks in release
+# Note: checkNotNull and checkNotNullParameter are kept because
+# Glance uses Kotlin null contracts internally via reflection.
+# Stripping them causes silent failures (blank widget) instead
+# of visible crashes.
 # ============================================
 -assumenosideeffects class kotlin.jvm.internal.Intrinsics {
-    public static void checkNotNull(...);
-    public static void checkNotNullParameter(...);
     public static void checkParameterIsNotNull(...);
     public static void checkNotNullExpressionValue(...);
     public static void checkExpressionValueIsNotNull(...);
@@ -106,4 +108,23 @@
 -optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*
 -optimizationpasses 5
 -allowaccessmodification
--repackageclasses ''
+# Use -flattenpackagehierarchy instead of -repackageclasses ''
+# -repackageclasses'' moves ALL classes to the root package, which breaks
+# Glance's internal reflection-based widget composition pipeline.
+-flattenpackagehierarchy ''
+
+# ============================================
+# Glance App Widget
+# Glance uses reflection to instantiate widget classes (e.g., via WorkManager)
+# and has internal state/session management that R8 can break.
+# ============================================
+-keep class * extends androidx.glance.appwidget.GlanceAppWidget { *; }
+-keep class * extends androidx.glance.appwidget.GlanceAppWidgetReceiver { *; }
+-keep class * extends androidx.glance.action.ActionCallback { *; }
+-keep class * extends androidx.glance.appwidget.action.ActionCallback { *; }
+
+# Keep ALL Glance classes to prevent SizeMode/LocalSize/Worker mangling
+-keep class androidx.glance.** { *; }
+
+# Keep the widget package explicitly (prevents repackaging of lambdas/helpers)
+-keep class com.joyal.swyplauncher.widget.** { *; }

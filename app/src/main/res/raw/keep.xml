@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@layout/widget_preview,
+                @xml/swyp_widget_info,
+                @color/widget_background,
+                @color/widget_icon_container,
+                @color/widget_icon_tint,
+                @color/widget_text_color,
+                @drawable/ic_handwriting,
+                @drawable/ic_index,
+                @drawable/ic_keyboard,
+                @drawable/ic_microphone,
+                @drawable/ic_quick_tile,
+                @string/widget_description,
+                @string/shortcut_handwriting_short,
+                @string/shortcut_index_short,
+                @string/shortcut_keyboard_short,
+                @string/shortcut_voice_short,
+                @string/swyp_launcher_tile_label" />
