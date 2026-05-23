@@ -112,7 +112,9 @@ class AppDataSource @Inject constructor(
         return@withLock apps
     }
 
-    override fun observeAppChanges(): Flow<AppChangeEvent> = callbackFlow {
+    private val appChangesFlow = kotlinx.coroutines.flow.MutableSharedFlow<AppChangeEvent>(extraBufferCapacity = 1, onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST)
+
+    init {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 when (intent?.action) {
@@ -120,14 +122,14 @@ class AppDataSource @Inject constructor(
                         val packageName = intent.data?.schemeSpecificPart
                         if (packageName != null) {
                             invalidateCache() // Invalidate cache when apps change
-                            trySend(AppChangeEvent.AppInstalled(packageName))
+                            appChangesFlow.tryEmit(AppChangeEvent.AppInstalled(packageName))
                         }
                     }
                     Intent.ACTION_PACKAGE_REMOVED -> {
                         val packageName = intent.data?.schemeSpecificPart
                         if (packageName != null) {
                             invalidateCache() // Invalidate cache when apps change
-                            trySend(AppChangeEvent.AppUninstalled(packageName))
+                            appChangesFlow.tryEmit(AppChangeEvent.AppUninstalled(packageName))
                         }
                     }
                     Intent.ACTION_PACKAGE_REPLACED,
@@ -135,7 +137,7 @@ class AppDataSource @Inject constructor(
                         val packageName = intent.data?.schemeSpecificPart
                         if (packageName != null) {
                             invalidateCache() // Invalidate cache when apps update/change
-                            trySend(AppChangeEvent.AppInstalled(packageName))
+                            appChangesFlow.tryEmit(AppChangeEvent.AppInstalled(packageName))
                         }
                     }
                 }
@@ -151,15 +153,9 @@ class AppDataSource @Inject constructor(
         }
 
         context.registerReceiver(receiver, filter)
-
-        awaitClose {
-            try {
-                context.unregisterReceiver(receiver)
-            } catch (e: IllegalArgumentException) {
-                // Receiver already unregistered
-            }
-        }
     }
+
+    override fun observeAppChanges(): Flow<AppChangeEvent> = appChangesFlow
 
     override suspend fun launchApp(packageName: String, activityName: String?): Result<Unit> {
         return try {
