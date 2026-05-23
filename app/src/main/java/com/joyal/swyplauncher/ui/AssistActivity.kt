@@ -38,6 +38,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -332,10 +334,73 @@ fun AssistantScreen(
         val density = LocalDensity.current
         val screenWidth = maxWidth
         val fullHeightPx = with(density) { maxHeight.toPx() }
-        val expansionRangePx = fullHeightPx * (maxSheetFraction - minSheetFraction)
+
+        // Bottom system insets. We treat the navigation bar and the IME differently because
+        // they have wildly different magnitudes:
+        //  - navigation bar (~24–48 dp): small. Grow the sheet by this amount so the natural
+        //    content area is preserved above the navbar.
+        //  - IME (~250–400 dp): large. Growing by the full IME would push the sheet to
+        //    fullscreen and leave 2–3 rows visible — more than the user wants. Instead, grow
+        //    just enough that the search input plus ~1 row of apps sits above the keyboard.
+        // The Box inside Surface still gets padded by the full bottom inset so nothing ever
+        // renders behind the navbar or IME.
+        val navbarBottomPx = WindowInsets.navigationBars.getBottom(density).toFloat()
+        val imeBottomPx = WindowInsets.ime.getBottom(density).toFloat()
+        val bottomInsetPx = max(navbarBottomPx, imeBottomPx)
+        val bottomInsetDp = with(density) { bottomInsetPx.toDp() }
+
+        val cornerRadiusPx = with(density) { cornerRadius.toPx() }
+
+        // Approximate "ModeSwitcher (72dp) + search input (88dp) + 1 app row (~80dp) + small
+        // buffer" — the minimum visible content the keyboard mode needs above the IME.
+        val keyboardMinVisibleContentPx = with(density) { 256.dp.toPx() }
+
+        // (A) Sheet target driven by navigation bar (or no inset): preserve base content area.
+        val navbarTargetFraction = if (fullHeightPx > 0f) {
+            minSheetFraction + navbarBottomPx / fullHeightPx
+        } else minSheetFraction
+
+        // (B) Sheet target driven by IME: just enough for header + ~1 row above the keyboard.
+        val imeTargetFraction = if (fullHeightPx > 0f && imeBottomPx > 0f) {
+            (keyboardMinVisibleContentPx + imeBottomPx + cornerRadiusPx) / fullHeightPx
+        } else 0f
+
+        val effectiveMinSheetFraction = maxOf(navbarTargetFraction, imeTargetFraction)
+            .coerceIn(minSheetFraction, maxSheetFraction)
+
+        val expansionRangePx = fullHeightPx * (maxSheetFraction - effectiveMinSheetFraction)
+
+        // Track the previous min so we can shrink back when the IME (or other inset) goes
+        // away — but only if the sheet was sitting at that previous min. If the user manually
+        // expanded above it, their expansion is preserved.
+        val previousEffectiveMin = remember { mutableStateOf(effectiveMinSheetFraction) }
+
+        LaunchedEffect(effectiveMinSheetFraction) {
+            val previousMin = previousEffectiveMin.value
+            val sheetWasAtPreviousMin = sheetFractionAnim.value <= previousMin + 0.001f
+            previousEffectiveMin.value = effectiveMinSheetFraction
+
+            when {
+                sheetFractionAnim.value < effectiveMinSheetFraction -> {
+                    // Bottom inset grew (e.g. keyboard opened): grow the sheet to the new min.
+                    sheetFractionAnim.animateTo(
+                        effectiveMinSheetFraction,
+                        motionScheme.defaultSpatialSpec()
+                    )
+                }
+                sheetWasAtPreviousMin && effectiveMinSheetFraction < sheetFractionAnim.value -> {
+                    // Bottom inset shrank (e.g. keyboard dismissed) and the sheet was at the
+                    // previous min: return to the new (lower) regular height.
+                    sheetFractionAnim.animateTo(
+                        effectiveMinSheetFraction,
+                        motionScheme.defaultSpatialSpec()
+                    )
+                }
+            }
+        }
 
         // Nested scroll with clear priorities
-        val nestedScrollConnection = remember(expansionRangePx) {
+        val nestedScrollConnection = remember(expansionRangePx, effectiveMinSheetFraction) {
             object : NestedScrollConnection {
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                     if (source != NestedScrollSource.UserInput) return Offset.Zero
@@ -372,10 +437,10 @@ fun AssistantScreen(
                     val dy = available.y
 
                     // Priority 1: Collapse sheet when pulling down
-                    if (sheetFractionAnim.value > minSheetFraction && expansionRangePx > 0f) {
+                    if (sheetFractionAnim.value > effectiveMinSheetFraction && expansionRangePx > 0f) {
                         val deltaFraction = dy / expansionRangePx
                         val newFraction =
-                            (sheetFractionAnim.value - deltaFraction).coerceAtLeast(minSheetFraction)
+                            (sheetFractionAnim.value - deltaFraction).coerceAtLeast(effectiveMinSheetFraction)
                         val consumed = (sheetFractionAnim.value - newFraction) * expansionRangePx
 
                         if (consumed > 0f) {
@@ -385,7 +450,7 @@ fun AssistantScreen(
                     }
 
                     // Priority 2: Drag-to-dismiss at base height
-                    if (sheetFractionAnim.value <= minSheetFraction) {
+                    if (sheetFractionAnim.value <= effectiveMinSheetFraction) {
                         scope.launch { dragOffsetY.snapTo((dragOffsetY.value + dy).coerceAtLeast(0f)) }
                         return Offset(0f, dy)
                     }
@@ -414,15 +479,15 @@ fun AssistantScreen(
                     available: Velocity
                 ): Velocity {
                     // Snap to nearest state
-                    if (sheetFractionAnim.value in (minSheetFraction + 0.001f)..<maxSheetFraction) {
+                    if (sheetFractionAnim.value in (effectiveMinSheetFraction + 0.001f)..<maxSheetFraction) {
                         val target =
-                            if (sheetFractionAnim.value >= (minSheetFraction + maxSheetFraction) / 2f)
-                                maxSheetFraction else minSheetFraction
+                            if (sheetFractionAnim.value >= (effectiveMinSheetFraction + maxSheetFraction) / 2f)
+                                maxSheetFraction else effectiveMinSheetFraction
                         sheetFractionAnim.animateTo(target, motionScheme.defaultSpatialSpec())
                     }
 
                     // Handle dismiss gesture
-                    if (sheetFractionAnim.value <= minSheetFraction && dragOffsetY.value > 0f) {
+                    if (sheetFractionAnim.value <= effectiveMinSheetFraction && dragOffsetY.value > 0f) {
                         if (dragOffsetY.value > dismissThresholdPx) handleDismiss(false)
                         else dragOffsetY.animateTo(0f, motionScheme.fastSpatialSpec())
                     }
@@ -433,8 +498,9 @@ fun AssistantScreen(
 
         Box(modifier = Modifier.fillMaxSize()) {
             // Backdrop with opacity based on sheet expansion
+            val backdropRange = (maxSheetFraction - effectiveMinSheetFraction).coerceAtLeast(0.0001f)
             val backdropOpacity =
-                ((sheetFractionAnim.value - minSheetFraction) / (maxSheetFraction - minSheetFraction))
+                ((sheetFractionAnim.value - effectiveMinSheetFraction) / backdropRange)
                     .coerceIn(0f, 1f)
 
             Box(
@@ -469,12 +535,12 @@ fun AssistantScreen(
                         .fillMaxSize()
                         .offset { IntOffset(0, dragOffsetY.value.roundToInt()) }
                         .nestedScroll(nestedScrollConnection)
-                        .pointerInput(sheetFractionAnim.value) {
+                        .pointerInput(sheetFractionAnim.value, effectiveMinSheetFraction) {
                             // Fallback for non-scrollable areas
                             detectVerticalDragGestures(
                                 onDragEnd = {
                                     scope.launch {
-                                        if (sheetFractionAnim.value <= minSheetFraction) {
+                                        if (sheetFractionAnim.value <= effectiveMinSheetFraction) {
                                             if (dragOffsetY.value > dismissThresholdPx) {
                                                 handleDismiss(false)
                                             } else if (dragOffsetY.value > 0f) {
@@ -497,7 +563,7 @@ fun AssistantScreen(
                                     }
                                 },
                                 onVerticalDrag = { change, dragAmount ->
-                                    if (sheetFractionAnim.value <= minSheetFraction && dragAmount > 0f) {
+                                    if (sheetFractionAnim.value <= effectiveMinSheetFraction && dragAmount > 0f) {
                                         change.consume()
                                         scope.launch {
                                             dragOffsetY.snapTo(
@@ -580,7 +646,11 @@ fun AssistantScreen(
                                 .toDp() - cornerRadius).coerceAtLeast(0.dp)
                         }
 
-                        Box(modifier = Modifier.fillMaxSize()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(bottom = bottomInsetDp)
+                        ) {
                             // Orientation-aware layout
                             if (isLandscape) {
                                 // Landscape: Horizontal layout with vertical mode switcher on left
