@@ -110,6 +110,7 @@ import com.joyal.swyplauncher.ui.screens.IndexModeScreen
 import com.joyal.swyplauncher.ui.screens.KeyboardModeScreen
 import com.joyal.swyplauncher.ui.screens.VoiceModeScreen
 import com.joyal.swyplauncher.ui.theme.SwypLauncherTheme
+import com.joyal.swyplauncher.ui.util.rememberSystemBlurSupported
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
 import com.joyal.swyplauncher.ui.viewmodel.ModeViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -248,7 +249,7 @@ fun AssistantScreen(
     }
 
     // Track blur state (user preference + system runtime state)
-    val blurEnabled = remember { preferencesRepository.isBackgroundBlurEnabled() }
+    val blurEnabled = rememberEffectiveBlurEnabled(preferencesRepository)
 
     val visibleState = remember { MutableTransitionState(false).apply { targetState = true } }
     var showUsageStatsPrompt by remember { mutableStateOf(false) }
@@ -901,6 +902,20 @@ fun UsageStatsPermissionPromptDialog(
             }
         }
     )
+}
+
+/**
+ * Resolves the effective blur state by combining the user preference with the system's
+ * runtime support for cross-window blur (see [rememberSystemBlurSupported]). When the system
+ * won't blur bg, the sheet falls back to its opaque background instead of looking like a translucent dim layer.
+ */
+@Composable
+private fun rememberEffectiveBlurEnabled(
+    preferencesRepository: com.joyal.swyplauncher.domain.repository.PreferencesRepository
+): Boolean {
+    val userBlurPref = remember { preferencesRepository.isBackgroundBlurEnabled() }
+    if (!userBlurPref) return false
+    return rememberSystemBlurSupported()
 }
 
 @Composable

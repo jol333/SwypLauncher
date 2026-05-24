@@ -121,6 +121,8 @@ fun BentoSettingsScreen(
         )
     }
     var blurLevel by remember { mutableStateOf(preferencesRepository?.getBlurLevel() ?: 80) }
+    // Hide the Visual Effects section on devices where cross-window blur is disabled
+    val systemBlurSupported = com.joyal.swyplauncher.ui.util.rememberSystemBlurSupported()
     
     // Language state
     var showLanguageDialog by remember { mutableStateOf(false) }
@@ -428,27 +430,29 @@ fun BentoSettingsScreen(
                 }
             }
 
-            // Visual Effects Card
-            item {
-                VisualEffectsCard(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .offset(y = (-32).dp),
-                    blurEnabled = backgroundBlurEnabled,
-                    onBlurEnabledChange = {
-                        backgroundBlurEnabled = it
-                        preferencesRepository?.setBackgroundBlurEnabled(it)
-                        if (it) {
-                            blurLevel = 80
+            // Visual Effects Card — only shown when the system can actually honour blur.
+            if (systemBlurSupported) {
+                item {
+                    VisualEffectsCard(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .offset(y = (-32).dp),
+                        blurEnabled = backgroundBlurEnabled,
+                        onBlurEnabledChange = {
+                            backgroundBlurEnabled = it
+                            preferencesRepository?.setBackgroundBlurEnabled(it)
+                            if (it) {
+                                blurLevel = 80
+                                preferencesRepository?.setBlurLevel(blurLevel)
+                            }
+                        },
+                        blurLevel = blurLevel,
+                        onBlurLevelChange = {
+                            blurLevel = it
                             preferencesRepository?.setBlurLevel(blurLevel)
                         }
-                    },
-                    blurLevel = blurLevel,
-                    onBlurLevelChange = {
-                        blurLevel = it
-                        preferencesRepository?.setBlurLevel(blurLevel)
-                    }
-                )
+                    )
+                }
             }
             
             // Language & App Shortcuts Row
