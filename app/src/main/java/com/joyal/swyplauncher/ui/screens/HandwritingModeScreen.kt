@@ -105,6 +105,7 @@ fun HandwritingModeScreen(
     onAddShortcut: ((String) -> Unit)? = null
 ) {
     val handwritingState by handwritingViewModel.uiState.collectAsState()
+    val matchedGesture by handwritingViewModel.matchedGesture.collectAsState()
     val launcherState by launcherViewModel.uiState.collectAsState()
     val gridSize by launcherViewModel.gridSize.collectAsState()
     val cornerRadius by launcherViewModel.cornerRadius.collectAsState()
@@ -166,43 +167,57 @@ fun HandwritingModeScreen(
     // Track if we were searching, to detect clear events and reset scroll
     var wasSearching by remember { mutableStateOf(false) }
 
-    // Filter apps based on recognized text - only match apps starting with the text
-    LaunchedEffect(handwritingState.recognizedText) {
-        if (handwritingState.recognizedText.isNotEmpty()) {
-            launcherViewModel.filterAppsByPrefixHandwriting(handwritingState.recognizedText)
-        } else {
-            launcherViewModel.resetFilterHandwriting()
+    // Filter apps based on matched custom gesture (priority) or recognized text
+    LaunchedEffect(matchedGesture, handwritingState.recognizedText) {
+        val gesture = matchedGesture
+        when {
+            gesture != null -> launcherViewModel.filterAppsByCustomGestureHandwriting(gesture.appIds)
+            handwritingState.recognizedText.isNotEmpty() ->
+                launcherViewModel.filterAppsByPrefixHandwriting(handwritingState.recognizedText)
+            else -> launcherViewModel.resetFilterHandwriting()
         }
     }
 
     // Re-apply filter when loading completes if there's an active search term
     // This handles the case where user searches while apps are still loading
     var wasLoading by remember { mutableStateOf(launcherState.isLoading) }
-    LaunchedEffect(launcherState.isLoading, handwritingState.recognizedText) {
-        if (wasLoading && !launcherState.isLoading && handwritingState.recognizedText.isNotEmpty()) {
-            launcherViewModel.filterAppsByPrefixHandwriting(handwritingState.recognizedText)
+    LaunchedEffect(launcherState.isLoading, handwritingState.recognizedText, matchedGesture) {
+        if (wasLoading && !launcherState.isLoading) {
+            val gesture = matchedGesture
+            when {
+                gesture != null ->
+                    launcherViewModel.filterAppsByCustomGestureHandwriting(gesture.appIds)
+                handwritingState.recognizedText.isNotEmpty() ->
+                    launcherViewModel.filterAppsByPrefixHandwriting(handwritingState.recognizedText)
+                else -> {}
+            }
         }
         wasLoading = launcherState.isLoading
     }
 
-    // When recognized text is cleared (transition from non-empty -> empty), reset scroll to top
-    LaunchedEffect(handwritingState.recognizedText) {
-        if (wasSearching && handwritingState.recognizedText.isEmpty()) {
+    // When recognized text/gesture is cleared (transition from active -> empty), reset scroll to top
+    LaunchedEffect(handwritingState.recognizedText, matchedGesture) {
+        val nowSearching =
+            handwritingState.recognizedText.isNotEmpty() || matchedGesture != null
+        if (wasSearching && !nowSearching) {
             // Give time for the list to recompose with full app list before scrolling
             kotlinx.coroutines.delay(50)
             gridScrollState.scrollToItem(0)
         }
-        wasSearching = handwritingState.recognizedText.isNotEmpty()
+        wasSearching = nowSearching
     }
 
-    // Auto-open single result if enabled
+    // Auto-open single result if enabled (treats gesture match as an active query)
     LaunchedEffect(
         launcherState.handwritingFilteredApps,
         autoOpenSingleResult,
-        handwritingState.recognizedText
+        handwritingState.recognizedText,
+        matchedGesture
     ) {
+        val hasActiveQuery =
+            handwritingState.recognizedText.isNotEmpty() || matchedGesture != null
         if (autoOpenSingleResult &&
-            handwritingState.recognizedText.isNotEmpty() &&
+            hasActiveQuery &&
             launcherState.handwritingFilteredApps.size == 1
         ) {
             kotlinx.coroutines.delay(300) // Small delay to avoid accidental opens
@@ -463,10 +478,15 @@ fun HandwritingModeScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val gestureNow = matchedGesture
             Text(
-                text = "${stringResource(R.string.recognized)} ${handwritingState.recognizedText}",
+                text = if (gestureNow != null) {
+                    stringResource(R.string.gesture_matched_label)
+                } else {
+                    "${stringResource(R.string.recognized)} ${handwritingState.recognizedText}"
+                },
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = Color.White,
                 modifier = Modifier.padding(start = 12.dp)
             )
             Row(

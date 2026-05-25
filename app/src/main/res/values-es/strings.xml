@@ -205,4 +205,25 @@
     <string name="copy_to_clipboard_desc">Copiar al portapapeles</string>
     <string name="share_text_desc">Compartir texto</string>
 
+        <!-- Custom Gestures -->
+    <string name="gestures_card_title">GESTOS</string>
+    <string name="gestures_card_hint">Funciona en el modo Escritura</string>
+    <string name="active_gesture_singular">Gesto activo</string>
+    <string name="active_gesture_plural">Gestos activos</string>
+    <string name="gestures_title">Gestos</string>
+    <string name="gestures_subtitle">Dibuja cualquiera de estos en el modo Escritura para ir directo a tus apps.</string>
+    <string name="no_gestures_yet">Sin gestos aún</string>
+    <string name="gestures_empty_desc">Añade formas para usar en el modo Escritura. Dibuja estas formas para abrir rápido las apps necesarias.</string>
+    <string name="new_gesture">Nuevo gesto</string>
+    <string name="edit_gesture">Editar gesto</string>
+    <string name="gesture_handwriting_only_chip">Solo funciona en modo Escritura</string>
+    <string name="gesture_canvas_placeholder">Dibuja una forma: △, ☆, ∞, o cualquier cosa</string>
+    <string name="gesture_canvas_hint_empty">Luego, puedes dibujar esto en el modo Escritura para mostrar las apps seleccionadas abajo.</string>
+    <string name="gesture_canvas_hint_drawn">Se ve bien. Intenta dibujarlo igual en la búsqueda de apps.</string>
+    <string name="gesture_canvas_hint_unchanged">Toca Redibujar para grabar una nueva forma.</string>
+    <string name="redraw">Redibujar</string>
+    <string name="save_gesture">Guardar gesto</string>
+    <string name="gesture_shape_required">Dibuja una forma para guardar como gesto</string>
+    <string name="gesture_shape_too_small">La forma es muy pequeña, intenta hacer un dibujo más grande</string>
+    <string name="gesture_matched_label">Gesto reconocido</string>
 </resources>

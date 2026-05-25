@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
 
     // Separate state for shortcuts count to update on resume without affecting bottom sheet
     private val shortcutsCount = mutableStateOf(0)
+    private val gesturesCount = mutableStateOf(0)
     private val assistantRoleLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { checkAssistantStatus() }
@@ -121,6 +122,7 @@ class MainActivity : AppCompatActivity() {
                     installedApps = installedApps.value,
                     screenEntryTimestamp = screenEntryTimestamp.value,
                     shortcutsCount = shortcutsCount.value,
+                    gesturesCount = gesturesCount.value,
                     onLanguageChanged = {
                         // Invalidate app cache. The activity recreation will trigger a reload with the correct locale.
                         appRepository.invalidateCache()
@@ -135,6 +137,7 @@ class MainActivity : AppCompatActivity() {
         checkAssistantStatus()
         // Refresh shortcuts count when returning from ShortcutsActivity
         shortcutsCount.value = preferencesRepository.getAppShortcuts().size
+        gesturesCount.value = preferencesRepository.getCustomGestures().size
     }
 
     private fun checkAssistantStatus() {

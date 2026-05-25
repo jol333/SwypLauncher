@@ -158,6 +158,18 @@ class PreferencesRepositoryImpl @Inject constructor(
         prefs.edit().putString(KEY_APP_SHORTCUTS, json).apply()
     }
 
+    override fun getCustomGestures(): List<com.joyal.swyplauncher.domain.model.CustomGesture> {
+        val json = prefs.getString(KEY_CUSTOM_GESTURES, null)
+        return com.joyal.swyplauncher.util.GestureRecognizer.deserialize(json)
+    }
+
+    override fun setCustomGestures(
+        gestures: List<com.joyal.swyplauncher.domain.model.CustomGesture>
+    ) {
+        val json = com.joyal.swyplauncher.util.GestureRecognizer.serialize(gestures)
+        prefs.edit().putString(KEY_CUSTOM_GESTURES, json).apply()
+    }
+
     override fun getAppLanguage(): com.joyal.swyplauncher.domain.model.AppLanguage {
         val code = prefs.getString(KEY_APP_LANGUAGE, null)
         return com.joyal.swyplauncher.domain.model.AppLanguage.fromCode(code)
@@ -182,6 +194,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         private const val KEY_BACKGROUND_BLUR_ENABLED = "background_blur_enabled"
         private const val KEY_BLUR_LEVEL = "blur_level"
         private const val KEY_APP_SHORTCUTS = "app_shortcuts"
+        private const val KEY_CUSTOM_GESTURES = "custom_gestures"
         private const val KEY_APP_LANGUAGE = "app_language"
     }
 }

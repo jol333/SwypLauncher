@@ -204,4 +204,27 @@
     <string name="copy_to_clipboard_desc">In die Zwischenablage kopieren</string>
     <string name="share_text_desc">Text teilen</string>
 
+    <string name="swyp_launcher_tile_label">Swyp Launcher</string>
+    
+        <!-- Custom Gestures -->
+    <string name="gestures_card_title">GESTEN</string>
+    <string name="gestures_card_hint">Funktioniert im Handschrift-Modus</string>
+    <string name="active_gesture_singular">Aktive Geste</string>
+    <string name="active_gesture_plural">Aktive Gesten</string>
+    <string name="gestures_title">Gesten</string>
+    <string name="gestures_subtitle">Zeichne eine dieser Formen im Handschrift-Modus, um direkt zu deinen Apps zu springen.</string>
+    <string name="no_gestures_yet">Noch keine Gesten</string>
+    <string name="gestures_empty_desc">Füge Formen hinzu, um sie im Handschrift-Modus zu nutzen. Zeichne diese Formen, um bestimmte Apps schnell zu starten.</string>
+    <string name="new_gesture">Neue Geste</string>
+    <string name="edit_gesture">Geste bearbeiten</string>
+    <string name="gesture_handwriting_only_chip">Nur im Handschrift-Modus</string>
+    <string name="gesture_canvas_placeholder">Zeichne eine Form: △, ☆, ∞ oder was auch immer</string>
+    <string name="gesture_canvas_hint_empty">Später kannst du dies im Handschrift-Modus zeichnen, um die unten ausgewählten Apps anzuzeigen.</string>
+    <string name="gesture_canvas_hint_drawn">Sieht gut aus. Versuch es bei der App-Suche genauso zu zeichnen.</string>
+    <string name="gesture_canvas_hint_unchanged">Tippe auf Neu zeichnen, um eine neue Form aufzuzeichnen.</string>
+    <string name="redraw">Neu zeichnen</string>
+    <string name="save_gesture">Geste speichern</string>
+    <string name="gesture_shape_required">Zeichne eine Form, um sie als Geste zu speichern</string>
+    <string name="gesture_shape_too_small">Die Form ist zu klein, versuche etwas größer zu zeichnen</string>
+    <string name="gesture_matched_label">Geste erkannt</string>
 </resources>

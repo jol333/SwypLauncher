@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Gesture
 import androidx.compose.material.icons.outlined.Rocket
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.automirrored.outlined.Label
@@ -252,6 +253,76 @@ fun AppShortcutsCard(
                 text = if (count == 1) stringResource(R.string.active_shortcut_singular) else stringResource(R.string.active_shortcuts_plural),
                 color = BentoColors.TextSecondary,
                 style = BentoTypography.bodyMedium
+            )
+        }
+    }
+}
+
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+fun CustomGesturesCard(
+    count: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    offsetX: Float = 0f
+) {
+    Box(
+        modifier = modifier
+            .graphicsLayer { translationX = offsetX }
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        BentoColors.CardBackground.copy(alpha = 0.6f),
+                        BentoColors.CardBackground
+                    )
+                )
+            )
+            .border(1.dp, BentoColors.BorderLight, RoundedCornerShape(24.dp))
+            .clickable { onClick() }
+            .padding(24.dp)
+    ) {
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Gesture,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = BentoColors.AccentGreen
+                )
+                Text(
+                    text = stringResource(R.string.gestures_card_title),
+                    color = BentoColors.TextLabel,
+                    style = BentoTypography.labelLarge
+                )
+            }
+            Spacer(Modifier.height(16.dp))
+            androidx.compose.foundation.layout.FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = count.toString(),
+                    color = BentoColors.AccentGreen,
+                    style = BentoTypography.displayLarge,
+                    modifier = Modifier.alignByBaseline()
+                )
+                Text(
+                    text = if (count == 1) stringResource(R.string.active_gesture_singular)
+                    else stringResource(R.string.active_gesture_plural),
+                    color = BentoColors.TextSecondary,
+                    style = BentoTypography.bodyMedium,
+                    modifier = Modifier.alignByBaseline()
+                )
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.gestures_card_hint),
+                color = BentoColors.TextMuted,
+                style = BentoTypography.labelSmall
             )
         }
     }

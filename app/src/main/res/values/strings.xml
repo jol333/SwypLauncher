@@ -198,6 +198,28 @@
     <string name="share_text_desc">Share text</string>
 
     
+    <!-- Custom Gestures -->
+    <string name="gestures_card_title">GESTURES</string>
+    <string name="gestures_card_hint">Works in handwriting mode</string>
+    <string name="active_gesture_singular">Active gesture</string>
+    <string name="active_gesture_plural">Active gestures</string>
+    <string name="gestures_title">Gestures</string>
+    <string name="gestures_subtitle">Draw any of these in handwriting mode to jump straight to your apps.</string>
+    <string name="no_gestures_yet">No gestures yet</string>
+    <string name="gestures_empty_desc">Add shapes to use in handwriting mode. Draw these shapes to quickly launch required apps</string>
+    <string name="new_gesture">New gesture</string>
+    <string name="edit_gesture">Edit gesture</string>
+    <string name="gesture_handwriting_only_chip">Works in Handwriting mode</string>
+    <string name="gesture_canvas_placeholder">Draw a shape: △, ☆, ∞, or anything</string>
+    <string name="gesture_canvas_hint_empty">Later, you can draw this in handwriting mode to display the apps selected below</string>
+    <string name="gesture_canvas_hint_drawn">Looks good. Try to draw it the same way in app search.</string>
+    <string name="gesture_canvas_hint_unchanged">Tap Redraw to record a new shape.</string>
+    <string name="redraw">Redraw</string>
+    <string name="save_gesture">Save gesture</string>
+    <string name="gesture_shape_required">Draw a shape to save as gesture</string>
+    <string name="gesture_shape_too_small">Shape is too small, try a larger drawing</string>
+    <string name="gesture_matched_label">Gesture matched</string>
+
     <!-- Voice Error Messages -->
     <string name="voice_error_stopped">Voice recognition stopped</string>
     <string name="voice_error_no_speech">No speech detected. Please try again</string>

@@ -193,11 +193,28 @@ class LauncherViewModel @Inject constructor(
         val calculatorResult = com.joyal.swyplauncher.util.CalculatorUtil.evaluate(prefix)
         filterApps(prefix, { app, p -> matchesQueryOrShortcut(app, p, prefixMatch = true) }) { filtered, smart, newlyInstalled ->
             copy(
-                handwritingFilteredApps = filtered, 
-                handwritingSmartApps = smart, 
+                handwritingFilteredApps = filtered,
+                handwritingSmartApps = smart,
                 newlyInstalledAppPackage = newlyInstalled,
                 handwritingCalculatorResult = calculatorResult
             )
+        }
+    }
+
+    // Handwriting mode filter by matched custom gesture's assigned apps
+    fun filterAppsByCustomGestureHandwriting(appIds: Set<String>) {
+        viewModelScope.launch {
+            val currentApps = _uiState.value.apps
+            val filtered = currentApps.filter { it.getIdentifier() in appIds }
+            val (smart, newlyInstalled) = computeSmartApps(filtered)
+            _uiState.update {
+                it.copy(
+                    handwritingFilteredApps = filtered,
+                    handwritingSmartApps = smart,
+                    newlyInstalledAppPackage = newlyInstalled,
+                    handwritingCalculatorResult = null
+                )
+            }
         }
     }
     

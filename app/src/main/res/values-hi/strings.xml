@@ -205,4 +205,25 @@
     <string name="copy_to_clipboard_desc">क्लिपबोर्ड पर कॉपी करें</string>
     <string name="share_text_desc">टेक्स्ट शेयर करें</string>
 
+        <!-- Custom Gestures -->
+    <string name="gestures_card_title">GESTURES</string>
+    <string name="gestures_card_hint">Handwriting मोड में काम करता है</string>
+    <string name="active_gesture_singular">Active जेस्चर</string>
+    <string name="active_gesture_plural">Active जेस्चर</string>
+    <string name="gestures_title">Gestures</string>
+    <string name="gestures_subtitle">Handwriting मोड में इनमें से कुछ भी ड्रॉ करें और सीधे अपने Apps पर जाएं।</string>
+    <string name="no_gestures_yet">अभी तक कोई जेस्चर नहीं</string>
+    <string name="gestures_empty_desc">Handwriting मोड में इस्तेमाल करने के लिए आकृतियां (shapes) ऐड करें। अपनी ज़रूरी Apps को तुरंत खोलने के लिए ये आकृतियां ड्रॉ करें।</string>
+    <string name="new_gesture">नया जेस्चर</string>
+    <string name="edit_gesture">जेस्चर एडिट करें</string>
+    <string name="gesture_handwriting_only_chip">Handwriting मोड में काम करता है</string>
+    <string name="gesture_canvas_placeholder">कोई आकृति (shape) ड्रॉ करें: △, ☆, ∞, या कुछ भी</string>
+    <string name="gesture_canvas_hint_empty">बाद में, आप नीचे सिलेक्ट किए गए Apps को देखने के लिए इसे Handwriting मोड में ड्रॉ कर सकते हैं।</string>
+    <string name="gesture_canvas_hint_drawn">बढ़िया लग रहा है। App सर्च में भी इसे इसी तरह ड्रॉ करने की कोशिश करें।</string>
+    <string name="gesture_canvas_hint_unchanged">नया शेप रिकॉर्ड करने के लिए Redraw पर टैप करें।</string>
+    <string name="redraw">Redraw</string>
+    <string name="save_gesture">जेस्चर सेव करें</string>
+    <string name="gesture_shape_required">जेस्चर के तौर पर सेव करने के लिए एक आकृति ड्रॉ करें</string>
+    <string name="gesture_shape_too_small">आकृति बहुत छोटी है, थोड़ी बड़ी ड्रॉइंग ट्राई करें</string>
+    <string name="gesture_matched_label">जेस्चर मैच हो गया</string>
 </resources>

@@ -2,11 +2,14 @@ package com.joyal.swyplauncher.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.joyal.swyplauncher.domain.model.CustomGesture
 import com.joyal.swyplauncher.domain.model.InkStroke
 import com.joyal.swyplauncher.domain.model.RecognitionResult
 import com.joyal.swyplauncher.domain.usecase.RecognizeHandwritingUseCase
 import com.joyal.swyplauncher.ui.state.HandwritingUiState
+import com.joyal.swyplauncher.util.GestureRecognizer
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,6 +31,9 @@ class HandwritingViewModel @Inject constructor(
         )
     )
     val uiState: StateFlow<HandwritingUiState> = _uiState.asStateFlow()
+
+    private val _matchedGesture = MutableStateFlow<CustomGesture?>(null)
+    val matchedGesture: StateFlow<CustomGesture?> = _matchedGesture.asStateFlow()
 
     init {
         initializeRecognizer()
@@ -75,6 +81,19 @@ class HandwritingViewModel @Inject constructor(
         val updatedStrokes = _uiState.value.strokes + stroke
         _uiState.update { it.copy(strokes = updatedStrokes) }
         recognizeStrokes(updatedStrokes)
+        matchGesture(updatedStrokes)
+    }
+
+    private fun matchGesture(strokes: List<InkStroke>) {
+        viewModelScope.launch(Dispatchers.Default) {
+            val gestures = preferencesRepository.getCustomGestures()
+            val match = if (gestures.isEmpty() || strokes.isEmpty()) {
+                null
+            } else {
+                GestureRecognizer.findBestMatch(strokes, gestures)
+            }
+            _matchedGesture.value = match
+        }
     }
 
     private fun recognizeStrokes(strokes: List<InkStroke>) {
@@ -113,9 +132,10 @@ class HandwritingViewModel @Inject constructor(
         if (currentStrokes.isNotEmpty()) {
             val updatedStrokes = currentStrokes.dropLast(1)
             _uiState.update { it.copy(strokes = updatedStrokes) }
-            
+
             if (updatedStrokes.isNotEmpty()) {
                 recognizeStrokes(updatedStrokes)
+                matchGesture(updatedStrokes)
             } else {
                 // No strokes left, clear everything
                 clearStrokes()
@@ -131,6 +151,7 @@ class HandwritingViewModel @Inject constructor(
                 recognitionResult = RecognitionResult.Loading
             )
         }
+        _matchedGesture.value = null
     }
 
     fun onInitializationToastShown() {

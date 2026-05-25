@@ -45,7 +45,10 @@ interface PreferencesRepository {
     
     fun getAppShortcuts(): Map<String, Set<String>>
     fun setAppShortcuts(shortcuts: Map<String, Set<String>>)
-    
+
+    fun getCustomGestures(): List<com.joyal.swyplauncher.domain.model.CustomGesture>
+    fun setCustomGestures(gestures: List<com.joyal.swyplauncher.domain.model.CustomGesture>)
+
     fun getAppLanguage(): com.joyal.swyplauncher.domain.model.AppLanguage
     fun setAppLanguage(language: com.joyal.swyplauncher.domain.model.AppLanguage)
 }

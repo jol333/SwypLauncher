@@ -50,6 +50,12 @@
             android:theme="@style/Theme.SwypLauncher.Translucent" />
 
         <activity
+            android:name=".CustomGesturesActivity"
+            android:exported="false"
+            android:label="Gestures"
+            android:theme="@style/Theme.SwypLauncher.Translucent" />
+
+        <activity
             android:name=".ui.AssistActivity"
             android:exported="true"
             android:theme="@style/Theme.SwypLauncher.Translucent"

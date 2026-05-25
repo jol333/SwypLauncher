@@ -204,4 +204,25 @@
     <string name="copy_to_clipboard_desc">ക്ലിപ്പ്ബോർഡിലേക്ക് പകർത്തുക</string>
     <string name="share_text_desc">ടെക്സ്റ്റ് പങ്കിടുക</string>
 
+        <!-- Custom Gestures -->
+    <string name="gestures_card_title">ജെസ്ചറുകൾ</string>
+    <string name="gestures_card_hint">കൈയെഴുത്ത് മോഡിൽ പ്രവർത്തിക്കുന്നു</string>
+    <string name="active_gesture_singular">സജീവമായ ജെസ്ചർ</string>
+    <string name="active_gesture_plural">സജീവമായ ജെസ്ചറുകൾ</string>
+    <string name="gestures_title">ജെസ്ചറുകൾ</string>
+    <string name="gestures_subtitle">ആപ്പുകൾ വേഗത്തിൽ തുറക്കാൻ കൈയെഴുത്ത് മോഡിൽ ഇതിൽ ഏതെങ്കിലും വരയ്ക്കുക</string>
+    <string name="no_gestures_yet">ജെസ്ചറുകൾ ഒന്നുമില്ല</string>
+    <string name="gestures_empty_desc">കൈയെഴുത്ത് മോഡിൽ ഉപയോഗിക്കാൻ രൂപങ്ങൾ (shapes) ചേർക്കുക. നിങ്ങൾക്ക് ആവശ്യമുള്ള ആപ്പുകൾ വേഗത്തിൽ തുറക്കാൻ ഇവ വരയ്ക്കാവുന്നതാണ്</string>
+    <string name="new_gesture">പുതിയ ജെസ്ചർ</string>
+    <string name="edit_gesture">ജെസ്ചർ എഡിറ്റ് ചെയ്യുക</string>
+    <string name="gesture_handwriting_only_chip">കൈയെഴുത്ത് മോഡിൽ മാത്രം</string>
+    <string name="gesture_canvas_placeholder">എന്തെങ്കിലും വരയ്ക്കുക: △, ☆, ∞, തുടങ്ങി എന്തും</string>
+    <string name="gesture_canvas_hint_empty">താഴെ തിരഞ്ഞെടുത്ത ആപ്പുകൾ കാണാൻ പിന്നീട് നിങ്ങൾക്ക് ഇത് കൈയെഴുത്ത് മോഡിൽ വരയ്ക്കാം</string>
+    <string name="gesture_canvas_hint_drawn">കൊള്ളാം! ആപ്പ് സേർച്ച് ചെയ്യുമ്പോളും ഇതുപോലെ തന്നെ വരയ്ക്കാൻ ശ്രമിക്കുക</string>
+    <string name="gesture_canvas_hint_unchanged">പുതിയത് വരയ്ക്കാൻ വീണ്ടും വരയ്ക്കുക എന്നതിൽ ടാപ്പ് ചെയ്യുക</string>
+    <string name="redraw">വീണ്ടും വരയ്ക്കുക</string>
+    <string name="save_gesture">ജെസ്ചർ സേവ് ചെയ്യുക</string>
+    <string name="gesture_shape_required">ജെസ്ചർ ആയി സേവ് ചെയ്യാൻ ഒരു രൂപം വരയ്ക്കുക</string>
+    <string name="gesture_shape_too_small">വരച്ചത് വളരെ ചെറുതാണ്, കുറച്ചുകൂടി വലുതാക്കാമോ</string>
+    <string name="gesture_matched_label">ജെസ്ചർ മാച്ച് ആയി</string>
 </resources>

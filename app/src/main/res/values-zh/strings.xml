@@ -205,4 +205,25 @@
     <string name="copy_to_clipboard_desc">复制到剪贴板</string>
     <string name="share_text_desc">分享文本</string>
 
+        <!-- Custom Gestures -->
+    <string name="gestures_card_title">手势</string>
+    <string name="gestures_card_hint">在手写模式下使用</string>
+    <string name="active_gesture_singular">当前启用的手势</string>
+    <string name="active_gesture_plural">当前启用的手势</string>
+    <string name="gestures_title">手势</string>
+    <string name="gestures_subtitle">在手写模式下画出这些手势，即可直接跳转到你的应用。</string>
+    <string name="no_gestures_yet">暂无手势</string>
+    <string name="gestures_empty_desc">添加在手写模式中使用的形状。画出这些形状即可快速启动所需的应用。</string>
+    <string name="new_gesture">新建手势</string>
+    <string name="edit_gesture">编辑手势</string>
+    <string name="gesture_handwriting_only_chip">仅在手写模式下生效</string>
+    <string name="gesture_canvas_placeholder">画一个形状：△, ☆, ∞, 或者任何图案</string>
+    <string name="gesture_canvas_hint_empty">稍后，你可以在手写模式中画出这个形状，来显示下方选中的应用。</string>
+    <string name="gesture_canvas_hint_drawn">看起来不错。在应用搜索中尝试以同样的方式画出来。</string>
+    <string name="gesture_canvas_hint_unchanged">点击重画来重新录制形状。</string>
+    <string name="redraw">重画</string>
+    <string name="save_gesture">保存手势</string>
+    <string name="gesture_shape_required">请画一个形状以保存为手势</string>
+    <string name="gesture_shape_too_small">形状太小了，试着画大一点</string>
+    <string name="gesture_matched_label">手势匹配成功</string>
 </resources>

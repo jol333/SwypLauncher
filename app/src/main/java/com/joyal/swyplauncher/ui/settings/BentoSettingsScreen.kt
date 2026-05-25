@@ -88,6 +88,7 @@ fun BentoSettingsScreen(
     installedApps: List<AppInfo> = emptyList(),
     screenEntryTimestamp: Long = 0L,
     shortcutsCount: Int = 0,
+    gesturesCount: Int = 0,
     onLanguageChanged: () -> Unit = {}
 ) {
     val prefs by prefsFlow.collectAsState()
@@ -490,6 +491,25 @@ fun BentoSettingsScreen(
                         offsetX = appShortcutsOffset
                     )
                 }
+            }
+
+            // Custom Gestures Row (full-width)
+            item {
+                CustomGesturesCard(
+                    count = gesturesCount,
+                    onClick = {
+                        context.startActivity(
+                            Intent(
+                                context,
+                                com.joyal.swyplauncher.CustomGesturesActivity::class.java
+                            )
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .offset(y = (-32).dp)
+                )
             }
 
             // Donate Section & Footer
