@@ -226,4 +226,8 @@
     <string name="gesture_shape_required">Desenhe uma forma para salvar como gesto</string>
     <string name="gesture_shape_too_small">A forma está muito pequena, tente um desenho maior</string>
     <string name="gesture_matched_label">Gesto reconhecido</string>
+
+    <!-- Currency Conversion -->
+    <string name="currency_last_updated">Atualizado: %1$s</string>
+    <string name="currency_no_connection">Sem conexão de internet. Verifique sua rede e tente novamente</string>
 </resources>

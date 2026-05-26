@@ -225,4 +225,8 @@
     <string name="gesture_shape_required">ജെസ്ചർ ആയി സേവ് ചെയ്യാൻ ഒരു രൂപം വരയ്ക്കുക</string>
     <string name="gesture_shape_too_small">വരച്ചത് വളരെ ചെറുതാണ്, കുറച്ചുകൂടി വലുതാക്കാമോ</string>
     <string name="gesture_matched_label">ജെസ്ചർ മാച്ച് ആയി</string>
+
+    <!-- Currency Conversion -->
+    <string name="currency_last_updated">അപ്ഡേറ്റ് ചെയ്തു: %1$s</string>
+    <string name="currency_no_connection">ഇന്റർനെറ്റ് കണക്ഷൻ ഇല്ല. ദയവായി നെറ്റ്‌വർക്ക് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക</string>
 </resources>

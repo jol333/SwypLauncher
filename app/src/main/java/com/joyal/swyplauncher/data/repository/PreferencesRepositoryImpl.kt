@@ -179,6 +179,18 @@ class PreferencesRepositoryImpl @Inject constructor(
         prefs.edit().putString(KEY_APP_LANGUAGE, language.code).apply()
     }
 
+    override fun getCurrencyRatesJson(): String? = prefs.getString(KEY_CURRENCY_RATES_JSON, null)
+    override fun getCurrencyRatesBase(): String? = prefs.getString(KEY_CURRENCY_RATES_BASE, null)
+    override fun getCurrencyRatesTimestamp(): Long = prefs.getLong(KEY_CURRENCY_RATES_TIMESTAMP, 0L)
+
+    override fun setCurrencyRates(base: String, json: String, timestamp: Long) {
+        prefs.edit()
+            .putString(KEY_CURRENCY_RATES_BASE, base)
+            .putString(KEY_CURRENCY_RATES_JSON, json)
+            .putLong(KEY_CURRENCY_RATES_TIMESTAMP, timestamp)
+            .apply()
+    }
+
     companion object {
         private const val KEY_HANDWRITING_INIT_TOAST_SHOWN = "handwriting_init_toast_shown"
         private const val KEY_HANDWRITING_MODEL_DOWNLOADED = "handwriting_model_downloaded"
@@ -196,5 +208,8 @@ class PreferencesRepositoryImpl @Inject constructor(
         private const val KEY_APP_SHORTCUTS = "app_shortcuts"
         private const val KEY_CUSTOM_GESTURES = "custom_gestures"
         private const val KEY_APP_LANGUAGE = "app_language"
+        private const val KEY_CURRENCY_RATES_JSON = "currency_rates_json"
+        private const val KEY_CURRENCY_RATES_BASE = "currency_rates_base"
+        private const val KEY_CURRENCY_RATES_TIMESTAMP = "currency_rates_timestamp"
     }
 }

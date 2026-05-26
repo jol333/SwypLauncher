@@ -58,6 +58,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.joyal.swyplauncher.ui.components.AppIconItem
+import com.joyal.swyplauncher.ui.components.CurrencyResultDisplay
+import com.joyal.swyplauncher.ui.components.ResultDisplay
 import com.joyal.swyplauncher.ui.model.AppListItem
 import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
 import com.joyal.swyplauncher.ui.viewmodel.KeyboardViewModel
@@ -227,36 +229,13 @@ fun KeyboardModeScreen(
                     CircularProgressIndicator()
                 }
             } else if (launcherState.keyboardCalculatorResult != null) {
-                // Show calculator result
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier
-                            .clickable {
-                                val clipboardManager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                val clip = android.content.ClipData.newPlainText("Copied Result", launcherState.keyboardCalculatorResult)
-                                clipboardManager.setPrimaryClip(clip)
-                            }
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = com.joyal.swyplauncher.util.CalculatorUtil.normalizeForDisplay(
-                                searchQuery
-                            ),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "= ${launcherState.keyboardCalculatorResult}",
-                            style = MaterialTheme.typography.displayMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+                ResultDisplay(
+                    inputText = com.joyal.swyplauncher.util.CalculatorUtil.normalizeForDisplay(searchQuery),
+                    resultText = "= ${launcherState.keyboardCalculatorResult}",
+                    clipboardValue = launcherState.keyboardCalculatorResult
+                )
+            } else if (launcherState.keyboardCurrencyResult != null) {
+                CurrencyResultDisplay(state = launcherState.keyboardCurrencyResult!!)
             } else if (launcherState.keyboardSmartApps.isNotEmpty() || (searchQuery.isNotEmpty() && launcherState.keyboardFilteredApps.isNotEmpty()) || (searchQuery.isEmpty() && launcherState.apps.isNotEmpty())) {
                 val appsToShow =
                     if (searchQuery.isEmpty()) launcherState.apps else launcherState.keyboardFilteredApps

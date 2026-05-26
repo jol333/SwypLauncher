@@ -226,4 +226,8 @@
     <string name="gesture_shape_required">请画一个形状以保存为手势</string>
     <string name="gesture_shape_too_small">形状太小了，试着画大一点</string>
     <string name="gesture_matched_label">手势匹配成功</string>
+
+    <!-- Currency Conversion -->
+    <string name="currency_last_updated">更新于：%1$s</string>
+    <string name="currency_no_connection">无网络连接。请检查网络后重试</string>
 </resources>

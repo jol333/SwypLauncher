@@ -227,4 +227,8 @@
     <string name="gesture_shape_required">Zeichne eine Form, um sie als Geste zu speichern</string>
     <string name="gesture_shape_too_small">Die Form ist zu klein, versuche etwas größer zu zeichnen</string>
     <string name="gesture_matched_label">Geste erkannt</string>
+
+    <!-- Currency Conversion -->
+    <string name="currency_last_updated">Aktualisiert: %1$s</string>
+    <string name="currency_no_connection">Keine Internetverbindung. Bitte prüfe dein Netzwerk und versuche es erneut</string>
 </resources>

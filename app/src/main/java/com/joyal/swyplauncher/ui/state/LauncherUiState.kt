@@ -22,6 +22,21 @@ data class LauncherUiState(
     val handwritingCalculatorResult: String? = null,
     val keyboardCalculatorResult: String? = null,
     val voiceCalculatorResult: String? = null,
+    // Currency conversion results for each mode
+    val handwritingCurrencyResult: CurrencyResultState? = null,
+    val keyboardCurrencyResult: CurrencyResultState? = null,
+    val voiceCurrencyResult: CurrencyResultState? = null,
     // Tooltip visibility
     val showHideAppTooltip: Boolean = false
+)
+
+// Currency conversion display state
+data class CurrencyResultState(
+    val inputDisplay: String,        // formatted source amount, e.g. "$100"
+    val outputDisplay: String? = null, // formatted target amount, null while loading
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val ratesTimestamp: Long? = null,  // non-null = using locally cached rates
+    val fromCode: String = "",
+    val toCode: String = ""
 )

@@ -220,6 +220,10 @@
     <string name="gesture_shape_too_small">Shape is too small, try a larger drawing</string>
     <string name="gesture_matched_label">Gesture matched</string>
 
+    <!-- Currency Conversion -->
+    <string name="currency_last_updated">Updated: %1$s</string>
+    <string name="currency_no_connection">No internet connection. Please check your network &amp; try again</string>
+
     <!-- Voice Error Messages -->
     <string name="voice_error_stopped">Voice recognition stopped</string>
     <string name="voice_error_no_speech">No speech detected. Please try again</string>

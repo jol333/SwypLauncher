@@ -70,6 +70,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.joyal.swyplauncher.domain.model.RecognitionResult
 import com.joyal.swyplauncher.ui.components.AppIconItem
+import com.joyal.swyplauncher.ui.components.CurrencyResultDisplay
+import com.joyal.swyplauncher.ui.components.ResultDisplay
 import com.joyal.swyplauncher.ui.model.AppListItem
 import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
@@ -392,39 +394,13 @@ fun VoiceModeScreen(
                     CircularProgressIndicator()
                 }
             } else if (launcherState.voiceCalculatorResult != null) {
-                // Show calculator result
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier
-                            .clickable {
-                                val clipboardManager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                val clip = android.content.ClipData.newPlainText("Copied Result", launcherState.voiceCalculatorResult)
-                                clipboardManager.setPrimaryClip(clip)
-                            }
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = com.joyal.swyplauncher.util.CalculatorUtil.normalizeForDisplay(
-                                voiceState.transcription
-                            ),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "= ${launcherState.voiceCalculatorResult}",
-                            style = MaterialTheme.typography.displayMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+                ResultDisplay(
+                    inputText = com.joyal.swyplauncher.util.CalculatorUtil.normalizeForDisplay(voiceState.transcription),
+                    resultText = "= ${launcherState.voiceCalculatorResult}",
+                    clipboardValue = launcherState.voiceCalculatorResult
+                )
+            } else if (launcherState.voiceCurrencyResult != null) {
+                CurrencyResultDisplay(state = launcherState.voiceCurrencyResult!!)
             } else {
                 val showSmart =
                     launcherState.voiceSmartApps.isNotEmpty() || (if (voiceState.transcription.isEmpty()) launcherState.apps else launcherState.voiceFilteredApps).isNotEmpty()

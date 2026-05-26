@@ -3,22 +3,26 @@ package com.joyal.swyplauncher.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.domain.repository.CurrencyRepository
 import com.joyal.swyplauncher.domain.usecase.GetCachedInstalledAppsUseCase
 import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
 import com.joyal.swyplauncher.domain.usecase.GetSmartAppListUseCase
 import com.joyal.swyplauncher.domain.usecase.LaunchAppUseCase
 import com.joyal.swyplauncher.domain.usecase.ObserveAppChangesUseCase
 import com.joyal.swyplauncher.domain.usecase.RecordAppUsageUseCase
+import com.joyal.swyplauncher.ui.state.CurrencyResultState
 import com.joyal.swyplauncher.ui.state.LauncherUiState
+import com.joyal.swyplauncher.util.CurrencyUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -30,8 +34,19 @@ class LauncherViewModel @Inject constructor(
     private val observeAppChangesUseCase: ObserveAppChangesUseCase,
     private val getSmartAppListUseCase: GetSmartAppListUseCase,
     private val recordAppUsageUseCase: RecordAppUsageUseCase,
-    private val preferencesRepository: com.joyal.swyplauncher.domain.repository.PreferencesRepository
+    private val preferencesRepository: com.joyal.swyplauncher.domain.repository.PreferencesRepository,
+    private val currencyRepository: CurrencyRepository
 ) : ViewModel() {
+
+    enum class CurrencyMode { KEYBOARD, VOICE, HANDWRITING }
+
+    private var keyboardCurrencyJob: Job? = null
+    private var voiceCurrencyJob: Job? = null
+    private var handwritingCurrencyJob: Job? = null
+
+    private var keyboardFilterJob: Job? = null
+    private var voiceFilterJob: Job? = null
+    private var handwritingFilterJob: Job? = null
 
     private val _uiState = MutableStateFlow(LauncherUiState())
     val uiState: StateFlow<LauncherUiState> = _uiState.asStateFlow()
@@ -164,46 +179,178 @@ class LauncherViewModel @Inject constructor(
 
     // Keyboard mode filter
     fun filterAppsKeyboard(query: String) {
-        val calculatorResult = com.joyal.swyplauncher.util.CalculatorUtil.evaluate(query)
-        filterApps(query, { app, q -> matchesQueryOrShortcut(app, q) }) { filtered, smart, newlyInstalled ->
-            copy(
-                keyboardFilteredApps = filtered, 
-                keyboardSmartApps = smart, 
-                newlyInstalledAppPackage = newlyInstalled,
-                keyboardCalculatorResult = calculatorResult
-            )
-        }
+        keyboardFilterJob?.cancel()
+        keyboardCurrencyJob?.cancel()
+        keyboardFilterJob = launchModeFilter(query, CurrencyMode.KEYBOARD, prefixMatch = false)
     }
 
     // Voice mode filter
     fun filterAppsVoice(query: String) {
-        val calculatorResult = com.joyal.swyplauncher.util.CalculatorUtil.evaluate(query)
-        filterApps(query, { app, q -> matchesQueryOrShortcut(app, q) }) { filtered, smart, newlyInstalled ->
-            copy(
-                voiceFilteredApps = filtered, 
-                voiceSmartApps = smart, 
-                newlyInstalledAppPackage = newlyInstalled,
-                voiceCalculatorResult = calculatorResult
-            )
-        }
+        voiceFilterJob?.cancel()
+        voiceCurrencyJob?.cancel()
+        voiceFilterJob = launchModeFilter(query, CurrencyMode.VOICE, prefixMatch = false)
     }
 
     // Handwriting mode filter by prefix
     fun filterAppsByPrefixHandwriting(prefix: String) {
-        val calculatorResult = com.joyal.swyplauncher.util.CalculatorUtil.evaluate(prefix)
-        filterApps(prefix, { app, p -> matchesQueryOrShortcut(app, p, prefixMatch = true) }) { filtered, smart, newlyInstalled ->
-            copy(
-                handwritingFilteredApps = filtered,
-                handwritingSmartApps = smart,
-                newlyInstalledAppPackage = newlyInstalled,
-                handwritingCalculatorResult = calculatorResult
+        handwritingFilterJob?.cancel()
+        handwritingCurrencyJob?.cancel()
+        handwritingFilterJob = launchModeFilter(prefix, CurrencyMode.HANDWRITING, prefixMatch = true)
+    }
+
+    // Runs parse + filter + smart-app compute on Default so keystrokes aren't blocked.
+    private fun launchModeFilter(query: String, mode: CurrencyMode, prefixMatch: Boolean): Job {
+        return viewModelScope.launch(Dispatchers.Default) {
+            val parseResult = computeCalcOrCurrency(query)
+            ensureActive()
+
+            val currentApps = _uiState.value.apps
+            val filtered = if (query.isBlank()) {
+                currentApps
+            } else {
+                val shortcuts = preferencesRepository.getAppShortcuts()
+                currentApps.filter { matchesQueryOrShortcut(it, query, shortcuts, prefixMatch) }
+            }
+
+            val (smart, newlyInstalled) = if (filtered.isEmpty()) {
+                emptyList<AppInfo>() to null
+            } else {
+                val gridSize = preferencesRepository.getGridSize()
+                val smartList = getSmartAppListUseCase(filtered, gridSize)
+                smartList to getNewlyInstalledPackage(smartList)
+            }
+
+            ensureActive()
+
+            _uiState.update { s ->
+                when (mode) {
+                    CurrencyMode.KEYBOARD -> s.copy(
+                        keyboardFilteredApps = filtered,
+                        keyboardSmartApps = smart,
+                        newlyInstalledAppPackage = newlyInstalled,
+                        keyboardCalculatorResult = parseResult.calc,
+                        keyboardCurrencyResult = parseResult.currency
+                    )
+                    CurrencyMode.VOICE -> s.copy(
+                        voiceFilteredApps = filtered,
+                        voiceSmartApps = smart,
+                        newlyInstalledAppPackage = newlyInstalled,
+                        voiceCalculatorResult = parseResult.calc,
+                        voiceCurrencyResult = parseResult.currency
+                    )
+                    CurrencyMode.HANDWRITING -> s.copy(
+                        handwritingFilteredApps = filtered,
+                        handwritingSmartApps = smart,
+                        newlyInstalledAppPackage = newlyInstalled,
+                        handwritingCalculatorResult = parseResult.calc,
+                        handwritingCurrencyResult = parseResult.currency
+                    )
+                }
+            }
+
+            // Job-var access stays on Main to match other cancel sites
+            parseResult.parsed?.let {
+                withContext(Dispatchers.Main.immediate) {
+                    launchCurrencyConversion(it, mode)
+                }
+            }
+        }
+    }
+
+    private data class ParseResult(
+        val calc: String?,
+        val currency: CurrencyResultState?,
+        val parsed: CurrencyUtil.Parsed?
+    )
+
+    // Detect calc vs currency. Currency tried first so inputs like "$5+5" prefer currency.
+    private fun computeCalcOrCurrency(input: String): ParseResult {
+        val parsed = CurrencyUtil.tryParse(input, currencyRepository.getNativeCurrencyCode())
+        if (parsed != null) {
+            val needsLoad = !currencyRepository.hasRatesInMemory()
+            return ParseResult(
+                calc = null,
+                currency = CurrencyResultState(
+                    inputDisplay = CurrencyUtil.formatAmount(parsed.amount, parsed.from),
+                    outputDisplay = null,
+                    isLoading = needsLoad,
+                    fromCode = parsed.from,
+                    toCode = parsed.to
+                ),
+                parsed = parsed
+            )
+        }
+        val calc = com.joyal.swyplauncher.util.CalculatorUtil.evaluate(input)
+        return ParseResult(calc, null, null)
+    }
+
+    private fun launchCurrencyConversion(parsed: CurrencyUtil.Parsed, mode: CurrencyMode) {
+        when (mode) {
+            CurrencyMode.KEYBOARD -> keyboardCurrencyJob?.cancel()
+            CurrencyMode.VOICE -> voiceCurrencyJob?.cancel()
+            CurrencyMode.HANDWRITING -> handwritingCurrencyJob?.cancel()
+        }
+        val targetInput = CurrencyUtil.formatAmount(parsed.amount, parsed.from)
+        val job = viewModelScope.launch(Dispatchers.Default) {
+            val result = currencyRepository.getRates()
+            val newState = buildCurrencyState(parsed, result)
+            // Only commit if the user's current input still matches what we just converted
+            _uiState.update { s ->
+                val active = when (mode) {
+                    CurrencyMode.KEYBOARD -> s.keyboardCurrencyResult
+                    CurrencyMode.VOICE -> s.voiceCurrencyResult
+                    CurrencyMode.HANDWRITING -> s.handwritingCurrencyResult
+                }
+                if (active?.inputDisplay != targetInput) return@update s
+                when (mode) {
+                    CurrencyMode.KEYBOARD -> s.copy(keyboardCurrencyResult = newState)
+                    CurrencyMode.VOICE -> s.copy(voiceCurrencyResult = newState)
+                    CurrencyMode.HANDWRITING -> s.copy(handwritingCurrencyResult = newState)
+                }
+            }
+        }
+        when (mode) {
+            CurrencyMode.KEYBOARD -> keyboardCurrencyJob = job
+            CurrencyMode.VOICE -> voiceCurrencyJob = job
+            CurrencyMode.HANDWRITING -> handwritingCurrencyJob = job
+        }
+    }
+
+    private fun buildCurrencyState(parsed: CurrencyUtil.Parsed, result: CurrencyRepository.RatesResult): CurrencyResultState {
+        return when (result) {
+            is CurrencyRepository.RatesResult.Success -> {
+                val converted = CurrencyUtil.convert(parsed.amount, parsed.from, parsed.to, result.base, result.rates)
+                if (converted == null) {
+                    CurrencyResultState(
+                        inputDisplay = CurrencyUtil.formatAmount(parsed.amount, parsed.from),
+                        error = "Unsupported currency",
+                        fromCode = parsed.from,
+                        toCode = parsed.to
+                    )
+                } else {
+                    CurrencyResultState(
+                        inputDisplay = CurrencyUtil.formatAmount(parsed.amount, parsed.from),
+                        outputDisplay = CurrencyUtil.formatAmount(converted, parsed.to),
+                        ratesTimestamp = if (result.fromCache) result.timestamp else null,
+                        fromCode = parsed.from,
+                        toCode = parsed.to
+                    )
+                }
+            }
+            is CurrencyRepository.RatesResult.Error -> CurrencyResultState(
+                inputDisplay = CurrencyUtil.formatAmount(parsed.amount, parsed.from),
+                error = result.message,
+                fromCode = parsed.from,
+                toCode = parsed.to
             )
         }
     }
 
     // Handwriting mode filter by matched custom gesture's assigned apps
     fun filterAppsByCustomGestureHandwriting(appIds: Set<String>) {
-        viewModelScope.launch {
+        handwritingFilterJob?.cancel()
+        handwritingCurrencyJob?.cancel()
+        handwritingFilterJob = viewModelScope.launch(Dispatchers.Default) {
             val currentApps = _uiState.value.apps
             val filtered = currentApps.filter { it.getIdentifier() in appIds }
             val (smart, newlyInstalled) = computeSmartApps(filtered)
@@ -212,14 +359,19 @@ class LauncherViewModel @Inject constructor(
                     handwritingFilteredApps = filtered,
                     handwritingSmartApps = smart,
                     newlyInstalledAppPackage = newlyInstalled,
-                    handwritingCalculatorResult = null
+                    handwritingCalculatorResult = null,
+                    handwritingCurrencyResult = null
                 )
             }
         }
     }
     
-    private fun matchesQueryOrShortcut(app: AppInfo, query: String, prefixMatch: Boolean = false): Boolean {
-        val shortcuts = preferencesRepository.getAppShortcuts()
+    private fun matchesQueryOrShortcut(
+        app: AppInfo,
+        query: String,
+        shortcuts: Map<String, Set<String>>,
+        prefixMatch: Boolean = false
+    ): Boolean {
         val matchesShortcut = shortcuts.any { (shortcut, appIds) ->
             appIds.contains(app.getIdentifier()) && shortcut.equals(query, ignoreCase = true)
         }
@@ -232,7 +384,7 @@ class LauncherViewModel @Inject constructor(
 
     // Index mode filter by first letter
     fun filterAppsByFirstLetterIndex(letter: Char) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             val filtered = _uiState.value.apps.filter { it.firstLetter == letter.uppercaseChar() }
             val (smart, newlyInstalled) = computeSmartApps(filtered)
             _uiState.update { it.copy(indexFilteredApps = filtered, indexSmartApps = smart, newlyInstalledAppPackage = newlyInstalled) }
@@ -240,28 +392,26 @@ class LauncherViewModel @Inject constructor(
     }
 
     // Reset filters for a specific mode
-    fun resetFilterHandwriting() = resetFilter { copy(handwritingFilteredApps = apps, handwritingSmartApps = it.first, newlyInstalledAppPackage = it.second, handwritingCalculatorResult = null) }
+    fun resetFilterHandwriting() {
+        handwritingFilterJob?.cancel()
+        handwritingCurrencyJob?.cancel()
+        resetFilter { copy(handwritingFilteredApps = apps, handwritingSmartApps = it.first, newlyInstalledAppPackage = it.second, handwritingCalculatorResult = null, handwritingCurrencyResult = null) }
+    }
     fun resetFilterIndex() = resetFilter { copy(indexFilteredApps = apps, indexSmartApps = it.first, newlyInstalledAppPackage = it.second) }
-    fun resetFilterKeyboard() = resetFilter { copy(keyboardFilteredApps = apps, keyboardSmartApps = it.first, newlyInstalledAppPackage = it.second, keyboardCalculatorResult = null) }
-    fun resetFilterVoice() = resetFilter { copy(voiceFilteredApps = apps, voiceSmartApps = it.first, newlyInstalledAppPackage = it.second, voiceCalculatorResult = null) }
-    
-    // Helper: Generic filter function
-    private fun filterApps(
-        query: String,
-        predicate: (AppInfo, String) -> Boolean,
-        updateState: LauncherUiState.(List<AppInfo>, List<AppInfo>, String?) -> LauncherUiState
-    ) {
-        viewModelScope.launch {
-            val currentApps = _uiState.value.apps
-            val filtered = if (query.isBlank()) currentApps else currentApps.filter { predicate(it, query) }
-            val (smart, newlyInstalled) = computeSmartApps(filtered)
-            _uiState.update { it.updateState(filtered, smart, newlyInstalled) }
-        }
+    fun resetFilterKeyboard() {
+        keyboardFilterJob?.cancel()
+        keyboardCurrencyJob?.cancel()
+        resetFilter { copy(keyboardFilteredApps = apps, keyboardSmartApps = it.first, newlyInstalledAppPackage = it.second, keyboardCalculatorResult = null, keyboardCurrencyResult = null) }
+    }
+    fun resetFilterVoice() {
+        voiceFilterJob?.cancel()
+        voiceCurrencyJob?.cancel()
+        resetFilter { copy(voiceFilteredApps = apps, voiceSmartApps = it.first, newlyInstalledAppPackage = it.second, voiceCalculatorResult = null, voiceCurrencyResult = null) }
     }
     
     // Helper: Reset filter for a mode
     private fun resetFilter(updateState: LauncherUiState.(Pair<List<AppInfo>, String?>) -> LauncherUiState) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             val smartData = computeSmartApps(_uiState.value.apps)
             _uiState.update { it.updateState(smartData) }
         }

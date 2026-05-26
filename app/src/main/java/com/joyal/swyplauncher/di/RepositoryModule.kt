@@ -1,9 +1,11 @@
 package com.joyal.swyplauncher.di
 
 import com.joyal.swyplauncher.data.repository.AppRepositoryImpl
+import com.joyal.swyplauncher.data.repository.CurrencyRepositoryImpl
 import com.joyal.swyplauncher.data.repository.MLKitRepositoryImpl
 import com.joyal.swyplauncher.data.repository.PreferencesRepositoryImpl
 import com.joyal.swyplauncher.domain.repository.AppRepository
+import com.joyal.swyplauncher.domain.repository.CurrencyRepository
 import com.joyal.swyplauncher.domain.repository.MLKitRepository
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import dagger.Binds
@@ -33,4 +35,10 @@ abstract class RepositoryModule {
     abstract fun bindMLKitRepository(
         mlKitRepositoryImpl: MLKitRepositoryImpl
     ): MLKitRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCurrencyRepository(
+        currencyRepositoryImpl: CurrencyRepositoryImpl
+    ): CurrencyRepository
 }

@@ -77,6 +77,8 @@ import com.joyal.swyplauncher.domain.model.InkPoint
 import com.joyal.swyplauncher.domain.model.InkStroke
 import com.joyal.swyplauncher.domain.model.RecognitionResult
 import com.joyal.swyplauncher.ui.components.AppIconItem
+import com.joyal.swyplauncher.ui.components.CurrencyResultDisplay
+import com.joyal.swyplauncher.ui.components.ResultDisplay
 import com.joyal.swyplauncher.ui.model.AppListItem
 import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
 import com.joyal.swyplauncher.ui.viewmodel.HandwritingViewModel
@@ -564,40 +566,13 @@ fun HandwritingModeScreen(
                 androidx.compose.material3.CircularProgressIndicator()
             }
         } else if (launcherState.handwritingCalculatorResult != null) {
-            // Show calculator result
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .clickable {
-                            val clipboardManager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                            val clip = android.content.ClipData.newPlainText("Copied Result", launcherState.handwritingCalculatorResult)
-                            clipboardManager.setPrimaryClip(clip)
-                        }
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = com.joyal.swyplauncher.util.CalculatorUtil.normalizeForDisplay(
-                            handwritingState.recognizedText
-                        ),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "= ${launcherState.handwritingCalculatorResult}",
-                        style = MaterialTheme.typography.displayMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
+            ResultDisplay(
+                inputText = com.joyal.swyplauncher.util.CalculatorUtil.normalizeForDisplay(handwritingState.recognizedText),
+                resultText = "= ${launcherState.handwritingCalculatorResult}",
+                clipboardValue = launcherState.handwritingCalculatorResult
+            )
+        } else if (launcherState.handwritingCurrencyResult != null) {
+            CurrencyResultDisplay(state = launcherState.handwritingCurrencyResult!!)
         } else if (launcherState.handwritingSmartApps.isNotEmpty() || launcherState.handwritingFilteredApps.isNotEmpty()) {
             Box(
                 modifier = Modifier

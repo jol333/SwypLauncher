@@ -226,4 +226,8 @@
     <string name="gesture_shape_required">जेस्चर के तौर पर सेव करने के लिए एक आकृति ड्रॉ करें</string>
     <string name="gesture_shape_too_small">आकृति बहुत छोटी है, थोड़ी बड़ी ड्रॉइंग ट्राई करें</string>
     <string name="gesture_matched_label">जेस्चर मैच हो गया</string>
+
+    <!-- Currency Conversion -->
+    <string name="currency_last_updated">अपडेट किया गया: %1$s</string>
+    <string name="currency_no_connection">इंटरनेट कनेक्शन नहीं है। कृपया अपना नेटवर्क चेक करके फिर कोशिश करें</string>
 </resources>

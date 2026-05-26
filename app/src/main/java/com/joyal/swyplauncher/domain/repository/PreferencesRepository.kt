@@ -51,6 +51,12 @@ interface PreferencesRepository {
 
     fun getAppLanguage(): com.joyal.swyplauncher.domain.model.AppLanguage
     fun setAppLanguage(language: com.joyal.swyplauncher.domain.model.AppLanguage)
+
+    // Currency rates cache (base currency + rates JSON + fetched timestamp)
+    fun getCurrencyRatesJson(): String?
+    fun getCurrencyRatesBase(): String?
+    fun getCurrencyRatesTimestamp(): Long
+    fun setCurrencyRates(base: String, json: String, timestamp: Long)
 }
 
 enum class AppSortOrder {
