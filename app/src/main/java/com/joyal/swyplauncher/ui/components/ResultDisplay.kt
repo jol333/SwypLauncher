@@ -91,19 +91,7 @@ fun ResultDisplay(
     }
 }
 
-// Helper used by mode screens to render currency state
-@Composable
-fun CurrencyResultDisplay(state: CurrencyResultState, modifier: Modifier = Modifier) {
-    ResultDisplay(
-        modifier = modifier,
-        inputText = state.inputDisplay,
-        resultText = state.outputDisplay,
-        isLoading = state.isLoading,
-        error = state.error,
-        timestamp = state.ratesTimestamp,
-        clipboardValue = state.outputDisplay
-    )
-}
+
 
 @Composable
 private fun SubtleLoader() {

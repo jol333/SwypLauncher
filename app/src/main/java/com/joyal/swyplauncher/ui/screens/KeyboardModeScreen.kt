@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,8 +22,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
@@ -58,7 +63,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.joyal.swyplauncher.ui.components.AppIconItem
-import com.joyal.swyplauncher.ui.components.CurrencyResultDisplay
+import com.joyal.swyplauncher.ui.components.InteractiveCurrencyConverter
 import com.joyal.swyplauncher.ui.components.ResultDisplay
 import com.joyal.swyplauncher.ui.model.AppListItem
 import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
@@ -235,7 +240,46 @@ fun KeyboardModeScreen(
                     clipboardValue = launcherState.keyboardCalculatorResult
                 )
             } else if (launcherState.keyboardCurrencyResult != null) {
-                CurrencyResultDisplay(state = launcherState.keyboardCurrencyResult!!)
+                val currencyState = launcherState.keyboardCurrencyResult!!
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .imePadding(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    InteractiveCurrencyConverter(
+                        state = currencyState,
+                        onAmountChanged = { isSource, amount ->
+                            launcherViewModel.updateCurrencyConversion(
+                                amount = amount,
+                                fromCode = currencyState.fromCode,
+                                toCode = currencyState.toCode,
+                                isSourceChanged = isSource,
+                                mode = LauncherViewModel.CurrencyMode.KEYBOARD
+                            )
+                        },
+                        onCurrencyChanged = { isSource, newCode ->
+                            if (isSource) {
+                                launcherViewModel.updateCurrencyConversion(
+                                    amount = currencyState.targetAmount ?: 0.0,
+                                    fromCode = newCode,
+                                    toCode = currencyState.toCode,
+                                    isSourceChanged = false,
+                                    mode = LauncherViewModel.CurrencyMode.KEYBOARD
+                                )
+                            } else {
+                                launcherViewModel.updateCurrencyConversion(
+                                    amount = currencyState.sourceAmount,
+                                    fromCode = currencyState.fromCode,
+                                    toCode = newCode,
+                                    isSourceChanged = true,
+                                    mode = LauncherViewModel.CurrencyMode.KEYBOARD
+                                )
+                            }
+                        }
+                    )
+                }
             } else if (launcherState.keyboardSmartApps.isNotEmpty() || (searchQuery.isNotEmpty() && launcherState.keyboardFilteredApps.isNotEmpty()) || (searchQuery.isEmpty() && launcherState.apps.isNotEmpty())) {
                 val appsToShow =
                     if (searchQuery.isEmpty()) launcherState.apps else launcherState.keyboardFilteredApps

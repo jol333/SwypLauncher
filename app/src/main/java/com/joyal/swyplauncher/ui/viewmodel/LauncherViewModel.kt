@@ -271,8 +271,8 @@ class LauncherViewModel @Inject constructor(
             return ParseResult(
                 calc = null,
                 currency = CurrencyResultState(
-                    inputDisplay = CurrencyUtil.formatAmount(parsed.amount, parsed.from),
-                    outputDisplay = null,
+                    sourceAmount = parsed.amount,
+                    targetAmount = null,
                     isLoading = needsLoad,
                     fromCode = parsed.from,
                     toCode = parsed.to
@@ -290,7 +290,8 @@ class LauncherViewModel @Inject constructor(
             CurrencyMode.VOICE -> voiceCurrencyJob?.cancel()
             CurrencyMode.HANDWRITING -> handwritingCurrencyJob?.cancel()
         }
-        val targetInput = CurrencyUtil.formatAmount(parsed.amount, parsed.from)
+        val targetSourceAmount = parsed.amount
+        val targetSourceCode = parsed.from
         val job = viewModelScope.launch(Dispatchers.Default) {
             val result = currencyRepository.getRates()
             val newState = buildCurrencyState(parsed, result)
@@ -301,7 +302,7 @@ class LauncherViewModel @Inject constructor(
                     CurrencyMode.VOICE -> s.voiceCurrencyResult
                     CurrencyMode.HANDWRITING -> s.handwritingCurrencyResult
                 }
-                if (active?.inputDisplay != targetInput) return@update s
+                if (active?.sourceAmount != targetSourceAmount || active.fromCode != targetSourceCode) return@update s
                 when (mode) {
                     CurrencyMode.KEYBOARD -> s.copy(keyboardCurrencyResult = newState)
                     CurrencyMode.VOICE -> s.copy(voiceCurrencyResult = newState)
@@ -322,15 +323,15 @@ class LauncherViewModel @Inject constructor(
                 val converted = CurrencyUtil.convert(parsed.amount, parsed.from, parsed.to, result.base, result.rates)
                 if (converted == null) {
                     CurrencyResultState(
-                        inputDisplay = CurrencyUtil.formatAmount(parsed.amount, parsed.from),
+                        sourceAmount = parsed.amount,
                         error = "Unsupported currency",
                         fromCode = parsed.from,
                         toCode = parsed.to
                     )
                 } else {
                     CurrencyResultState(
-                        inputDisplay = CurrencyUtil.formatAmount(parsed.amount, parsed.from),
-                        outputDisplay = CurrencyUtil.formatAmount(converted, parsed.to),
+                        sourceAmount = parsed.amount,
+                        targetAmount = converted,
                         ratesTimestamp = if (result.fromCache) result.timestamp else null,
                         fromCode = parsed.from,
                         toCode = parsed.to
@@ -338,11 +339,116 @@ class LauncherViewModel @Inject constructor(
                 }
             }
             is CurrencyRepository.RatesResult.Error -> CurrencyResultState(
-                inputDisplay = CurrencyUtil.formatAmount(parsed.amount, parsed.from),
+                sourceAmount = parsed.amount,
                 error = result.message,
                 fromCode = parsed.from,
                 toCode = parsed.to
             )
+        }
+    }
+    
+    fun updateCurrencyConversion(amount: Double, fromCode: String, toCode: String, isSourceChanged: Boolean, mode: CurrencyMode) {
+        val active = when (mode) {
+            CurrencyMode.KEYBOARD -> _uiState.value.keyboardCurrencyResult
+            CurrencyMode.VOICE -> _uiState.value.voiceCurrencyResult
+            CurrencyMode.HANDWRITING -> _uiState.value.handwritingCurrencyResult
+        } ?: return
+
+        // Set immediate loading state if rates are not in memory, else we can compute immediately
+        val needsLoad = !currencyRepository.hasRatesInMemory()
+        
+        val parsed = if (isSourceChanged) {
+            CurrencyUtil.Parsed(amount, fromCode, toCode)
+        } else {
+            // Amount is the new target amount, so we treat it as the source for inverse conversion
+            CurrencyUtil.Parsed(amount, toCode, fromCode)
+        }
+        
+        val pendingState = CurrencyResultState(
+            sourceAmount = if (isSourceChanged) amount else active.sourceAmount,
+            targetAmount = if (!isSourceChanged) amount else active.targetAmount,
+            isLoading = needsLoad,
+            fromCode = fromCode,
+            toCode = toCode
+        )
+        
+        _uiState.update { s ->
+            when (mode) {
+                CurrencyMode.KEYBOARD -> s.copy(keyboardCurrencyResult = pendingState)
+                CurrencyMode.VOICE -> s.copy(voiceCurrencyResult = pendingState)
+                CurrencyMode.HANDWRITING -> s.copy(handwritingCurrencyResult = pendingState)
+            }
+        }
+        
+        launchCurrencyConversion(parsed, mode, isSourceChanged)
+    }
+
+    private fun launchCurrencyConversion(parsed: CurrencyUtil.Parsed, mode: CurrencyMode, isSourceChanged: Boolean) {
+        when (mode) {
+            CurrencyMode.KEYBOARD -> keyboardCurrencyJob?.cancel()
+            CurrencyMode.VOICE -> voiceCurrencyJob?.cancel()
+            CurrencyMode.HANDWRITING -> handwritingCurrencyJob?.cancel()
+        }
+        val targetSourceAmount = parsed.amount
+        val targetSourceCode = parsed.from
+        val job = viewModelScope.launch(Dispatchers.Default) {
+            val result = currencyRepository.getRates()
+            
+            // Build state, but carefully map it back since we might be doing inverse conversion
+            val newState = when (result) {
+                is CurrencyRepository.RatesResult.Success -> {
+                    val converted = CurrencyUtil.convert(parsed.amount, parsed.from, parsed.to, result.base, result.rates)
+                    if (converted == null) {
+                        CurrencyResultState(
+                            sourceAmount = if (isSourceChanged) parsed.amount else 0.0, // Error state
+                            targetAmount = if (!isSourceChanged) parsed.amount else null,
+                            error = "Unsupported currency",
+                            fromCode = if (isSourceChanged) parsed.from else parsed.to,
+                            toCode = if (isSourceChanged) parsed.to else parsed.from
+                        )
+                    } else {
+                        CurrencyResultState(
+                            sourceAmount = if (isSourceChanged) parsed.amount else converted,
+                            targetAmount = if (!isSourceChanged) parsed.amount else converted,
+                            ratesTimestamp = if (result.fromCache) result.timestamp else null,
+                            fromCode = if (isSourceChanged) parsed.from else parsed.to,
+                            toCode = if (isSourceChanged) parsed.to else parsed.from
+                        )
+                    }
+                }
+                is CurrencyRepository.RatesResult.Error -> CurrencyResultState(
+                    sourceAmount = if (isSourceChanged) parsed.amount else 0.0,
+                    targetAmount = if (!isSourceChanged) parsed.amount else null,
+                    error = result.message,
+                    fromCode = if (isSourceChanged) parsed.from else parsed.to,
+                    toCode = if (isSourceChanged) parsed.to else parsed.from
+                )
+            }
+            
+            _uiState.update { s ->
+                val active = when (mode) {
+                    CurrencyMode.KEYBOARD -> s.keyboardCurrencyResult
+                    CurrencyMode.VOICE -> s.voiceCurrencyResult
+                    CurrencyMode.HANDWRITING -> s.handwritingCurrencyResult
+                }
+                
+                // We check against the active state's current values which should have been set by updateCurrencyConversion
+                val currentCheckingAmount = if (isSourceChanged) active?.sourceAmount else active?.targetAmount
+                val currentCheckingCode = if (isSourceChanged) active?.fromCode else active?.toCode
+                
+                if (currentCheckingAmount != targetSourceAmount || currentCheckingCode != targetSourceCode) return@update s
+                
+                when (mode) {
+                    CurrencyMode.KEYBOARD -> s.copy(keyboardCurrencyResult = newState)
+                    CurrencyMode.VOICE -> s.copy(voiceCurrencyResult = newState)
+                    CurrencyMode.HANDWRITING -> s.copy(handwritingCurrencyResult = newState)
+                }
+            }
+        }
+        when (mode) {
+            CurrencyMode.KEYBOARD -> keyboardCurrencyJob = job
+            CurrencyMode.VOICE -> voiceCurrencyJob = job
+            CurrencyMode.HANDWRITING -> handwritingCurrencyJob = job
         }
     }
 

@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,6 +35,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -70,7 +72,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.joyal.swyplauncher.domain.model.RecognitionResult
 import com.joyal.swyplauncher.ui.components.AppIconItem
-import com.joyal.swyplauncher.ui.components.CurrencyResultDisplay
+import com.joyal.swyplauncher.ui.components.InteractiveCurrencyConverter
 import com.joyal.swyplauncher.ui.components.ResultDisplay
 import com.joyal.swyplauncher.ui.model.AppListItem
 import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
@@ -400,7 +402,46 @@ fun VoiceModeScreen(
                     clipboardValue = launcherState.voiceCalculatorResult
                 )
             } else if (launcherState.voiceCurrencyResult != null) {
-                CurrencyResultDisplay(state = launcherState.voiceCurrencyResult!!)
+                val currencyState = launcherState.voiceCurrencyResult!!
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .imePadding(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    InteractiveCurrencyConverter(
+                        state = currencyState,
+                        onAmountChanged = { isSource, amount ->
+                            launcherViewModel.updateCurrencyConversion(
+                                amount = amount,
+                                fromCode = currencyState.fromCode,
+                                toCode = currencyState.toCode,
+                                isSourceChanged = isSource,
+                                mode = LauncherViewModel.CurrencyMode.VOICE
+                            )
+                        },
+                        onCurrencyChanged = { isSource, newCode ->
+                            if (isSource) {
+                                launcherViewModel.updateCurrencyConversion(
+                                    amount = currencyState.targetAmount ?: 0.0,
+                                    fromCode = newCode,
+                                    toCode = currencyState.toCode,
+                                    isSourceChanged = false,
+                                    mode = LauncherViewModel.CurrencyMode.VOICE
+                                )
+                            } else {
+                                launcherViewModel.updateCurrencyConversion(
+                                    amount = currencyState.sourceAmount,
+                                    fromCode = currencyState.fromCode,
+                                    toCode = newCode,
+                                    isSourceChanged = true,
+                                    mode = LauncherViewModel.CurrencyMode.VOICE
+                                )
+                            }
+                        }
+                    )
+                }
             } else {
                 val showSmart =
                     launcherState.voiceSmartApps.isNotEmpty() || (if (voiceState.transcription.isEmpty()) launcherState.apps else launcherState.voiceFilteredApps).isNotEmpty()

@@ -32,8 +32,8 @@ data class LauncherUiState(
 
 // Currency conversion display state
 data class CurrencyResultState(
-    val inputDisplay: String,        // formatted source amount, e.g. "$100"
-    val outputDisplay: String? = null, // formatted target amount, null while loading
+    val sourceAmount: Double,
+    val targetAmount: Double? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
     val ratesTimestamp: Long? = null,  // non-null = using locally cached rates

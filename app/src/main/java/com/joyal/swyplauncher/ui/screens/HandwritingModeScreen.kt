@@ -10,7 +10,6 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,10 +30,10 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
@@ -77,7 +77,7 @@ import com.joyal.swyplauncher.domain.model.InkPoint
 import com.joyal.swyplauncher.domain.model.InkStroke
 import com.joyal.swyplauncher.domain.model.RecognitionResult
 import com.joyal.swyplauncher.ui.components.AppIconItem
-import com.joyal.swyplauncher.ui.components.CurrencyResultDisplay
+import com.joyal.swyplauncher.ui.components.InteractiveCurrencyConverter
 import com.joyal.swyplauncher.ui.components.ResultDisplay
 import com.joyal.swyplauncher.ui.model.AppListItem
 import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
@@ -161,7 +161,11 @@ fun HandwritingModeScreen(
     // Show toast only once when initialization completes for the first time
     LaunchedEffect(handwritingState.isInitialized, handwritingState.hasShownInitToast) {
         if (handwritingState.isInitialized && !handwritingState.hasShownInitToast) {
-            Toast.makeText(context, context.getString(R.string.handwriting_ready), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                context.getString(R.string.handwriting_ready),
+                Toast.LENGTH_SHORT
+            ).show()
             handwritingViewModel.onInitializationToastShown()
         }
     }
@@ -176,6 +180,7 @@ fun HandwritingModeScreen(
             gesture != null -> launcherViewModel.filterAppsByCustomGestureHandwriting(gesture.appIds)
             handwritingState.recognizedText.isNotEmpty() ->
                 launcherViewModel.filterAppsByPrefixHandwriting(handwritingState.recognizedText)
+
             else -> launcherViewModel.resetFilterHandwriting()
         }
     }
@@ -189,8 +194,10 @@ fun HandwritingModeScreen(
             when {
                 gesture != null ->
                     launcherViewModel.filterAppsByCustomGestureHandwriting(gesture.appIds)
+
                 handwritingState.recognizedText.isNotEmpty() ->
                     launcherViewModel.filterAppsByPrefixHandwriting(handwritingState.recognizedText)
+
                 else -> {}
             }
         }
@@ -273,7 +280,8 @@ fun HandwritingModeScreen(
 
     // Orientation detection for responsive layout
     val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val isLandscape =
+        configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
     val canvasHeight = if (isLandscape) 160.dp else 260.dp
 
     Column(
@@ -567,12 +575,53 @@ fun HandwritingModeScreen(
             }
         } else if (launcherState.handwritingCalculatorResult != null) {
             ResultDisplay(
-                inputText = com.joyal.swyplauncher.util.CalculatorUtil.normalizeForDisplay(handwritingState.recognizedText),
+                inputText = com.joyal.swyplauncher.util.CalculatorUtil.normalizeForDisplay(
+                    handwritingState.recognizedText
+                ),
                 resultText = "= ${launcherState.handwritingCalculatorResult}",
                 clipboardValue = launcherState.handwritingCalculatorResult
             )
         } else if (launcherState.handwritingCurrencyResult != null) {
-            CurrencyResultDisplay(state = launcherState.handwritingCurrencyResult!!)
+            val currencyState = launcherState.handwritingCurrencyResult!!
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .imePadding(),
+                contentAlignment = Alignment.Center
+            ) {
+                InteractiveCurrencyConverter(
+                    state = currencyState,
+                    onAmountChanged = { isSource, amount ->
+                        launcherViewModel.updateCurrencyConversion(
+                            amount = amount,
+                            fromCode = currencyState.fromCode,
+                            toCode = currencyState.toCode,
+                            isSourceChanged = isSource,
+                            mode = LauncherViewModel.CurrencyMode.HANDWRITING
+                        )
+                    },
+                    onCurrencyChanged = { isSource, newCode ->
+                        if (isSource) {
+                            launcherViewModel.updateCurrencyConversion(
+                                amount = currencyState.targetAmount ?: 0.0,
+                                fromCode = newCode,
+                                toCode = currencyState.toCode,
+                                isSourceChanged = false,
+                                mode = LauncherViewModel.CurrencyMode.HANDWRITING
+                            )
+                        } else {
+                            launcherViewModel.updateCurrencyConversion(
+                                amount = currencyState.sourceAmount,
+                                fromCode = currencyState.fromCode,
+                                toCode = newCode,
+                                isSourceChanged = true,
+                                mode = LauncherViewModel.CurrencyMode.HANDWRITING
+                            )
+                        }
+                    }
+                )
+            }
         } else if (launcherState.handwritingSmartApps.isNotEmpty() || launcherState.handwritingFilteredApps.isNotEmpty()) {
             Box(
                 modifier = Modifier
@@ -767,8 +816,12 @@ fun HandwritingModeScreen(
                             ) {
                                 androidx.compose.material3.OutlinedButton(
                                     onClick = {
-                                        val clipboardManager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                        val clip = android.content.ClipData.newPlainText("Copied Text", handwritingState.recognizedText)
+                                        val clipboardManager =
+                                            context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                        val clip = android.content.ClipData.newPlainText(
+                                            "Copied Text",
+                                            handwritingState.recognizedText
+                                        )
                                         clipboardManager.setPrimaryClip(clip)
                                     }
                                 ) {
@@ -779,15 +832,28 @@ fun HandwritingModeScreen(
                                         tint = MaterialTheme.colorScheme.onSurface
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text(stringResource(R.string.copy), color = MaterialTheme.colorScheme.onSurface)
+                                    Text(
+                                        stringResource(R.string.copy),
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
                                 }
                                 androidx.compose.material3.OutlinedButton(
                                     onClick = {
-                                        val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                                            type = "text/plain"
-                                            putExtra(android.content.Intent.EXTRA_TEXT, handwritingState.recognizedText)
-                                        }
-                                        context.startActivity(android.content.Intent.createChooser(intent, context.getString(R.string.share)))
+                                        val intent =
+                                            android.content.Intent(android.content.Intent.ACTION_SEND)
+                                                .apply {
+                                                    type = "text/plain"
+                                                    putExtra(
+                                                        android.content.Intent.EXTRA_TEXT,
+                                                        handwritingState.recognizedText
+                                                    )
+                                                }
+                                        context.startActivity(
+                                            android.content.Intent.createChooser(
+                                                intent,
+                                                context.getString(R.string.share)
+                                            )
+                                        )
                                     }
                                 ) {
                                     Icon(
@@ -797,7 +863,10 @@ fun HandwritingModeScreen(
                                         tint = MaterialTheme.colorScheme.onSurface
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text(stringResource(R.string.share), color = MaterialTheme.colorScheme.onSurface)
+                                    Text(
+                                        stringResource(R.string.share),
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
                                 }
                             }
                         }
