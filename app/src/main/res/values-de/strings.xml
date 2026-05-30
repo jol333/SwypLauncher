@@ -70,6 +70,17 @@
     <string name="license">Lizenz</string>
     <string name="version_format">Version %1$s</string>
     
+    <!-- Settings Screen - Launch Options -->
+    <string name="launch_options_card">WEGE ZUM ÖFFNEN</string>
+    <string name="launch_options_popup_title">Öffnungsmethoden wählen</string>
+    <string name="access_assistant">Du kannst Swyp Launcher auf verschiedene Weisen öffnen</string>
+    <string name="default_digital_assistant">Als Standard-Assistent festlegen</string>
+    <string name="add_home_screen_widget">Widget hinzufügen</string>
+    <string name="add_shortcut_home">Verknüpfung hinzufügen</string>
+    <string name="quick_settings_tile">Kachel für Schnelleinstellungen</string>
+    <string name="widget_description">Schnappzugriff auf Swyp Launcher</string>
+    <string name="swyp_launcher_tile_label">Swyp Launcher</string>
+
     <!-- Dialog buttons -->
     <string name="cancel">Abbrechen</string>
     <string name="save">Speichern</string>
@@ -154,7 +165,7 @@
     <string name="how_to_enable">So aktivierst du es:</string>
     <string name="assistant_instruction">Klicke im nächsten Bildschirm auf \'Standard-Digitale-Assistent-App\' und wähle \'Swyp Launcher\'</string>
     <string name="to_launch_using_gesture">Zum Starten mit Navigationsgeste und Power-Taste</string>
-    
+
     <!-- Handwriting Mode -->
     <string name="handwriting_ready">Bereit für Handschrift</string>
     <string name="downloading_model">Lade Handschrift-Modell herunter...</string>
@@ -163,7 +174,7 @@
     <string name="undo">Rückgängig</string>
     <string name="clear_action">LÖSCHEN</string>
     <string name="retry">Erneut versuchen</string>
-    
+
     <!-- Voice Mode -->
     <string name="mic_permission_required">Mikrofon-Berechtigung erforderlich</string>
     <string name="open_settings">Einstellungen öffnen</string>
@@ -171,7 +182,7 @@
     <string name="listening_status">Höre zu...</string>
     <string name="stop">Stopp</string>
     <string name="start_listening">Zuhören starten</string>
-    
+
     <!-- Keyboard Mode -->
     <string name="search_apps_hint">Apps suchen...</string>
     
@@ -182,31 +193,13 @@
     <string name="search_google_desc">Auf Google suchen</string>
     <string name="search_play_store_desc">Im Play Store suchen</string>
     
-    <!-- Voice Error Messages -->
-    <string name="voice_error_stopped">Spracherkennung gestoppt</string>
-    <string name="voice_error_no_speech">Nichts gehört. Bitte versuche es erneut</string>
-    <string name="voice_error_network">Netzwerkproblem. Bitte prüfe deine Verbindung</string>
-    <string name="voice_error_permission">Mikrofon-Berechtigung benötigt</string>
-    <string name="voice_error_busy">Mikrofon ist beschäftigt. Bitte versuche es erneut</string>
-    <string name="voice_error_not_available">Spracherkennung nicht verfügbar</string>
-    <string name="voice_error_no_match">Konnte ich nicht verstehen. Bitte versuche es erneut</string>
-    <!-- Settings Screen - Launch Options -->
-    <string name="launch_options_card">WEGE ZUM ÖFFNEN</string>
-    <string name="launch_options_popup_title">Öffnungsmethoden wählen</string>
-    <string name="access_assistant">Du kannst Swyp Launcher auf verschiedene Weisen öffnen</string>
-    <string name="default_digital_assistant">Als Standard-Assistent festlegen</string>
-    <string name="add_home_screen_widget">Widget hinzufügen</string>
-    <string name="add_shortcut_home">Verknüpfung hinzufügen</string>
-    <string name="quick_settings_tile">Kachel für Schnelleinstellungen</string>
-    <string name="widget_description">Schnappzugriff auf Swyp Launcher</string>
     <string name="copy">Kopieren</string>
     <string name="share">Teilen</string>
     <string name="copy_to_clipboard_desc">In die Zwischenablage kopieren</string>
     <string name="share_text_desc">Text teilen</string>
 
-    <string name="swyp_launcher_tile_label">Swyp Launcher</string>
     
-        <!-- Custom Gestures -->
+    <!-- Custom Gestures -->
     <string name="gestures_card_title">GESTEN</string>
     <string name="gestures_card_hint">Funktioniert im Handschrift-Modus</string>
     <string name="active_gesture_singular">Aktive Geste</string>
@@ -231,4 +224,54 @@
     <!-- Currency Conversion -->
     <string name="currency_last_updated">Aktualisiert: %1$s</string>
     <string name="currency_no_connection">Keine Internetverbindung. Bitte prüfe dein Netzwerk und versuche es erneut</string>
+    <string name="currency_unsupported">Währung nicht unterstützt</string>
+    <string name="select_currency">Währung auswählen</string>
+
+    <!-- Unit Conversion -->
+    <string name="select_unit">Einheit auswählen</string>
+    <string name="unit_cannot_convert">Umrechnung nicht möglich</string>
+    <string name="unit_invalid_shoe_size">Gültige Schuhgröße eingeben</string>
+    <!-- Approximate human-readable subtext, e.g. "~9.46 trillion" (%1$s = number, %2$s = scale word) -->
+    <string name="unit_approx_value">~%1$s %2$s</string>
+    <string name="unit_scale_thousand">Tausend</string>
+    <string name="unit_scale_million">Millionen</string>
+    <string name="unit_scale_billion">Milliarden</string>
+    <string name="unit_scale_trillion">Billionen</string>
+    <string name="unit_scale_quadrillion">Billiarden</string>
+    <string name="unit_scale_lakh">Lakh</string>
+    <string name="unit_scale_crore">Crore</string>
+    <string name="unit_scale_lakh_crore">Lakh Crore</string>
+    <string name="unit_scale_crore_crore">Crore Crore</string>
+
+    <!-- Voice Error Messages -->
+    <string name="voice_error_stopped">Spracherkennung gestoppt</string>
+    <string name="voice_error_no_speech">Nichts gehört. Bitte versuche es erneut</string>
+    <string name="voice_error_network">Netzwerkproblem. Bitte prüfe deine Verbindung</string>
+    <string name="voice_error_permission">Mikrofon-Berechtigung benötigt</string>
+    <string name="voice_error_busy">Mikrofon ist beschäftigt. Bitte versuche es erneut</string>
+    <string name="voice_error_not_available">Spracherkennung nicht verfügbar</string>
+    <string name="voice_error_no_match">Konnte ich nicht verstehen. Bitte versuche es erneut</string>
+
+    <!-- Strings extracted from hardcoded source -->
+    <string name="biometric_authenticate_title">Authentifizieren</string>
+    <string name="biometric_authenticate_subtitle">Entsperren &amp; versteckte Apps anzeigen</string>
+    <string name="allow">Erlauben</string>
+    <string name="not_now">Nicht jetzt</string>
+    <string name="settings">Einstellungen</string>
+    <string name="mode_draw">Zeichnen</string>
+    <string name="mode_type">Tippen</string>
+    <string name="hide_app_tooltip_text">Tippe zweimal auf das Einstellungssymbol, um versteckte Apps anzuzeigen</string>
+    <string name="usage_stats_prompt_title">App-Sortierung verbessern</string>
+    <string name="usage_stats_prompt_message">Erlaube den Zugriff auf Nutzungsstatistiken, um deine meistgenutzten Apps in der ersten Zeile anzuzeigen. So startest du deine Lieblings-Apps schneller.\n\nDu wirst zu den Einstellungen weitergeleitet, um diese Berechtigung zu erteilen. Wähle Swyp Launcher und erlaube den Zugriff auf Nutzungsdaten</string>
+    <string name="version_label">Version %1$s</string>
+    <string name="version_unknown">Unbekannt</string>
+    <string name="error_failed_to_load_apps">Apps konnten nicht geladen werden</string>
+    <string name="error_failed_to_launch_app">App konnte nicht gestartet werden</string>
+    <string name="handwriting_recognition_failed">Erkennung fehlgeschlagen</string>
+    <string name="handwriting_recognizer_not_ready">Bitte warte, während die Handschrifterkennung eingerichtet wird...</string>
+    <string name="handwriting_model_error_no_internet">Keine Internetverbindung. Bitte prüfe dein Netzwerk und versuche es erneut.</string>
+    <string name="handwriting_model_error_download_failed">Download fehlgeschlagen. Bitte versuche es erneut.</string>
+    <string name="handwriting_model_error_download_generic">Handschrifterkennungsmodell konnte nicht heruntergeladen werden. Bitte versuche es erneut.</string>
+    <string name="handwriting_model_error_check_status">Modellstatus konnte nicht geprüft werden. Bitte versuche es erneut.</string>
+    <string name="handwriting_model_error_init">Handschrifterkennung konnte nicht initialisiert werden. Bitte versuche es erneut.</string>
 </resources>

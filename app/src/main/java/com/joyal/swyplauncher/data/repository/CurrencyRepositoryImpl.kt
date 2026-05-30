@@ -1,6 +1,7 @@
 package com.joyal.swyplauncher.data.repository
 
 import android.content.Context
+import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.repository.CurrencyRepository
 import com.joyal.swyplauncher.domain.repository.CurrencyRepository.RatesResult
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
@@ -69,7 +70,7 @@ class CurrencyRepositoryImpl @Inject constructor(
                 return@withLock persisted.toResult()
             }
 
-            RatesResult.Error("No internet connection. Please check your network & try again.")
+            RatesResult.Error(context.getString(R.string.currency_no_connection))
         }
     }
 

@@ -70,6 +70,17 @@
     <string name="license">许可证</string>
     <string name="version_format">版本 %1$s</string>
     
+    <!-- Settings Screen - Launch Options -->
+    <string name="launch_options_card">打开方式</string>
+    <string name="launch_options_popup_title">选择打开方式</string>
+    <string name="access_assistant">可以通过多种方式打开 Swyp Launcher</string>
+    <string name="default_digital_assistant">设为默认助手</string>
+    <string name="add_home_screen_widget">添加主屏幕小部件</string>
+    <string name="add_shortcut_home">添加快捷方式</string>
+    <string name="quick_settings_tile">快速设置磁贴</string>
+    <string name="widget_description">快速访问 Swyp Launcher</string>
+    <string name="swyp_launcher_tile_label">Swyp Launcher</string>
+
     <!-- Dialog buttons -->
     <string name="cancel">取消</string>
     <string name="save">保存</string>
@@ -154,7 +165,7 @@
     <string name="how_to_enable">如何启用：</string>
     <string name="assistant_instruction">在下一屏幕点击“默认数字助理应用”并选择“Swyp Launcher”</string>
     <string name="to_launch_using_gesture">使用导航手势和电源键启动</string>
-    
+
     <!-- Handwriting Mode -->
     <string name="handwriting_ready">手写识别就绪</string>
     <string name="downloading_model">正在下载手写识别模型...</string>
@@ -163,7 +174,7 @@
     <string name="undo">撤销</string>
     <string name="clear_action">清除</string>
     <string name="retry">重试</string>
-    
+
     <!-- Voice Mode -->
     <string name="mic_permission_required">需要麦克风权限</string>
     <string name="open_settings">打开设置</string>
@@ -171,7 +182,7 @@
     <string name="listening_status">正在聆听...</string>
     <string name="stop">停止</string>
     <string name="start_listening">开始聆听</string>
-    
+
     <!-- Keyboard Mode -->
     <string name="search_apps_hint">搜索应用...</string>
     
@@ -182,30 +193,13 @@
     <string name="search_google_desc">在 Google 上搜索</string>
     <string name="search_play_store_desc">在 Play 商店搜索</string>
     
-    <!-- Voice Error Messages -->
-    <string name="voice_error_stopped">语音识别已停止</string>
-    <string name="voice_error_no_speech">未检测到语音。请重试</string>
-    <string name="voice_error_network">网络问题。请检查连接</string>
-    <string name="voice_error_permission">需要麦克风权限</string>
-    <string name="voice_error_busy">麦克风忙。请重试</string>
-    <string name="voice_error_not_available">语音识别不可用</string>
-    <string name="voice_error_no_match">无法理解。请重试</string>
-    <!-- Settings Screen - Launch Options -->
-    <string name="launch_options_card">打开方式</string>
-    <string name="launch_options_popup_title">选择打开方式</string>
-    <string name="access_assistant">可以通过多种方式打开 Swyp Launcher</string>
-    <string name="default_digital_assistant">设为默认助手</string>
-    <string name="add_home_screen_widget">添加主屏幕小部件</string>
-    <string name="add_shortcut_home">添加快捷方式</string>
-    <string name="quick_settings_tile">快速设置磁贴</string>
-    <string name="widget_description">快速访问 Swyp Launcher</string>
-    <string name="swyp_launcher_tile_label">Swyp Launcher</string>
     <string name="copy">复制</string>
     <string name="share">分享</string>
     <string name="copy_to_clipboard_desc">复制到剪贴板</string>
     <string name="share_text_desc">分享文本</string>
 
-        <!-- Custom Gestures -->
+    
+    <!-- Custom Gestures -->
     <string name="gestures_card_title">手势</string>
     <string name="gestures_card_hint">在手写模式下使用</string>
     <string name="active_gesture_singular">当前启用的手势</string>
@@ -230,4 +224,54 @@
     <!-- Currency Conversion -->
     <string name="currency_last_updated">更新于：%1$s</string>
     <string name="currency_no_connection">无网络连接。请检查网络后重试</string>
+    <string name="currency_unsupported">不支持的货币</string>
+    <string name="select_currency">选择货币</string>
+
+    <!-- Unit Conversion -->
+    <string name="select_unit">选择单位</string>
+    <string name="unit_cannot_convert">无法转换</string>
+    <string name="unit_invalid_shoe_size">请输入有效的鞋码</string>
+    <!-- Approximate human-readable subtext, e.g. "~9.46 trillion" (%1$s = number, %2$s = scale word) -->
+    <string name="unit_approx_value">~%1$s %2$s</string>
+    <string name="unit_scale_thousand">千</string>
+    <string name="unit_scale_million">百万</string>
+    <string name="unit_scale_billion">十亿</string>
+    <string name="unit_scale_trillion">万亿</string>
+    <string name="unit_scale_quadrillion">千万亿</string>
+    <string name="unit_scale_lakh">拉克</string>
+    <string name="unit_scale_crore">克若尔</string>
+    <string name="unit_scale_lakh_crore">拉克克若尔</string>
+    <string name="unit_scale_crore_crore">克若尔克若尔</string>
+
+    <!-- Voice Error Messages -->
+    <string name="voice_error_stopped">语音识别已停止</string>
+    <string name="voice_error_no_speech">未检测到语音。请重试</string>
+    <string name="voice_error_network">网络问题。请检查连接</string>
+    <string name="voice_error_permission">需要麦克风权限</string>
+    <string name="voice_error_busy">麦克风忙。请重试</string>
+    <string name="voice_error_not_available">语音识别不可用</string>
+    <string name="voice_error_no_match">无法理解。请重试</string>
+
+    <!-- Strings extracted from hardcoded source -->
+    <string name="biometric_authenticate_title">验证身份</string>
+    <string name="biometric_authenticate_subtitle">解锁并查看隐藏应用</string>
+    <string name="allow">允许</string>
+    <string name="not_now">暂不</string>
+    <string name="settings">设置</string>
+    <string name="mode_draw">手写</string>
+    <string name="mode_type">键入</string>
+    <string name="hide_app_tooltip_text">双击设置图标查看隐藏应用</string>
+    <string name="usage_stats_prompt_title">优化应用排列顺序</string>
+    <string name="usage_stats_prompt_message">允许使用情况访问权限，即可将最常用的应用显示在第一行，帮助你更快启动喜爱的应用。\n\n系统将跳转至设置页面以授予此权限。请选择 Swyp Launcher 并允许使用情况访问</string>
+    <string name="version_label">版本 %1$s</string>
+    <string name="version_unknown">未知</string>
+    <string name="error_failed_to_load_apps">加载应用失败</string>
+    <string name="error_failed_to_launch_app">启动应用失败</string>
+    <string name="handwriting_recognition_failed">识别失败</string>
+    <string name="handwriting_recognizer_not_ready">正在设置手写识别，请稍候...</string>
+    <string name="handwriting_model_error_no_internet">无网络连接，请检查网络后重试。</string>
+    <string name="handwriting_model_error_download_failed">下载失败，请重试。</string>
+    <string name="handwriting_model_error_download_generic">手写识别模型下载失败，请重试。</string>
+    <string name="handwriting_model_error_check_status">检查模型状态失败，请重试。</string>
+    <string name="handwriting_model_error_init">初始化手写识别失败，请重试。</string>
 </resources>

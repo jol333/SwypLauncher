@@ -223,6 +223,24 @@
     <!-- Currency Conversion -->
     <string name="currency_last_updated">Updated: %1$s</string>
     <string name="currency_no_connection">No internet connection. Please check your network &amp; try again</string>
+    <string name="currency_unsupported">Unsupported currency</string>
+    <string name="select_currency">Select currency</string>
+
+    <!-- Unit Conversion -->
+    <string name="select_unit">Select unit</string>
+    <string name="unit_cannot_convert">Cannot convert</string>
+    <string name="unit_invalid_shoe_size">Enter a valid shoe size</string>
+    <!-- Approximate human-readable subtext, e.g. "~9.46 trillion" (%1$s = number, %2$s = scale word) -->
+    <string name="unit_approx_value">~%1$s %2$s</string>
+    <string name="unit_scale_thousand">thousand</string>
+    <string name="unit_scale_million">million</string>
+    <string name="unit_scale_billion">billion</string>
+    <string name="unit_scale_trillion">trillion</string>
+    <string name="unit_scale_quadrillion">quadrillion</string>
+    <string name="unit_scale_lakh">lakh</string>
+    <string name="unit_scale_crore">crore</string>
+    <string name="unit_scale_lakh_crore">lakh crore</string>
+    <string name="unit_scale_crore_crore">crore crore</string>
 
     <!-- Voice Error Messages -->
     <string name="voice_error_stopped">Voice recognition stopped</string>
@@ -232,4 +250,27 @@
     <string name="voice_error_busy">Microphone is busy. Please try again</string>
     <string name="voice_error_not_available">Voice recognition not available</string>
     <string name="voice_error_no_match">Couldn\'t understand. Please try again</string>
+
+    <!-- Strings extracted from hardcoded source -->
+    <string name="biometric_authenticate_title">Authenticate</string>
+    <string name="biometric_authenticate_subtitle">Unlock &amp; view hidden apps</string>
+    <string name="allow">Allow</string>
+    <string name="not_now">Not Now</string>
+    <string name="settings">Settings</string>
+    <string name="mode_draw">Draw</string>
+    <string name="mode_type">Type</string>
+    <string name="hide_app_tooltip_text">Double tap Settings icon to view hidden apps</string>
+    <string name="usage_stats_prompt_title">Improve App Listing Order</string>
+    <string name="usage_stats_prompt_message">Allow usage access to show your most used apps in the first row. This helps you launch your favorite apps faster.\n\nYou\'ll be taken to the settings screen to grant this permission. Select Swyp Launcher and permit usage access</string>
+    <string name="version_label">Version %1$s</string>
+    <string name="version_unknown">Unknown</string>
+    <string name="error_failed_to_load_apps">Failed to load apps</string>
+    <string name="error_failed_to_launch_app">Failed to launch app</string>
+    <string name="handwriting_recognition_failed">Recognition failed</string>
+    <string name="handwriting_recognizer_not_ready">Please wait while we set up handwriting recognition...</string>
+    <string name="handwriting_model_error_no_internet">No internet connection. Please check your network and try again.</string>
+    <string name="handwriting_model_error_download_failed">Download failed. Please try again.</string>
+    <string name="handwriting_model_error_download_generic">Failed to download handwriting recognition model. Please try again.</string>
+    <string name="handwriting_model_error_check_status">Failed to check model status. Please try again.</string>
+    <string name="handwriting_model_error_init">Failed to initialize handwriting recognition. Please try again.</string>
 </resources>

@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +53,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.ui.state.CurrencyResultState
 import com.joyal.swyplauncher.util.CurrencyData
 import com.joyal.swyplauncher.util.UnitUtil
@@ -300,7 +302,7 @@ private fun CurrencyDropdown(
                 )
                 Icon(
                     imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = "Select Currency",
+                    contentDescription = stringResource(R.string.select_currency),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }

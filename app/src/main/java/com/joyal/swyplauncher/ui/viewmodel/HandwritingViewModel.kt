@@ -1,14 +1,17 @@
 package com.joyal.swyplauncher.ui.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.joyal.swyplauncher.domain.model.CustomGesture
 import com.joyal.swyplauncher.domain.model.InkStroke
+import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.RecognitionResult
 import com.joyal.swyplauncher.domain.usecase.RecognizeHandwritingUseCase
 import com.joyal.swyplauncher.ui.state.HandwritingUiState
 import com.joyal.swyplauncher.util.GestureRecognizer
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HandwritingViewModel @Inject constructor(
     private val recognizeHandwritingUseCase: RecognizeHandwritingUseCase,
-    private val preferencesRepository: com.joyal.swyplauncher.domain.repository.PreferencesRepository
+    private val preferencesRepository: com.joyal.swyplauncher.domain.repository.PreferencesRepository,
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -64,7 +68,7 @@ class HandwritingViewModel @Inject constructor(
                     it.copy(
                         isInitialized = false,
                         recognitionResult = RecognitionResult.Error(
-                            message = result.exceptionOrNull()?.message ?: "Failed to download handwriting recognition model. Please try again.",
+                            message = result.exceptionOrNull()?.message ?: context.getString(R.string.handwriting_model_error_download_generic),
                             isInitializationError = true
                         )
                     )
@@ -119,7 +123,7 @@ class HandwritingViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         recognitionResult = RecognitionResult.Error(
-                            result.exceptionOrNull()?.message ?: "Recognition failed"
+                            result.exceptionOrNull()?.message ?: context.getString(R.string.handwriting_recognition_failed)
                         )
                     )
                 }

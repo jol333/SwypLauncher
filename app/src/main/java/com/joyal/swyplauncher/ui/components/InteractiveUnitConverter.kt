@@ -41,6 +41,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.ui.state.UnitResultState
 import com.joyal.swyplauncher.util.UnitData
 import com.joyal.swyplauncher.util.UnitUtil
@@ -264,7 +266,7 @@ private fun UnitDropdown(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Icon(Icons.Default.ArrowDropDown, contentDescription = "Select unit", tint = MaterialTheme.colorScheme.onSurface)
+                Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(R.string.select_unit), tint = MaterialTheme.colorScheme.onSurface)
             }
         }
 

@@ -38,9 +38,9 @@ object CurrencyUtil {
                 val tm = context.getSystemService(Context.TELEPHONY_SERVICE)
                     as? android.telephony.TelephonyManager
                 tm?.simCountryIso?.takeIf { it.isNotBlank() }
-                    ?.let { add(Locale("", it.uppercase())) }
+                    ?.let { add(Locale.Builder().setRegion(it.uppercase()).build()) }
                 tm?.networkCountryIso?.takeIf { it.isNotBlank() }
-                    ?.let { add(Locale("", it.uppercase())) }
+                    ?.let { add(Locale.Builder().setRegion(it.uppercase()).build()) }
             }
             runCatching {
                 val sys = android.content.res.Resources.getSystem().configuration.locales

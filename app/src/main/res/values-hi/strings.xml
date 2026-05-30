@@ -70,6 +70,17 @@
     <string name="license">लाइसेंस</string>
     <string name="version_format">वर्ज़न %1$s</string>
     
+    <!-- Settings Screen - Launch Options -->
+    <string name="launch_options_card">खोलने के तरीके</string>
+    <string name="launch_options_popup_title">खोलने के तरीके चुनें</string>
+    <string name="access_assistant">Swyp Launcher को कई तरीकों से खोला जा सकता है</string>
+    <string name="default_digital_assistant">डिफ़ॉल्ट असिस्टेंट सेट करें</string>
+    <string name="add_home_screen_widget">होम स्क्रीन विजेट जोड़ें</string>
+    <string name="add_shortcut_home">शॉर्टकट जोड़ें</string>
+    <string name="quick_settings_tile">क्विक सेटिंग्स टाइल</string>
+    <string name="widget_description">Swyp Launcher मोड्स तक तुरंत पहुँचें</string>
+    <string name="swyp_launcher_tile_label">Swyp Launcher</string>
+
     <!-- Dialog buttons -->
     <string name="cancel">कैंसिल</string>
     <string name="save">सेव</string>
@@ -154,7 +165,7 @@
     <string name="how_to_enable">इनेबल कैसे करें:</string>
     <string name="assistant_instruction">अगली स्क्रीन पर \'Default digital assistant app\' पर क्लिक करें और \'Swyp Launcher\' चुनें</string>
     <string name="to_launch_using_gesture">नेविगेशन जेस्चर और पावर बटन से लॉन्च करने के लिए</string>
-    
+
     <!-- Handwriting Mode -->
     <string name="handwriting_ready">लिखावट पहचानने के लिए तैयार</string>
     <string name="downloading_model">मॉडल डाउनलोड हो रहा है...</string>
@@ -163,7 +174,7 @@
     <string name="undo">अंडू (Undo)</string>
     <string name="clear_action">साफ़ करें</string>
     <string name="retry">फिर कोशिश करें</string>
-    
+
     <!-- Voice Mode -->
     <string name="mic_permission_required">माइक की परमिशन चाहिए</string>
     <string name="open_settings">सेटिंग्स खोलें</string>
@@ -171,7 +182,7 @@
     <string name="listening_status">सुन रहा हूँ...</string>
     <string name="stop">रोकें</string>
     <string name="start_listening">सुनना शुरू करें</string>
-    
+
     <!-- Keyboard Mode -->
     <string name="search_apps_hint">Apps सर्च करें...</string>
     
@@ -182,30 +193,13 @@
     <string name="search_google_desc">Google पर सर्च करें</string>
     <string name="search_play_store_desc">Play Store पर सर्च करें</string>
     
-    <!-- Voice Error Messages -->
-    <string name="voice_error_stopped">वॉइस रिकग्निशन रुक गया</string>
-    <string name="voice_error_no_speech">कुछ सुनाई नहीं दिया। कृपया फिर कोशिश करें</string>
-    <string name="voice_error_network">नेटवर्क की दिक्कत है। कृपया अपना कनेक्शन चेक करें</string>
-    <string name="voice_error_permission">माइक की परमिशन चाहिए</string>
-    <string name="voice_error_busy">माइक बिज़ी है। कृपया फिर कोशिश करें</string>
-    <string name="voice_error_not_available">वॉइस रिकग्निशन उपलब्ध नहीं है</string>
-    <string name="voice_error_no_match">समझ नहीं आया। कृपया फिर कोशिश करें</string>
-    <!-- Settings Screen - Launch Options -->
-    <string name="launch_options_card">खोलने के तरीके</string>
-    <string name="launch_options_popup_title">खोलने के तरीके चुनें</string>
-    <string name="access_assistant">Swyp Launcher को कई तरीकों से खोला जा सकता है</string>
-    <string name="default_digital_assistant">डिफ़ॉल्ट असिस्टेंट सेट करें</string>
-    <string name="add_home_screen_widget">होम स्क्रीन विजेट जोड़ें</string>
-    <string name="add_shortcut_home">शॉर्टकट जोड़ें</string>
-    <string name="quick_settings_tile">क्विक सेटिंग्स टाइल</string>
-    <string name="widget_description">Swyp Launcher मोड्स तक तुरंत पहुँचें</string>
-    <string name="swyp_launcher_tile_label">Swyp Launcher</string>
     <string name="copy">कॉपी करें</string>
     <string name="share">शेयर करें</string>
     <string name="copy_to_clipboard_desc">क्लिपबोर्ड पर कॉपी करें</string>
     <string name="share_text_desc">टेक्स्ट शेयर करें</string>
 
-        <!-- Custom Gestures -->
+    
+    <!-- Custom Gestures -->
     <string name="gestures_card_title">GESTURES</string>
     <string name="gestures_card_hint">Handwriting मोड में काम करता है</string>
     <string name="active_gesture_singular">Active जेस्चर</string>
@@ -230,4 +224,54 @@
     <!-- Currency Conversion -->
     <string name="currency_last_updated">अपडेट किया गया: %1$s</string>
     <string name="currency_no_connection">इंटरनेट कनेक्शन नहीं है। कृपया अपना नेटवर्क चेक करके फिर कोशिश करें</string>
+    <string name="currency_unsupported">असमर्थित मुद्रा</string>
+    <string name="select_currency">मुद्रा चुनें</string>
+
+    <!-- Unit Conversion -->
+    <string name="select_unit">इकाई चुनें</string>
+    <string name="unit_cannot_convert">रूपांतरण नहीं हो सका</string>
+    <string name="unit_invalid_shoe_size">मान्य जूते का साइज़ दर्ज करें</string>
+    <!-- Approximate human-readable subtext, e.g. "~9.46 trillion" (%1$s = number, %2$s = scale word) -->
+    <string name="unit_approx_value">~%1$s %2$s</string>
+    <string name="unit_scale_thousand">हज़ार</string>
+    <string name="unit_scale_million">मिलियन</string>
+    <string name="unit_scale_billion">बिलियन</string>
+    <string name="unit_scale_trillion">ट्रिलियन</string>
+    <string name="unit_scale_quadrillion">क्वाड्रिलियन</string>
+    <string name="unit_scale_lakh">लाख</string>
+    <string name="unit_scale_crore">करोड़</string>
+    <string name="unit_scale_lakh_crore">लाख करोड़</string>
+    <string name="unit_scale_crore_crore">करोड़ करोड़</string>
+
+    <!-- Voice Error Messages -->
+    <string name="voice_error_stopped">वॉइस रिकग्निशन रुक गया</string>
+    <string name="voice_error_no_speech">कुछ सुनाई नहीं दिया। कृपया फिर कोशिश करें</string>
+    <string name="voice_error_network">नेटवर्क की दिक्कत है। कृपया अपना कनेक्शन चेक करें</string>
+    <string name="voice_error_permission">माइक की परमिशन चाहिए</string>
+    <string name="voice_error_busy">माइक बिज़ी है। कृपया फिर कोशिश करें</string>
+    <string name="voice_error_not_available">वॉइस रिकग्निशन उपलब्ध नहीं है</string>
+    <string name="voice_error_no_match">समझ नहीं आया। कृपया फिर कोशिश करें</string>
+
+    <!-- Strings extracted from hardcoded source -->
+    <string name="biometric_authenticate_title">प्रमाणित करें</string>
+    <string name="biometric_authenticate_subtitle">अनलॉक करें और छिपे हुए ऐप्स देखें</string>
+    <string name="allow">अनुमति दें</string>
+    <string name="not_now">अभी नहीं</string>
+    <string name="settings">सेटिंग</string>
+    <string name="mode_draw">बनाएं</string>
+    <string name="mode_type">टाइप करें</string>
+    <string name="hide_app_tooltip_text">छिपे हुए ऐप्स देखने के लिए सेटिंग आइकन पर दो बार टैप करें</string>
+    <string name="usage_stats_prompt_title">ऐप सूची का क्रम बेहतर बनाएं</string>
+    <string name="usage_stats_prompt_message">अपने सबसे ज़्यादा इस्तेमाल किए गए ऐप्स को पहली पंक्ति में दिखाने के लिए उपयोग एक्सेस की अनुमति दें। इससे आप अपने पसंदीदा ऐप्स तेज़ी से खोल पाएंगे।\n\nयह अनुमति देने के लिए आपको सेटिंग स्क्रीन पर ले जाया जाएगा। Swyp Launcher चुनें और उपयोग एक्सेस की अनुमति दें</string>
+    <string name="version_label">वर्शन %1$s</string>
+    <string name="version_unknown">अज्ञात</string>
+    <string name="error_failed_to_load_apps">ऐप्स लोड करने में विफल</string>
+    <string name="error_failed_to_launch_app">ऐप खोलने में विफल</string>
+    <string name="handwriting_recognition_failed">पहचान विफल रही</string>
+    <string name="handwriting_recognizer_not_ready">कृपया प्रतीक्षा करें, हम हस्तलेखन पहचान सेट कर रहे हैं...</string>
+    <string name="handwriting_model_error_no_internet">इंटरनेट कनेक्शन नहीं है। कृपया अपना नेटवर्क जांचें और फिर से प्रयास करें।</string>
+    <string name="handwriting_model_error_download_failed">डाउनलोड विफल रहा। कृपया फिर से प्रयास करें।</string>
+    <string name="handwriting_model_error_download_generic">हस्तलेखन पहचान मॉडल डाउनलोड करने में विफल। कृपया फिर से प्रयास करें।</string>
+    <string name="handwriting_model_error_check_status">मॉडल की स्थिति जांचने में विफल। कृपया फिर से प्रयास करें।</string>
+    <string name="handwriting_model_error_init">हस्तलेखन पहचान शुरू करने में विफल। कृपया फिर से प्रयास करें।</string>
 </resources>

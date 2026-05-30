@@ -12,6 +12,7 @@ import com.google.mlkit.vision.digitalink.recognition.DigitalInkRecognitionModel
 import com.google.mlkit.vision.digitalink.recognition.DigitalInkRecognizer
 import com.google.mlkit.vision.digitalink.recognition.DigitalInkRecognizerOptions
 import com.google.mlkit.vision.digitalink.recognition.Ink
+import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.InkStroke
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
@@ -97,15 +98,15 @@ class MLKitDataSource @Inject constructor(
                                                     "internet",
                                                     ignoreCase = true
                                                 ) == true ->
-                                            "No internet connection. Please check your network and try again."
+                                            context.getString(R.string.handwriting_model_error_no_internet)
 
                                         e.message?.contains(
                                             "download",
                                             ignoreCase = true
                                         ) == true ->
-                                            "Download failed. Please try again."
+                                            context.getString(R.string.handwriting_model_error_download_failed)
 
-                                        else -> "Failed to download handwriting recognition model. Please try again."
+                                        else -> context.getString(R.string.handwriting_model_error_download_generic)
                                     }
                                     if (continuation.isActive) {
                                         continuation.resume(Result.failure(Exception(errorMessage)))
@@ -115,12 +116,12 @@ class MLKitDataSource @Inject constructor(
                     }
                     .addOnFailureListener { e ->
                         if (continuation.isActive) {
-                            continuation.resume(Result.failure(Exception("Failed to check model status. Please try again.")))
+                            continuation.resume(Result.failure(Exception(context.getString(R.string.handwriting_model_error_check_status))))
                         }
                     }
             } catch (e: Exception) {
                 if (continuation.isActive) {
-                    continuation.resume(Result.failure(Exception("Failed to initialize handwriting recognition. Please try again.")))
+                    continuation.resume(Result.failure(Exception(context.getString(R.string.handwriting_model_error_init))))
                 }
             }
         }
@@ -129,7 +130,7 @@ class MLKitDataSource @Inject constructor(
         suspendCancellableCoroutine { continuation ->
             val recognizer = digitalInkRecognizer
             if (recognizer == null) {
-                continuation.resume(Result.failure(Exception("Please wait while we set up handwriting recognition...")))
+                continuation.resume(Result.failure(Exception(context.getString(R.string.handwriting_recognizer_not_ready))))
                 return@suspendCancellableCoroutine
             }
 

@@ -3,6 +3,7 @@ package com.joyal.swyplauncher.ui.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.repository.CurrencyRepository
 import com.joyal.swyplauncher.domain.usecase.GetCachedInstalledAppsUseCase
@@ -125,7 +126,7 @@ class LauncherViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "Failed to load apps"
+                        error = e.message ?: appContext.getString(R.string.error_failed_to_load_apps)
                     )
                 }
             }
@@ -319,14 +320,17 @@ class LauncherViewModel @Inject constructor(
         if (spec?.category == UnitData.Category.NUMERAL || spec?.category == UnitData.Category.SHOE_SIZE || spec?.category == UnitData.Category.DATA) {
             return null
         }
-        val human = UnitUtil.humanReadable(value, unitRegion.indian) ?: return null
+        val human = UnitUtil.humanReadable(appContext, value, unitRegion.indian) ?: return null
         val unitName = spec?.aliases?.getOrNull(1) ?: spec?.aliases?.firstOrNull() ?: spec?.symbol ?: return human
         return "$human $unitName"
     }
 
     // Failed-conversion message, tailored for shoe sizes (out-of-range / negative input)
     private fun convError(category: UnitData.Category): String =
-        if (category == UnitData.Category.SHOE_SIZE) "Enter a valid shoe size" else "Cannot convert"
+        appContext.getString(
+            if (category == UnitData.Category.SHOE_SIZE) R.string.unit_invalid_shoe_size
+            else R.string.unit_cannot_convert
+        )
 
     // Interactive unit edits (typing a value or changing a unit). Synchronous recompute.
     fun updateUnitConversion(amount: Double, fromId: String, toId: String, isSourceChanged: Boolean, mode: CurrencyMode) {
@@ -402,7 +406,7 @@ class LauncherViewModel @Inject constructor(
                 if (converted == null) {
                     CurrencyResultState(
                         sourceAmount = parsed.amount,
-                        error = "Unsupported currency",
+                        error = appContext.getString(R.string.currency_unsupported),
                         fromCode = parsed.from,
                         toCode = parsed.to
                     )
@@ -480,7 +484,7 @@ class LauncherViewModel @Inject constructor(
                         CurrencyResultState(
                             sourceAmount = if (isSourceChanged) parsed.amount else 0.0, // Error state
                             targetAmount = if (!isSourceChanged) parsed.amount else null,
-                            error = "Unsupported currency",
+                            error = appContext.getString(R.string.currency_unsupported),
                             fromCode = if (isSourceChanged) parsed.from else parsed.to,
                             toCode = if (isSourceChanged) parsed.to else parsed.from
                         )
@@ -635,7 +639,7 @@ class LauncherViewModel @Inject constructor(
             val result = launchAppUseCase(packageName, activityName)
             if (result.isFailure) {
                 _uiState.update {
-                    it.copy(error = result.exceptionOrNull()?.message ?: "Failed to launch app")
+                    it.copy(error = result.exceptionOrNull()?.message ?: appContext.getString(R.string.error_failed_to_launch_app))
                 }
             } else {
                 // Refresh smart apps after successful launch for all modes
@@ -783,7 +787,7 @@ class LauncherViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "Failed to load apps"
+                        error = e.message ?: appContext.getString(R.string.error_failed_to_load_apps)
                     )
                 }
             }

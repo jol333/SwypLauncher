@@ -533,7 +533,7 @@ fun BentoSettingsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Privacy Policy",
+                                text = stringResource(R.string.privacy_policy),
                                 style = BentoTypography.labelSmall,
                                 color = BentoColors.TextMuted,
                                 modifier = Modifier.clickable {
@@ -546,7 +546,7 @@ fun BentoSettingsScreen(
                                 color = BentoColors.TextMuted
                             )
                             Text(
-                                text = "Source Code",
+                                text = stringResource(R.string.source_code),
                                 style = BentoTypography.labelSmall,
                                 color = BentoColors.TextMuted,
                                 modifier = Modifier.clickable {
@@ -559,7 +559,7 @@ fun BentoSettingsScreen(
                                 color = BentoColors.TextMuted
                             )
                             Text(
-                                text = "License",
+                                text = stringResource(R.string.license),
                                 style = BentoTypography.labelSmall,
                                 color = BentoColors.TextMuted,
                                 modifier = Modifier.clickable {
@@ -575,14 +575,14 @@ fun BentoSettingsScreen(
                                 context.packageManager.getPackageInfo(
                                     context.packageName,
                                     0
-                                ).versionName
+                                ).versionName ?: context.getString(R.string.version_unknown)
                             } catch (e: Exception) {
-                                "Unknown"
+                                context.getString(R.string.version_unknown)
                             }
                         }
 
                         Text(
-                            text = "Version $versionName",
+                            text = stringResource(R.string.version_label, versionName),
                             style = BentoTypography.labelSmall,
                             color = BentoColors.TextMuted.copy(alpha = 0.5f)
                         )

@@ -70,6 +70,17 @@
     <string name="license">ലൈസൻസ്</string>
     <string name="version_format">പതിപ്പ് %1$s</string>
     
+    <!-- Settings Screen - Launch Options -->
+    <string name="launch_options_card">തുറക്കാനുള്ള വഴികൾ</string>
+    <string name="launch_options_popup_title">തുറക്കാനുള്ള വഴികൾ തിരഞ്ഞെടുക്കുക</string>
+    <string name="access_assistant">സ്വൈപ് ലോഞ്ചർ പല വഴികളിലൂടെ തുറക്കാം</string>
+    <string name="default_digital_assistant">ഡിഫോൾട്ട് അസിസ്റ്റന്റായി സെറ്റ് ചെയ്യുക</string>
+    <string name="add_home_screen_widget">ഹോം സ്ക്രീൻ വിഡ്ജെറ്റ് ചേർക്കുക</string>
+    <string name="add_shortcut_home">ഷോർട്ട് കട്ട് ചേർക്കുക</string>
+    <string name="quick_settings_tile">ക്വിക്ക് സെറ്റിംഗ്സ് ടൈൽ</string>
+    <string name="widget_description">ഇത് വഴി എളുപ്പത്തിൽ Swyp Launcher തുറക്കാം</string>
+    <string name="swyp_launcher_tile_label">സ്വൈപ് ലോഞ്ചർ</string>
+
     <!-- Dialog buttons -->
     <string name="cancel">ഇപ്പൊ വേണ്ട</string>
     <string name="save">സേവ് ചെയ്യുക</string>
@@ -174,37 +185,21 @@
 
     <!-- Keyboard Mode -->
     <string name="search_apps_hint">ആപ്പുകൾ തിരയുക...</string>
-
+    
     <!-- Shared -->
     <string name="no_apps_found">ആപ്പുകളൊന്നും കണ്ടെത്തിയില്ല</string>
     <string name="google">ഗൂഗിൾ</string>
     <string name="play_store">പ്ലേ സ്റ്റോർ</string>
     <string name="search_google_desc">ഗൂഗിളിൽ തിരയുക</string>
     <string name="search_play_store_desc">പ്ലേ സ്റ്റോറിൽ തിരയുക</string>
-    <!-- Voice Error Messages -->
-    <string name="voice_error_stopped">വോയ്സ് റെക്കഗ്നീഷൻ നിർത്തി</string>
-    <string name="voice_error_no_speech">ഒന്നും കേട്ടില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക</string>
-    <string name="voice_error_network">നെറ്റ്‌വർക്ക് പ്രശ്നം. ദയവായി കണക്ഷൻ പരിശോധിക്കുക</string>
-    <string name="voice_error_permission">മൈക്രോഫോൺ അനുമതി ആവശ്യമാണ്</string>
-    <string name="voice_error_busy">മൈക്രോഫോൺ തിരക്കിലാണ്. ദയവായി വീണ്ടും ശ്രമിക്കുക</string>
-    <string name="voice_error_not_available">വോയ്സ് റെക്കഗ്നീഷൻ ലഭ്യമല്ല</string>
-    <string name="voice_error_no_match">മനസ്സിലായില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക</string>
-    <!-- Settings Screen - Launch Options -->
-    <string name="launch_options_card">തുറക്കാനുള്ള വഴികൾ</string>
-    <string name="launch_options_popup_title">തുറക്കാനുള്ള വഴികൾ തിരഞ്ഞെടുക്കുക</string>
-    <string name="access_assistant">സ്വൈപ് ലോഞ്ചർ പല വഴികളിലൂടെ തുറക്കാം</string>
-    <string name="default_digital_assistant">ഡിഫോൾട്ട് അസിസ്റ്റന്റായി സെറ്റ് ചെയ്യുക</string>
-    <string name="add_home_screen_widget">ഹോം സ്ക്രീൻ വിഡ്ജെറ്റ് ചേർക്കുക</string>
-    <string name="add_shortcut_home">ഷോർട്ട് കട്ട് ചേർക്കുക</string>
-    <string name="quick_settings_tile">ക്വിക്ക് സെറ്റിംഗ്സ് ടൈൽ</string>
-    <string name="widget_description">ഇത് വഴി എളുപ്പത്തിൽ Swyp Launcher തുറക്കാം</string>
-    <string name="swyp_launcher_tile_label">സ്വൈപ് ലോഞ്ചർ</string>
+    
     <string name="copy">കോപ്പി ചെയ്യൂ</string>
     <string name="share">ഷെയർ ചെയ്യൂ</string>
     <string name="copy_to_clipboard_desc">ക്ലിപ്പ്ബോർഡിലേക്ക് പകർത്തുക</string>
     <string name="share_text_desc">ടെക്സ്റ്റ് പങ്കിടുക</string>
 
-        <!-- Custom Gestures -->
+    
+    <!-- Custom Gestures -->
     <string name="gestures_card_title">ജെസ്ചറുകൾ</string>
     <string name="gestures_card_hint">കൈയെഴുത്ത് മോഡിൽ പ്രവർത്തിക്കുന്നു</string>
     <string name="active_gesture_singular">സജീവമായ ജെസ്ചർ</string>
@@ -229,4 +224,54 @@
     <!-- Currency Conversion -->
     <string name="currency_last_updated">അപ്ഡേറ്റ് ചെയ്തു: %1$s</string>
     <string name="currency_no_connection">ഇന്റർനെറ്റ് കണക്ഷൻ ഇല്ല. ദയവായി നെറ്റ്‌വർക്ക് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക</string>
+    <string name="currency_unsupported">പിന്തുണയ്ക്കാത്ത കറൻസി</string>
+    <string name="select_currency">കറൻസി തിരഞ്ഞെടുക്കുക</string>
+
+    <!-- Unit Conversion -->
+    <string name="select_unit">യൂണിറ്റ് തിരഞ്ഞെടുക്കുക</string>
+    <string name="unit_cannot_convert">പരിവർത്തനം ചെയ്യാനായില്ല</string>
+    <string name="unit_invalid_shoe_size">സാധുവായ ഷൂ സൈസ് നൽകുക</string>
+    <!-- Approximate human-readable subtext, e.g. "~9.46 trillion" (%1$s = number, %2$s = scale word) -->
+    <string name="unit_approx_value">~%1$s %2$s</string>
+    <string name="unit_scale_thousand">ആയിരം</string>
+    <string name="unit_scale_million">മില്യൺ</string>
+    <string name="unit_scale_billion">ബില്യൺ</string>
+    <string name="unit_scale_trillion">ട്രില്യൺ</string>
+    <string name="unit_scale_quadrillion">ക്വാഡ്രില്യൺ</string>
+    <string name="unit_scale_lakh">ലക്ഷം</string>
+    <string name="unit_scale_crore">കോടി</string>
+    <string name="unit_scale_lakh_crore">ലക്ഷം കോടി</string>
+    <string name="unit_scale_crore_crore">കോടി കോടി</string>
+
+    <!-- Voice Error Messages -->
+    <string name="voice_error_stopped">വോയ്സ് റെക്കഗ്നീഷൻ നിർത്തി</string>
+    <string name="voice_error_no_speech">ഒന്നും കേട്ടില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക</string>
+    <string name="voice_error_network">നെറ്റ്‌വർക്ക് പ്രശ്നം. ദയവായി കണക്ഷൻ പരിശോധിക്കുക</string>
+    <string name="voice_error_permission">മൈക്രോഫോൺ അനുമതി ആവശ്യമാണ്</string>
+    <string name="voice_error_busy">മൈക്രോഫോൺ തിരക്കിലാണ്. ദയവായി വീണ്ടും ശ്രമിക്കുക</string>
+    <string name="voice_error_not_available">വോയ്സ് റെക്കഗ്നീഷൻ ലഭ്യമല്ല</string>
+    <string name="voice_error_no_match">മനസ്സിലായില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക</string>
+
+    <!-- Strings extracted from hardcoded source -->
+    <string name="biometric_authenticate_title">ആധികാരികത ഉറപ്പാക്കുക</string>
+    <string name="biometric_authenticate_subtitle">അൺലോക്ക് ചെയ്ത് മറച്ച ആപ്പുകൾ കാണുക</string>
+    <string name="allow">അനുവദിക്കുക</string>
+    <string name="not_now">ഇപ്പോൾ വേണ്ട</string>
+    <string name="settings">ക്രമീകരണങ്ങൾ</string>
+    <string name="mode_draw">വരയ്ക്കുക</string>
+    <string name="mode_type">ടൈപ്പ് ചെയ്യുക</string>
+    <string name="hide_app_tooltip_text">മറച്ച ആപ്പുകൾ കാണാൻ സെറ്റിംഗ്സ് ഐക്കണിൽ സ്പീഡിൽ രണ്ടുതവണ ടാപ്പ് ചെയ്യുക</string>
+    <string name="usage_stats_prompt_title">ആപ്പ് ലിസ്റ്റിങ് ക്രമം മെച്ചപ്പെടുത്തുക</string>
+    <string name="usage_stats_prompt_message">നിങ്ങൾ ഏറ്റവും കൂടുതൽ ഉപയോഗിക്കുന്ന ആപ്പുകൾ ആദ്യ വരിയിൽ കാണിക്കാൻ ഉപയോഗ ആക്‌സസ് അനുവദിക്കുക. ഇത് നിങ്ങളുടെ പ്രിയപ്പെട്ട ആപ്പുകൾ വേഗത്തിൽ തുറക്കാൻ സഹായിക്കുന്നു.\n\nഈ അനുമതി നൽകാൻ നിങ്ങളെ ക്രമീകരണ സ്ക്രീനിലേക്ക് കൊണ്ടുപോകും. Swyp Launcher തിരഞ്ഞെടുത്ത് ഉപയോഗ ആക്‌സസ് അനുവദിക്കുക</string>
+    <string name="version_label">പതിപ്പ് %1$s</string>
+    <string name="version_unknown">അജ്ഞാതം</string>
+    <string name="error_failed_to_load_apps">ആപ്പുകൾ ലോഡ് ചെയ്യാനായില്ല</string>
+    <string name="error_failed_to_launch_app">ആപ്പ് തുറക്കാനായില്ല</string>
+    <string name="handwriting_recognition_failed">തിരിച്ചറിയൽ പരാജയപ്പെട്ടു</string>
+    <string name="handwriting_recognizer_not_ready">കൈയക്ഷര തിരിച്ചറിയൽ സജ്ജമാക്കുന്നു, കാത്തിരിക്കുക...</string>
+    <string name="handwriting_model_error_no_internet">ഇന്റർനെറ്റ് കണക്ഷൻ ഇല്ല. നിങ്ങളുടെ നെറ്റ്‌വർക്ക് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</string>
+    <string name="handwriting_model_error_download_failed">ഡൗൺലോഡ് പരാജയപ്പെട്ടു. വീണ്ടും ശ്രമിക്കുക.</string>
+    <string name="handwriting_model_error_download_generic">കൈയക്ഷര തിരിച്ചറിയൽ മോഡൽ ഡൗൺലോഡ് ചെയ്യാനായില്ല. വീണ്ടും ശ്രമിക്കുക.</string>
+    <string name="handwriting_model_error_check_status">മോഡൽ സ്റ്റാറ്റസ് പരിശോധിക്കാനായില്ല. വീണ്ടും ശ്രമിക്കുക.</string>
+    <string name="handwriting_model_error_init">കൈയക്ഷര തിരിച്ചറിയൽ ആരംഭിക്കാനായില്ല. വീണ്ടും ശ്രമിക്കുക.</string>
 </resources>

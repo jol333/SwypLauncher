@@ -1,6 +1,7 @@
 package com.joyal.swyplauncher.util
 
 import android.content.Context
+import com.joyal.swyplauncher.R
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Locale
@@ -173,35 +174,41 @@ object UnitUtil {
         return this.contains(token)
     }
 
-    // International large-number scale words
+    // International large-number scale words (threshold to string resource)
     private val intlScales = listOf(
-        1e15 to "quadrillion", 1e12 to "trillion", 1e9 to "billion", 1e6 to "million"
+        1e15 to R.string.unit_scale_quadrillion,
+        1e12 to R.string.unit_scale_trillion,
+        1e9 to R.string.unit_scale_billion,
+        1e6 to R.string.unit_scale_million
     )
 
     // Approximate human-readable form for very large results, null if in normal range.
-    fun humanReadable(value: Double, indian: Boolean): String? {
+    fun humanReadable(context: Context, value: Double, indian: Boolean): String? {
         if (!value.isFinite()) return null
         if (abs(value) < 1e6) return null
-        return if (indian) indianReadable(value) else intlReadable(value)
+        return if (indian) indianReadable(context, value) else intlReadable(context, value)
     }
 
-    private fun intlReadable(value: Double): String {
+    private fun approx(context: Context, value: Double, divisor: Double, scaleResId: Int): String =
+        context.getString(R.string.unit_approx_value, trimNum(value / divisor), context.getString(scaleResId))
+
+    private fun intlReadable(context: Context, value: Double): String {
         val a = abs(value)
-        for ((threshold, word) in intlScales) {
-            if (a >= threshold) return "~${trimNum(value / threshold)} $word"
+        for ((threshold, scaleResId) in intlScales) {
+            if (a >= threshold) return approx(context, value, threshold, scaleResId)
         }
-        return "~${trimNum(value / 1e3)} thousand"
+        return approx(context, value, 1e3, R.string.unit_scale_thousand)
     }
 
     // Indian numbering: lakh (1e5), crore (1e7), then chained "lakh crore" (1e12), "crore crore" (1e14)
-    private fun indianReadable(value: Double): String {
+    private fun indianReadable(context: Context, value: Double): String {
         val a = abs(value)
         return when {
-            a >= 1e14 -> "~${trimNum(value / 1e14)} crore crore"
-            a >= 1e12 -> "~${trimNum(value / 1e12)} lakh crore"
-            a >= 1e7 -> "~${trimNum(value / 1e7)} crore"
-            a >= 1e5 -> "~${trimNum(value / 1e5)} lakh"
-            else -> "~${trimNum(value / 1e3)} thousand"
+            a >= 1e14 -> approx(context, value, 1e14, R.string.unit_scale_crore_crore)
+            a >= 1e12 -> approx(context, value, 1e12, R.string.unit_scale_lakh_crore)
+            a >= 1e7 -> approx(context, value, 1e7, R.string.unit_scale_crore)
+            a >= 1e5 -> approx(context, value, 1e5, R.string.unit_scale_lakh)
+            else -> approx(context, value, 1e3, R.string.unit_scale_thousand)
         }
     }
 

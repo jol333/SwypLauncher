@@ -91,6 +91,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Density
@@ -629,8 +630,8 @@ fun AssistantScreen(
 
                         val promptInfo = remember {
                             BiometricPrompt.PromptInfo.Builder()
-                                .setTitle("Authenticate")
-                                .setSubtitle("Unlock & view hidden apps")
+                                .setTitle(context.getString(R.string.biometric_authenticate_title))
+                                .setSubtitle(context.getString(R.string.biometric_authenticate_subtitle))
                                 .setAllowedAuthenticators(
                                     BiometricManager.Authenticators.BIOMETRIC_WEAK or
                                             BiometricManager.Authenticators.DEVICE_CREDENTIAL
@@ -882,23 +883,18 @@ fun UsageStatsPermissionPromptDialog(
 ) {
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Improve App Listing Order") },
+        title = { Text(stringResource(R.string.usage_stats_prompt_title)) },
         text = {
-            Text(
-                "Allow usage access to show your most used apps in the first row. " +
-                        "This helps you launch your favorite apps faster. \n\n" +
-                        "You'll be taken to the settings screen to grant this permission. " +
-                        "Select Swyp Launcher and permit usage access"
-            )
+            Text(stringResource(R.string.usage_stats_prompt_message))
         },
         confirmButton = {
             androidx.compose.material3.TextButton(onClick = onGrantPermission) {
-                Text("Allow")
+                Text(stringResource(R.string.allow))
             }
         },
         dismissButton = {
             androidx.compose.material3.TextButton(onClick = onDismiss) {
-                Text("Not Now")
+                Text(stringResource(R.string.not_now))
             }
         }
     )
@@ -1002,10 +998,10 @@ fun ModeSwitcher(
 
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         val allModes = listOf(
-            Triple(R.drawable.ic_handwriting, "Draw", LauncherMode.HANDWRITING),
-            Triple(R.drawable.ic_index, "Index", LauncherMode.INDEX),
-            Triple(R.drawable.ic_keyboard, "Type", LauncherMode.KEYBOARD),
-            Triple(R.drawable.ic_microphone, "Voice", LauncherMode.VOICE)
+            Triple(R.drawable.ic_handwriting, stringResource(R.string.mode_draw), LauncherMode.HANDWRITING),
+            Triple(R.drawable.ic_index, stringResource(R.string.mode_index), LauncherMode.INDEX),
+            Triple(R.drawable.ic_keyboard, stringResource(R.string.mode_type), LauncherMode.KEYBOARD),
+            Triple(R.drawable.ic_microphone, stringResource(R.string.mode_voice), LauncherMode.VOICE)
         )
 
         val modes = enabledModes.mapNotNull { enabledMode ->
@@ -1026,7 +1022,7 @@ fun ModeSwitcher(
         Spacer(Modifier.width(8.dp))
         ModeButton(
             iconRes = R.drawable.ic_settings,
-            label = "Settings",
+            label = stringResource(R.string.settings),
             isSelected = false,
             onClick = {
                 context.startActivity(
@@ -1173,10 +1169,10 @@ fun VerticalModeSwitcher(
         verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
     ) {
         val allModes = listOf(
-            Triple(R.drawable.ic_handwriting, "Draw", LauncherMode.HANDWRITING),
-            Triple(R.drawable.ic_index, "Index", LauncherMode.INDEX),
-            Triple(R.drawable.ic_keyboard, "Type", LauncherMode.KEYBOARD),
-            Triple(R.drawable.ic_microphone, "Voice", LauncherMode.VOICE)
+            Triple(R.drawable.ic_handwriting, stringResource(R.string.mode_draw), LauncherMode.HANDWRITING),
+            Triple(R.drawable.ic_index, stringResource(R.string.mode_index), LauncherMode.INDEX),
+            Triple(R.drawable.ic_keyboard, stringResource(R.string.mode_type), LauncherMode.KEYBOARD),
+            Triple(R.drawable.ic_microphone, stringResource(R.string.mode_voice), LauncherMode.VOICE)
         )
 
         val modes = enabledModes.mapNotNull { enabledMode ->
@@ -1195,7 +1191,7 @@ fun VerticalModeSwitcher(
 
         VerticalModeButton(
             iconRes = R.drawable.ic_settings,
-            label = "Settings",
+            label = stringResource(R.string.settings),
             isSelected = false,
             onClick = {
                 context.startActivity(
@@ -1409,7 +1405,7 @@ fun HideAppTooltip(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Double tap Settings icon to view hidden apps",
+                text = stringResource(R.string.hide_app_tooltip_text),
                 style = MaterialTheme.typography.bodyMedium,
                 color = contentColor
             )
