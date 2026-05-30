@@ -1,5 +1,6 @@
 package com.joyal.swyplauncher.ui.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.joyal.swyplauncher.domain.model.AppInfo
@@ -12,8 +13,12 @@ import com.joyal.swyplauncher.domain.usecase.ObserveAppChangesUseCase
 import com.joyal.swyplauncher.domain.usecase.RecordAppUsageUseCase
 import com.joyal.swyplauncher.ui.state.CurrencyResultState
 import com.joyal.swyplauncher.ui.state.LauncherUiState
+import com.joyal.swyplauncher.ui.state.UnitResultState
 import com.joyal.swyplauncher.util.CurrencyUtil
+import com.joyal.swyplauncher.util.UnitData
+import com.joyal.swyplauncher.util.UnitUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,10 +40,14 @@ class LauncherViewModel @Inject constructor(
     private val getSmartAppListUseCase: GetSmartAppListUseCase,
     private val recordAppUsageUseCase: RecordAppUsageUseCase,
     private val preferencesRepository: com.joyal.swyplauncher.domain.repository.PreferencesRepository,
-    private val currencyRepository: CurrencyRepository
+    private val currencyRepository: CurrencyRepository,
+    @param:ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
     enum class CurrencyMode { KEYBOARD, VOICE, HANDWRITING }
+
+    // Region for unit-conversion preferences (imperial vs metric, Indian numbering)
+    private val unitRegion: UnitUtil.Region by lazy { UnitUtil.detectRegion(appContext) }
 
     private var keyboardCurrencyJob: Job? = null
     private var voiceCurrencyJob: Job? = null
@@ -229,21 +238,24 @@ class LauncherViewModel @Inject constructor(
                         keyboardSmartApps = smart,
                         newlyInstalledAppPackage = newlyInstalled,
                         keyboardCalculatorResult = parseResult.calc,
-                        keyboardCurrencyResult = parseResult.currency
+                        keyboardCurrencyResult = parseResult.currency,
+                        keyboardUnitResult = parseResult.unit
                     )
                     CurrencyMode.VOICE -> s.copy(
                         voiceFilteredApps = filtered,
                         voiceSmartApps = smart,
                         newlyInstalledAppPackage = newlyInstalled,
                         voiceCalculatorResult = parseResult.calc,
-                        voiceCurrencyResult = parseResult.currency
+                        voiceCurrencyResult = parseResult.currency,
+                        voiceUnitResult = parseResult.unit
                     )
                     CurrencyMode.HANDWRITING -> s.copy(
                         handwritingFilteredApps = filtered,
                         handwritingSmartApps = smart,
                         newlyInstalledAppPackage = newlyInstalled,
                         handwritingCalculatorResult = parseResult.calc,
-                        handwritingCurrencyResult = parseResult.currency
+                        handwritingCurrencyResult = parseResult.currency,
+                        handwritingUnitResult = parseResult.unit
                     )
                 }
             }
@@ -260,10 +272,11 @@ class LauncherViewModel @Inject constructor(
     private data class ParseResult(
         val calc: String?,
         val currency: CurrencyResultState?,
-        val parsed: CurrencyUtil.Parsed?
+        val parsed: CurrencyUtil.Parsed?,
+        val unit: UnitResultState? = null
     )
 
-    // Detect calc vs currency. Currency tried first so inputs like "$5+5" prefer currency.
+    // Detect calc vs currency vs unit. Currency first ("$5+5"), then unit ("5 km"), then calc.
     private fun computeCalcOrCurrency(input: String): ParseResult {
         val parsed = CurrencyUtil.tryParse(input, currencyRepository.getNativeCurrencyCode())
         if (parsed != null) {
@@ -280,8 +293,73 @@ class LauncherViewModel @Inject constructor(
                 parsed = parsed
             )
         }
+        UnitUtil.tryParse(input, unitRegion)?.let { return ParseResult(null, null, null, buildUnitState(it)) }
         val calc = com.joyal.swyplauncher.util.CalculatorUtil.evaluate(input)
         return ParseResult(calc, null, null)
+    }
+
+    // Build a complete unit-conversion state (synchronous — no network needed).
+    private fun buildUnitState(p: UnitUtil.Parsed): UnitResultState {
+        val target = UnitUtil.convert(p.amount, p.from, p.to)
+        return UnitResultState(
+            category = p.category,
+            sourceAmount = p.amount,
+            targetAmount = target,
+            fromId = p.from,
+            toId = p.to,
+            sourceApprox = approxFor(p.amount, p.from),
+            targetApprox = target?.let { approxFor(it, p.to) },
+            error = if (target == null) convError(p.category) else null
+        )
+    }
+
+    // "~9.46 trillion kilometers" style subtext, null when value is in a normal range.
+    private fun approxFor(value: Double, unitId: String): String? {
+        val spec = UnitData.byId(unitId)
+        if (spec?.category == UnitData.Category.NUMERAL || spec?.category == UnitData.Category.SHOE_SIZE || spec?.category == UnitData.Category.DATA) {
+            return null
+        }
+        val human = UnitUtil.humanReadable(value, unitRegion.indian) ?: return null
+        val unitName = spec?.aliases?.getOrNull(1) ?: spec?.aliases?.firstOrNull() ?: spec?.symbol ?: return human
+        return "$human $unitName"
+    }
+
+    // Failed-conversion message, tailored for shoe sizes (out-of-range / negative input)
+    private fun convError(category: UnitData.Category): String =
+        if (category == UnitData.Category.SHOE_SIZE) "Enter a valid shoe size" else "Cannot convert"
+
+    // Interactive unit edits (typing a value or changing a unit). Synchronous recompute.
+    fun updateUnitConversion(amount: Double, fromId: String, toId: String, isSourceChanged: Boolean, mode: CurrencyMode) {
+        val active = when (mode) {
+            CurrencyMode.KEYBOARD -> _uiState.value.keyboardUnitResult
+            CurrencyMode.VOICE -> _uiState.value.voiceUnitResult
+            CurrencyMode.HANDWRITING -> _uiState.value.handwritingUnitResult
+        } ?: return
+
+        val newState = if (isSourceChanged) {
+            val converted = UnitUtil.convert(amount, fromId, toId)
+            active.copy(
+                sourceAmount = amount, targetAmount = converted, fromId = fromId, toId = toId,
+                sourceApprox = approxFor(amount, fromId),
+                targetApprox = converted?.let { approxFor(it, toId) },
+                error = if (converted == null) convError(active.category) else null
+            )
+        } else {
+            val converted = UnitUtil.convert(amount, toId, fromId)
+            active.copy(
+                sourceAmount = converted ?: active.sourceAmount, targetAmount = amount, fromId = fromId, toId = toId,
+                sourceApprox = converted?.let { approxFor(it, fromId) },
+                targetApprox = approxFor(amount, toId),
+                error = if (converted == null) convError(active.category) else null
+            )
+        }
+        _uiState.update { s ->
+            when (mode) {
+                CurrencyMode.KEYBOARD -> s.copy(keyboardUnitResult = newState)
+                CurrencyMode.VOICE -> s.copy(voiceUnitResult = newState)
+                CurrencyMode.HANDWRITING -> s.copy(handwritingUnitResult = newState)
+            }
+        }
     }
 
     private fun launchCurrencyConversion(parsed: CurrencyUtil.Parsed, mode: CurrencyMode) {
@@ -466,12 +544,13 @@ class LauncherViewModel @Inject constructor(
                     handwritingSmartApps = smart,
                     newlyInstalledAppPackage = newlyInstalled,
                     handwritingCalculatorResult = null,
-                    handwritingCurrencyResult = null
+                    handwritingCurrencyResult = null,
+                    handwritingUnitResult = null
                 )
             }
         }
     }
-    
+
     private fun matchesQueryOrShortcut(
         app: AppInfo,
         query: String,
@@ -501,18 +580,18 @@ class LauncherViewModel @Inject constructor(
     fun resetFilterHandwriting() {
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
-        resetFilter { copy(handwritingFilteredApps = apps, handwritingSmartApps = it.first, newlyInstalledAppPackage = it.second, handwritingCalculatorResult = null, handwritingCurrencyResult = null) }
+        resetFilter { copy(handwritingFilteredApps = apps, handwritingSmartApps = it.first, newlyInstalledAppPackage = it.second, handwritingCalculatorResult = null, handwritingCurrencyResult = null, handwritingUnitResult = null) }
     }
     fun resetFilterIndex() = resetFilter { copy(indexFilteredApps = apps, indexSmartApps = it.first, newlyInstalledAppPackage = it.second) }
     fun resetFilterKeyboard() {
         keyboardFilterJob?.cancel()
         keyboardCurrencyJob?.cancel()
-        resetFilter { copy(keyboardFilteredApps = apps, keyboardSmartApps = it.first, newlyInstalledAppPackage = it.second, keyboardCalculatorResult = null, keyboardCurrencyResult = null) }
+        resetFilter { copy(keyboardFilteredApps = apps, keyboardSmartApps = it.first, newlyInstalledAppPackage = it.second, keyboardCalculatorResult = null, keyboardCurrencyResult = null, keyboardUnitResult = null) }
     }
     fun resetFilterVoice() {
         voiceFilterJob?.cancel()
         voiceCurrencyJob?.cancel()
-        resetFilter { copy(voiceFilteredApps = apps, voiceSmartApps = it.first, newlyInstalledAppPackage = it.second, voiceCalculatorResult = null, voiceCurrencyResult = null) }
+        resetFilter { copy(voiceFilteredApps = apps, voiceSmartApps = it.first, newlyInstalledAppPackage = it.second, voiceCalculatorResult = null, voiceCurrencyResult = null, voiceUnitResult = null) }
     }
     
     // Helper: Reset filter for a mode

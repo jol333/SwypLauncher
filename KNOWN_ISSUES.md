@@ -30,3 +30,8 @@
 **Workaround:** Swipe diagonally from corners twice or press and hold the power button twice if the assistant doesn't appear on the first attempt.
 
 **Status:** Open - likely related to Android's memory management and app lifecycle when acting as VoiceInteractionService.
+
+### 4. Shoe size conversion calculator is not accurate
+**Symptom:** The shoe size conversion calculator returns inaccurate results when converting between sizing systems (e.g. US, UK, EU).
+
+**Status:** Open - requires review of the conversion formulas and reference sizing charts.

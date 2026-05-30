@@ -73,6 +73,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.joyal.swyplauncher.domain.model.RecognitionResult
 import com.joyal.swyplauncher.ui.components.AppIconItem
 import com.joyal.swyplauncher.ui.components.InteractiveCurrencyConverter
+import com.joyal.swyplauncher.ui.components.InteractiveUnitConverter
 import com.joyal.swyplauncher.ui.components.ResultDisplay
 import com.joyal.swyplauncher.ui.model.AppListItem
 import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
@@ -435,6 +436,47 @@ fun VoiceModeScreen(
                                     amount = currencyState.sourceAmount,
                                     fromCode = currencyState.fromCode,
                                     toCode = newCode,
+                                    isSourceChanged = true,
+                                    mode = LauncherViewModel.CurrencyMode.VOICE
+                                )
+                            }
+                        }
+                    )
+                }
+            } else if (launcherState.voiceUnitResult != null) {
+                val unitState = launcherState.voiceUnitResult!!
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .imePadding(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    InteractiveUnitConverter(
+                        state = unitState,
+                        onAmountChanged = { isSource, amount ->
+                            launcherViewModel.updateUnitConversion(
+                                amount = amount,
+                                fromId = unitState.fromId,
+                                toId = unitState.toId,
+                                isSourceChanged = isSource,
+                                mode = LauncherViewModel.CurrencyMode.VOICE
+                            )
+                        },
+                        onUnitChanged = { isSource, newId ->
+                            if (isSource) {
+                                launcherViewModel.updateUnitConversion(
+                                    amount = unitState.targetAmount ?: 0.0,
+                                    fromId = newId,
+                                    toId = unitState.toId,
+                                    isSourceChanged = false,
+                                    mode = LauncherViewModel.CurrencyMode.VOICE
+                                )
+                            } else {
+                                launcherViewModel.updateUnitConversion(
+                                    amount = unitState.sourceAmount,
+                                    fromId = unitState.fromId,
+                                    toId = newId,
                                     isSourceChanged = true,
                                     mode = LauncherViewModel.CurrencyMode.VOICE
                                 )

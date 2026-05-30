@@ -1,11 +1,5 @@
 package com.joyal.swyplauncher.ui.components
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -29,6 +24,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,10 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -50,18 +46,18 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.joyal.swyplauncher.ui.state.CurrencyResultState
-import com.joyal.swyplauncher.util.CurrencyData
+import com.joyal.swyplauncher.ui.state.UnitResultState
+import com.joyal.swyplauncher.util.UnitData
 import com.joyal.swyplauncher.util.UnitUtil
-import java.text.DecimalFormat
 
 @Composable
-fun InteractiveCurrencyConverter(
-    state: CurrencyResultState,
+fun InteractiveUnitConverter(
+    state: UnitResultState,
     onAmountChanged: (isSource: Boolean, amount: Double) -> Unit,
-    onCurrencyChanged: (isSource: Boolean, code: String) -> Unit,
+    onUnitChanged: (isSource: Boolean, id: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -70,32 +66,22 @@ fun InteractiveCurrencyConverter(
     val escapedDecimal = remember(decimalSep) { Regex.escape(decimalSep.toString()) }
     val numberRegex = remember(escapedDecimal) { Regex("^-?\\d*$escapedDecimal?\\d*$") }
 
-    var sourceText by remember {
-        mutableStateOf(formatForEditing(state.sourceAmount, state.fromCode))
-    }
-    var targetText by remember {
-        mutableStateOf(state.targetAmount?.let { formatForEditing(it, state.toCode) } ?: "")
-    }
-
+    var sourceText by remember { mutableStateOf(UnitUtil.formatValue(state.sourceAmount, state.fromId)) }
+    var targetText by remember { mutableStateOf(state.targetAmount?.let { UnitUtil.formatValue(it, state.toId) } ?: "") }
     var isSourceFocused by remember { mutableStateOf(false) }
     var isTargetFocused by remember { mutableStateOf(false) }
 
-    LaunchedEffect(state.sourceAmount, state.fromCode) {
-        if (!isSourceFocused) {
-            sourceText = formatForEditing(state.sourceAmount, state.fromCode)
-        }
+    LaunchedEffect(state.sourceAmount, state.fromId) {
+        if (!isSourceFocused) sourceText = UnitUtil.formatValue(state.sourceAmount, state.fromId)
+    }
+    LaunchedEffect(state.targetAmount, state.toId) {
+        if (!isTargetFocused) targetText = state.targetAmount?.let { UnitUtil.formatValue(it, state.toId) } ?: ""
     }
 
-    LaunchedEffect(state.targetAmount, state.toCode) {
-        if (!isTargetFocused) {
-            targetText = state.targetAmount?.let { formatForEditing(it, state.toCode) } ?: ""
-        }
-    }
+    val isNumeral = remember(state.category) { UnitData.byId(state.fromId)?.radix != null }
 
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -107,17 +93,25 @@ fun InteractiveCurrencyConverter(
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
                 .padding(8.dp)
         ) {
-            CurrencyInputRow(
+            UnitInputRow(
                 valueText = sourceText,
-                currencyCode = state.fromCode,
-                onValueChange = { newValue ->
-                    sourceText = newValue
-                    val dotValue = newValue.replace(decimalSep, '.')
-                    dotValue.toDoubleOrNull()?.let { amount -> onAmountChanged(true, amount) }
+                unitId = state.fromId,
+                category = state.category,
+                approx = state.sourceApprox,
+                isNumeral = isNumeral,
+                onValueChange = {
+                    sourceText = it
+                    if (isNumeral) {
+                        parseValue(it, state.fromId)?.let { amt -> onAmountChanged(true, amt) }
+                    } else {
+                        val dotValue = it.replace(decimalSep, '.')
+                        val d = dotValue.toDoubleOrNull()
+                        if (d != null) onAmountChanged(true, d)
+                        else if (it.isEmpty() || it == "-" || it == decimalSep.toString()) onAmountChanged(true, 0.0)
+                    }
                 },
-                onCurrencyChange = { onCurrencyChanged(true, it) },
+                onUnitChange = { onUnitChanged(true, it) },
                 onFocusChange = { isSourceFocused = it },
-                isLoading = false,
                 numberRegex = numberRegex,
                 locale = locale
             )
@@ -130,17 +124,25 @@ fun InteractiveCurrencyConverter(
                     .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
             )
 
-            CurrencyInputRow(
+            UnitInputRow(
                 valueText = targetText,
-                currencyCode = state.toCode,
-                onValueChange = { newValue ->
-                    targetText = newValue
-                    val dotValue = newValue.replace(decimalSep, '.')
-                    dotValue.toDoubleOrNull()?.let { amount -> onAmountChanged(false, amount) }
+                unitId = state.toId,
+                category = state.category,
+                approx = state.targetApprox,
+                isNumeral = isNumeral,
+                onValueChange = {
+                    targetText = it
+                    if (isNumeral) {
+                        parseValue(it, state.toId)?.let { amt -> onAmountChanged(false, amt) }
+                    } else {
+                        val dotValue = it.replace(decimalSep, '.')
+                        val d = dotValue.toDoubleOrNull()
+                        if (d != null) onAmountChanged(false, d)
+                        else if (it.isEmpty() || it == "-" || it == decimalSep.toString()) onAmountChanged(false, 0.0)
+                    }
                 },
-                onCurrencyChange = { onCurrencyChanged(false, it) },
+                onUnitChange = { onUnitChanged(false, it) },
                 onFocusChange = { isTargetFocused = it },
-                isLoading = state.isLoading,
                 numberRegex = numberRegex,
                 locale = locale
             )
@@ -158,49 +160,46 @@ fun InteractiveCurrencyConverter(
 }
 
 @Composable
-private fun CurrencyInputRow(
+private fun UnitInputRow(
     valueText: String,
-    currencyCode: String,
+    unitId: String,
+    category: UnitData.Category,
+    approx: String?,
+    isNumeral: Boolean,
     onValueChange: (String) -> Unit,
-    onCurrencyChange: (String) -> Unit,
+    onUnitChange: (String) -> Unit,
     onFocusChange: (Boolean) -> Unit,
-    isLoading: Boolean,
     numberRegex: Regex,
     locale: java.util.Locale
 ) {
     var textFieldValue by remember(valueText) {
         mutableStateOf(TextFieldValue(text = valueText, selection = TextRange(valueText.length)))
     }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (isLoading) {
-            ShimmerValuePlaceholder(modifier = Modifier.weight(1f))
-        } else {
+    
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             BasicTextField(
                 value = textFieldValue,
                 onValueChange = { newValue ->
-                    if (newValue.text.isEmpty() || newValue.text == "-" || newValue.text.matches(numberRegex)) {
+                    val ok = if (isNumeral) newValue.text.matches(Regex("^[0-9a-fA-F]*$"))
+                    else newValue.text.isEmpty() || newValue.text == "-" || newValue.text.matches(numberRegex)
+                    if (ok) {
                         textFieldValue = newValue
                         onValueChange(newValue.text)
                     }
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .onFocusChanged { onFocusChange(it.isFocused) },
+                modifier = Modifier.weight(1f).onFocusChanged { onFocusChange(it.isFocused) },
                 textStyle = TextStyle(
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Medium
                 ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                visualTransformation = NumberCommaTransformation(locale),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = if (isNumeral) KeyboardType.Text else KeyboardType.Decimal
+                ),
+                visualTransformation = if (!isNumeral) NumberCommaTransformation(locale) else VisualTransformation.None,
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                decorationBox = { innerTextField ->
+                decorationBox = { inner ->
                     if (valueText.isEmpty()) {
                         Text(
                             text = "0",
@@ -211,77 +210,44 @@ private fun CurrencyInputRow(
                             )
                         )
                     }
-                    innerTextField()
+                    inner()
                 }
             )
+            Spacer(modifier = Modifier.width(8.dp))
+            UnitDropdown(category = category, selectedId = unitId, onSelected = onUnitChange)
         }
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        CurrencyDropdown(
-            selectedCode = currencyCode,
-            onCodeSelected = onCurrencyChange
-        )
+        // Approximate human-readable subtext for very large/small values
+        if (approx != null) {
+            Text(
+                text = approx,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                modifier = Modifier.padding(top = 2.dp)
+            )
+        }
     }
 }
 
 @Composable
-private fun ShimmerValuePlaceholder(modifier: Modifier = Modifier) {
-    val transition = rememberInfiniteTransition(label = "shimmer")
-    val translate by transition.animateFloat(
-        initialValue = -2f,
-        targetValue = 2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1100, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "shimmerTranslate"
-    )
-
-    val base = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-    val highlight = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.22f)
-    val barWidthPx = with(LocalDensity.current) { 160.dp.toPx() }
-
-    val brush = Brush.linearGradient(
-        colors = listOf(base, highlight, base),
-        start = Offset(translate * barWidthPx, 0f),
-        end = Offset((translate + 1f) * barWidthPx, 0f)
-    )
-
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(0.55f)
-                .height(26.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(brush)
-        )
-    }
-}
-
-@Composable
-private fun CurrencyDropdown(
-    selectedCode: String,
-    onCodeSelected: (String) -> Unit
+private fun UnitDropdown(
+    category: UnitData.Category,
+    selectedId: String,
+    onSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val sortedCurrencies = remember { CurrencyData.all.sortedBy { it.code } }
+    val units = remember(category) { UnitData.unitsIn(category) }
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
     val itemHeightPx = with(density) { 48.dp.toPx() }
 
     LaunchedEffect(expanded) {
         if (expanded) {
-            val index = sortedCurrencies.indexOfFirst { it.code == selectedCode }
-            if (index >= 0) {
-                scrollState.scrollTo((index * itemHeightPx).toInt())
-            }
+            val index = units.indexOfFirst { it.id == selectedId }
+            if (index >= 0) scrollState.scrollTo((index * itemHeightPx).toInt())
         }
     }
 
+    val selected = remember(selectedId) { UnitData.byId(selectedId) }
     Box {
         Surface(
             shape = RoundedCornerShape(8.dp),
@@ -293,37 +259,26 @@ private fun CurrencyDropdown(
                 modifier = Modifier.padding(start = 12.dp, top = 8.dp, end = 8.dp, bottom = 8.dp)
             ) {
                 Text(
-                    text = selectedCode,
+                    text = selected?.symbol ?: selectedId,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = "Select Currency",
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
+                Icon(Icons.Default.ArrowDropDown, contentDescription = "Select unit", tint = MaterialTheme.colorScheme.onSurface)
             }
         }
 
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.height(300.dp),
+            modifier = Modifier.heightIn(max = 320.dp),  // wrap small lists, cap+scroll large ones
             scrollState = scrollState
         ) {
-            sortedCurrencies.forEach { spec ->
+            units.forEach { spec ->
                 DropdownMenuItem(
-                    text = {
-                        val displayText = if (spec.code.equals(spec.symbol, ignoreCase = true)) {
-                            spec.code
-                        } else {
-                            "${spec.code} - ${spec.symbol}"
-                        }
-                        Text(displayText, style = MaterialTheme.typography.bodyLarge)
-                    },
+                    text = { Text("${spec.symbol} — ${UnitData.label(spec.id)}", style = MaterialTheme.typography.bodyLarge) },
                     onClick = {
-                        onCodeSelected(spec.code)
+                        onSelected(spec.id)
                         expanded = false
                     }
                 )
@@ -332,13 +287,9 @@ private fun CurrencyDropdown(
     }
 }
 
-private fun formatForEditing(value: Double, currencyCode: String): String {
-    val crypto = listOf("BTC", "ETH", "BNB")
-    val maxDecimals = if (crypto.contains(currencyCode.uppercase())) 6 else 2
-
-    val pattern = if (maxDecimals == 6) "0.######" else "0.##"
-    val format = DecimalFormat(pattern)
-    format.isGroupingUsed = false
-
-    return format.format(value)
+private fun parseValue(text: String, unitId: String): Double? {
+    if (text.isEmpty() || text == "-") return null
+    val radix = UnitData.byId(unitId)?.radix
+    return if (radix != null) text.toLongOrNull(radix)?.toDouble() else text.toDoubleOrNull()
 }
+

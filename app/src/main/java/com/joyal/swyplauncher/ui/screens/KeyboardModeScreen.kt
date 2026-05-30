@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.joyal.swyplauncher.ui.components.AppIconItem
 import com.joyal.swyplauncher.ui.components.InteractiveCurrencyConverter
+import com.joyal.swyplauncher.ui.components.InteractiveUnitConverter
 import com.joyal.swyplauncher.ui.components.ResultDisplay
 import com.joyal.swyplauncher.ui.model.AppListItem
 import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
@@ -273,6 +274,47 @@ fun KeyboardModeScreen(
                                     amount = currencyState.sourceAmount,
                                     fromCode = currencyState.fromCode,
                                     toCode = newCode,
+                                    isSourceChanged = true,
+                                    mode = LauncherViewModel.CurrencyMode.KEYBOARD
+                                )
+                            }
+                        }
+                    )
+                }
+            } else if (launcherState.keyboardUnitResult != null) {
+                val unitState = launcherState.keyboardUnitResult!!
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .imePadding(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    InteractiveUnitConverter(
+                        state = unitState,
+                        onAmountChanged = { isSource, amount ->
+                            launcherViewModel.updateUnitConversion(
+                                amount = amount,
+                                fromId = unitState.fromId,
+                                toId = unitState.toId,
+                                isSourceChanged = isSource,
+                                mode = LauncherViewModel.CurrencyMode.KEYBOARD
+                            )
+                        },
+                        onUnitChanged = { isSource, newId ->
+                            if (isSource) {
+                                launcherViewModel.updateUnitConversion(
+                                    amount = unitState.targetAmount ?: 0.0,
+                                    fromId = newId,
+                                    toId = unitState.toId,
+                                    isSourceChanged = false,
+                                    mode = LauncherViewModel.CurrencyMode.KEYBOARD
+                                )
+                            } else {
+                                launcherViewModel.updateUnitConversion(
+                                    amount = unitState.sourceAmount,
+                                    fromId = unitState.fromId,
+                                    toId = newId,
                                     isSourceChanged = true,
                                     mode = LauncherViewModel.CurrencyMode.KEYBOARD
                                 )

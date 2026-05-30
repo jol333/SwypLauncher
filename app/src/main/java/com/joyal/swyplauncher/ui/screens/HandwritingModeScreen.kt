@@ -78,6 +78,7 @@ import com.joyal.swyplauncher.domain.model.InkStroke
 import com.joyal.swyplauncher.domain.model.RecognitionResult
 import com.joyal.swyplauncher.ui.components.AppIconItem
 import com.joyal.swyplauncher.ui.components.InteractiveCurrencyConverter
+import com.joyal.swyplauncher.ui.components.InteractiveUnitConverter
 import com.joyal.swyplauncher.ui.components.ResultDisplay
 import com.joyal.swyplauncher.ui.model.AppListItem
 import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
@@ -615,6 +616,47 @@ fun HandwritingModeScreen(
                                 amount = currencyState.sourceAmount,
                                 fromCode = currencyState.fromCode,
                                 toCode = newCode,
+                                isSourceChanged = true,
+                                mode = LauncherViewModel.CurrencyMode.HANDWRITING
+                            )
+                        }
+                    }
+                )
+            }
+        } else if (launcherState.handwritingUnitResult != null) {
+            val unitState = launcherState.handwritingUnitResult!!
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .imePadding(),
+                contentAlignment = Alignment.Center
+            ) {
+                InteractiveUnitConverter(
+                    state = unitState,
+                    onAmountChanged = { isSource, amount ->
+                        launcherViewModel.updateUnitConversion(
+                            amount = amount,
+                            fromId = unitState.fromId,
+                            toId = unitState.toId,
+                            isSourceChanged = isSource,
+                            mode = LauncherViewModel.CurrencyMode.HANDWRITING
+                        )
+                    },
+                    onUnitChanged = { isSource, newId ->
+                        if (isSource) {
+                            launcherViewModel.updateUnitConversion(
+                                amount = unitState.targetAmount ?: 0.0,
+                                fromId = newId,
+                                toId = unitState.toId,
+                                isSourceChanged = false,
+                                mode = LauncherViewModel.CurrencyMode.HANDWRITING
+                            )
+                        } else {
+                            launcherViewModel.updateUnitConversion(
+                                amount = unitState.sourceAmount,
+                                fromId = unitState.fromId,
+                                toId = newId,
                                 isSourceChanged = true,
                                 mode = LauncherViewModel.CurrencyMode.HANDWRITING
                             )

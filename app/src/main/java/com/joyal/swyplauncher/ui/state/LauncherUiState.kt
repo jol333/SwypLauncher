@@ -26,8 +26,24 @@ data class LauncherUiState(
     val handwritingCurrencyResult: CurrencyResultState? = null,
     val keyboardCurrencyResult: CurrencyResultState? = null,
     val voiceCurrencyResult: CurrencyResultState? = null,
+    // Unit conversion results for each mode
+    val handwritingUnitResult: UnitResultState? = null,
+    val keyboardUnitResult: UnitResultState? = null,
+    val voiceUnitResult: UnitResultState? = null,
     // Tooltip visibility
     val showHideAppTooltip: Boolean = false
+)
+
+// Unit conversion display state
+data class UnitResultState(
+    val category: com.joyal.swyplauncher.util.UnitData.Category,
+    val sourceAmount: Double,
+    val targetAmount: Double? = null,
+    val fromId: String,
+    val toId: String,
+    val sourceApprox: String? = null,  // human-readable subtext (large/small values)
+    val targetApprox: String? = null,
+    val error: String? = null
 )
 
 // Currency conversion display state
