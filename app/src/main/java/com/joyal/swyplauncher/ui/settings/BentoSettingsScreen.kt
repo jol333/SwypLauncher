@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.outlined.ElectricBolt
 import androidx.compose.material.icons.outlined.RocketLaunch
 import androidx.compose.material.icons.outlined.SwapVert
@@ -105,6 +106,7 @@ fun BentoSettingsScreen(
     var showModeOrderDialog by remember { mutableStateOf(false) }
     var showLaunchOptionsDialog by remember { mutableStateOf(false) }
     var showSortOrderDialog by remember { mutableStateOf(false) }
+    var showConversionDialog by remember { mutableStateOf(false) }
     // Track if user dismissed the bottom sheet in this session
     // Using screenEntryTimestamp as key forces reset each time user enters settings
     var userDismissedBottomSheet by remember(screenEntryTimestamp) { mutableStateOf(false) }
@@ -146,6 +148,16 @@ fun BentoSettingsScreen(
         mutableStateOf(if (saved != null) saved.split(",").size else 4)
     }
 
+    // Conversion categories state
+    var enabledConversionCount by remember {
+        val saved = preferencesRepository?.getEnabledConversionCategories()
+        mutableStateOf(saved?.size ?: TOTAL_CONVERSION_CATEGORIES)
+    }
+    var enabledConversionCategories by remember {
+        val saved = preferencesRepository?.getEnabledConversionCategories()
+        mutableStateOf(saved ?: ALL_CONVERSION_CATEGORIES.toSet())
+    }
+
     // Calculate scroll progress for donate section animation
     val scrollProgress by remember {
         derivedStateOf {
@@ -174,6 +186,7 @@ fun BentoSettingsScreen(
     var sortAppsCardBounds by remember { mutableStateOf(Rect.Zero) }
     var languageCardBounds by remember { mutableStateOf(Rect.Zero) }
     var launchOptionsCardBounds by remember { mutableStateOf(Rect.Zero) }
+    var conversionCardBounds by remember { mutableStateOf(Rect.Zero) }
 
     // Container transform animation progress (0 = card, 1 = popup)
     val modeOrderProgress by animateFloatAsState(
@@ -212,12 +225,21 @@ fun BentoSettingsScreen(
         label = "launchOptionsProgress"
     )
 
-    // Spatial awareness: Adjacent cards push away when dialog opens
+    val conversionProgress by animateFloatAsState(
+        targetValue = if (showConversionDialog) 1f else 0f,
+        animationSpec = spring(
+            dampingRatio = 0.65f,
+            stiffness = 280f
+        ),
+        label = "conversionProgress"
+    )
+
+    // Language & Conversions row pushes away when dialog opens
     val density = LocalDensity.current
-    val appShortcutsOffset by animateFloatAsState(
-        targetValue = if (showLanguageDialog) with(density) { 15.dp.toPx() } else 0f,
+    val conversionOffset by animateFloatAsState(
+        targetValue = if (showLanguageDialog) with(density) { 15.dp.toPx() } else if (showConversionDialog) with(density) { 8.dp.toPx() } else 0f,
         animationSpec = expressiveSpatialSpring,
-        label = "appShortcutsOffset"
+        label = "conversionOffset"
     )
     val launchModesOffset by animateFloatAsState(
         targetValue = if (showModeOrderDialog) with(density) { (-8).dp.toPx() } else if (showLaunchOptionsDialog) with(density) { (-15).dp.toPx() } else 0f,
@@ -239,7 +261,7 @@ fun BentoSettingsScreen(
     
     // Language card offset when dialog opens
     val languageOffset by animateFloatAsState(
-        targetValue = if (showLanguageDialog) with(density) { 8.dp.toPx() } else 0f,
+        targetValue = if (showLanguageDialog) with(density) { 8.dp.toPx() } else if (showConversionDialog) with(density) { (-15).dp.toPx() } else 0f,
         animationSpec = expressiveSpatialSpring,
         label = "languageOffset"
     )
@@ -251,6 +273,10 @@ fun BentoSettingsScreen(
         label = "launchOptionsOffset"
     )
 
+    // App shortcuts and Gestures don't have morphing dialogs, so no offsets are needed.
+    val appShortcutsOffset = 0f
+    val gesturesOffset = 0f
+
 
 
     Box(
@@ -258,7 +284,7 @@ fun BentoSettingsScreen(
             .fillMaxSize()
             .background(BentoColors.BackgroundDark)
     ) {
-        val blurRadius = (modeOrderProgress * 10f + sortOrderProgress * 10f + languageProgress * 10f + launchOptionsProgress * 10f).dp
+        val blurRadius = (modeOrderProgress * 10f + sortOrderProgress * 10f + languageProgress * 10f + launchOptionsProgress * 10f + conversionProgress * 10f).dp
 
         LazyColumn(
             state = listState,
@@ -456,7 +482,7 @@ fun BentoSettingsScreen(
                 }
             }
             
-            // Language & App Shortcuts Row
+            // Language & Conversion Categories Row
             item {
                 Row(
                     modifier = Modifier
@@ -477,6 +503,30 @@ fun BentoSettingsScreen(
                             .alpha(1f - languageProgress),
                         offsetX = languageOffset
                     )
+                    ConversionCategoriesCard(
+                        count = enabledConversionCount,
+                        onClick = { showConversionDialog = true },
+                        modifier = Modifier
+                            .weight(1f)
+                            .onGloballyPositioned { coordinates ->
+                                conversionCardBounds = coordinates.boundsInRoot()
+                            }
+                            .alpha(1f - conversionProgress),
+                        offsetX = conversionOffset
+                    )
+                }
+            }
+
+            // App Shortcuts & Custom Gestures Row
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .offset(y = (-32).dp)
+                        .height(IntrinsicSize.Max),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
                     AppShortcutsCard(
                         count = shortcutsCount,
                         onClick = {
@@ -490,26 +540,20 @@ fun BentoSettingsScreen(
                         modifier = Modifier.weight(1f),
                         offsetX = appShortcutsOffset
                     )
-                }
-            }
-
-            // Custom Gestures Row (full-width)
-            item {
-                CustomGesturesCard(
-                    count = gesturesCount,
-                    onClick = {
-                        context.startActivity(
-                            Intent(
-                                context,
-                                com.joyal.swyplauncher.CustomGesturesActivity::class.java
+                    CustomGesturesCard(
+                        count = gesturesCount,
+                        onClick = {
+                            context.startActivity(
+                                Intent(
+                                    context,
+                                    com.joyal.swyplauncher.CustomGesturesActivity::class.java
+                                )
                             )
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .offset(y = (-32).dp)
-                )
+                        },
+                        modifier = Modifier.weight(1f),
+                        offsetX = gesturesOffset
+                    )
+                }
             }
 
             // Donate Section & Footer
@@ -685,6 +729,29 @@ fun BentoSettingsScreen(
                 )
             }
         )
+
+        // Container transform overlay for ConversionCategoriesDialog
+        ContainerTransformPopup(
+            isVisible = showConversionDialog || conversionProgress > 0f,
+            progress = conversionProgress,
+            cardBounds = conversionCardBounds,
+            onDismiss = { showConversionDialog = false },
+            cardContent = {
+                ConversionCategoriesCardContent(count = enabledConversionCount)
+            },
+            popupContent = {
+                ConversionCategoriesDialogContent(
+                    initialEnabled = enabledConversionCategories,
+                    onDismiss = { showConversionDialog = false },
+                    onSave = { categories ->
+                        enabledConversionCategories = categories
+                        enabledConversionCount = categories.size
+                        preferencesRepository?.setEnabledConversionCategories(categories)
+                        showConversionDialog = false
+                    }
+                )
+            }
+        )
     }
 }
 
@@ -706,6 +773,7 @@ private fun ContainerTransformPopup(
     if (isVisible) {
         SubcomposeLayout(modifier = Modifier.fillMaxSize()) { constraints ->
             val popupWidthPx = 320.dp.roundToPx()
+            val popupMaxHeightPx = (constraints.maxHeight * 0.8f).toInt()
 
             // Measure popup content to get target height
             val popupPlaceable = subcompose("popupContent") {
@@ -717,7 +785,7 @@ private fun ContainerTransformPopup(
                     minWidth = popupWidthPx,
                     maxWidth = popupWidthPx,
                     minHeight = 0,
-                    maxHeight = constraints.maxHeight
+                    maxHeight = popupMaxHeightPx
                 )
             )
             

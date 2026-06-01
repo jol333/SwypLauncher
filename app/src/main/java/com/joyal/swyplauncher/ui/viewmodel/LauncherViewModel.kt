@@ -277,10 +277,21 @@ class LauncherViewModel @Inject constructor(
         val unit: UnitResultState? = null
     )
 
+    // Enabled conversion categories — loaded once lazily from preferences.
+    // null means "all enabled" (first launch / no preference saved yet).
+    private val enabledConversionCategories: Set<String>? by lazy {
+        preferencesRepository.getEnabledConversionCategories()
+    }
+
+    private fun isCategoryEnabled(key: String): Boolean {
+        val enabled = enabledConversionCategories ?: return true // null = all enabled
+        return key in enabled
+    }
+
     // Detect calc vs currency vs unit. Currency first ("$5+5"), then unit ("5 km"), then calc.
     private fun computeCalcOrCurrency(input: String): ParseResult {
         val parsed = CurrencyUtil.tryParse(input, currencyRepository.getNativeCurrencyCode())
-        if (parsed != null) {
+        if (parsed != null && isCategoryEnabled("CURRENCY")) {
             val needsLoad = !currencyRepository.hasRatesInMemory()
             return ParseResult(
                 calc = null,
@@ -294,7 +305,11 @@ class LauncherViewModel @Inject constructor(
                 parsed = parsed
             )
         }
-        UnitUtil.tryParse(input, unitRegion)?.let { return ParseResult(null, null, null, buildUnitState(it)) }
+        UnitUtil.tryParse(input, unitRegion)?.let { p ->
+            if (isCategoryEnabled(p.category.name)) {
+                return ParseResult(null, null, null, buildUnitState(p))
+            }
+        }
         val calc = com.joyal.swyplauncher.util.CalculatorUtil.evaluate(input)
         return ParseResult(calc, null, null)
     }

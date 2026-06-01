@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Gesture
 import androidx.compose.material.icons.outlined.Rocket
 import androidx.compose.material.icons.outlined.TouchApp
+import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -269,6 +270,7 @@ fun CustomGesturesCard(
     Box(
         modifier = modifier
             .graphicsLayer { translationX = offsetX }
+            .height(192.dp)
             .clip(RoundedCornerShape(24.dp))
             .background(
                 brush = Brush.verticalGradient(
@@ -299,31 +301,84 @@ fun CustomGesturesCard(
                     style = BentoTypography.labelLarge
                 )
             }
-            Spacer(Modifier.height(16.dp))
-            androidx.compose.foundation.layout.FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                Text(
-                    text = count.toString(),
-                    color = BentoColors.AccentGreen,
-                    style = BentoTypography.displayLarge,
-                    modifier = Modifier.alignByBaseline()
-                )
-                Text(
-                    text = if (count == 1) stringResource(R.string.active_gesture_singular)
-                    else stringResource(R.string.active_gesture_plural),
-                    color = BentoColors.TextSecondary,
-                    style = BentoTypography.bodyMedium,
-                    modifier = Modifier.alignByBaseline()
-                )
-            }
-            Spacer(Modifier.height(4.dp))
+            
+            Spacer(Modifier.weight(1f))
+            
             Text(
-                text = stringResource(R.string.gestures_card_hint),
-                color = BentoColors.TextMuted,
-                style = BentoTypography.labelSmall
+                text = count.toString(),
+                color = BentoColors.AccentGreen,
+                style = BentoTypography.displayLarge
+            )
+            Text(
+                text = if (count == 1) stringResource(R.string.active_gesture_singular)
+                else stringResource(R.string.active_gesture_plural),
+                color = BentoColors.TextSecondary,
+                style = BentoTypography.bodyMedium
             )
         }
+    }
+}
+
+@Composable
+fun ConversionCategoriesCard(
+    count: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    offsetX: Float = 0f
+) {
+    Box(
+        modifier = modifier
+            .graphicsLayer { translationX = offsetX }
+            .height(192.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        BentoColors.CardBackground.copy(alpha = 0.6f),
+                        BentoColors.CardBackground
+                    )
+                )
+            )
+            .border(1.dp, BentoColors.BorderLight, RoundedCornerShape(24.dp))
+            .clickable { onClick() }
+            .padding(24.dp)
+    ) {
+        ConversionCategoriesCardContent(count = count)
+    }
+}
+
+@Composable
+fun ConversionCategoriesCardContent(count: Int) {
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Calculate,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = BentoColors.AccentGreen
+            )
+            Text(
+                text = stringResource(R.string.conversions_card_title),
+                color = BentoColors.TextLabel,
+                style = BentoTypography.labelLarge
+            )
+        }
+        
+        Spacer(Modifier.weight(1f))
+        
+        Text(
+            text = count.toString(),
+            color = BentoColors.AccentGreen,
+            style = BentoTypography.displayLarge
+        )
+        Text(
+            text = if (count == 1) stringResource(R.string.categories_enabled_singular)
+            else stringResource(R.string.categories_enabled_plural),
+            color = BentoColors.TextSecondary,
+            style = BentoTypography.bodyMedium
+        )
     }
 }

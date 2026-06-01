@@ -230,6 +230,32 @@
     <string name="select_unit">Select unit</string>
     <string name="unit_cannot_convert">Cannot convert</string>
     <string name="unit_invalid_shoe_size">Enter a valid shoe size</string>
+
+    <!-- Conversion Categories Settings -->
+    <string name="conversions_card_title">CONVERSIONS</string>
+    <string name="categories_enabled_singular">Category enabled</string>
+    <string name="categories_enabled_plural">Categories enabled</string>
+    <string name="select_conversion_categories">Select conversion categories</string>
+    <string name="conversion_categories_hint">Shown in search results</string>
+    <string name="conversion_category_currency">Currency</string>
+    <string name="conversion_category_length">Length</string>
+    <string name="conversion_category_area">Area</string>
+    <string name="conversion_category_density">Density</string>
+    <string name="conversion_category_volume">Volume</string>
+    <string name="conversion_category_time">Time</string>
+    <string name="conversion_category_temperature">Temperature</string>
+    <string name="conversion_category_speed">Speed</string>
+    <string name="conversion_category_mass">Mass</string>
+    <string name="conversion_category_pressure">Pressure</string>
+    <string name="conversion_category_energy">Energy</string>
+    <string name="conversion_category_angle">Angle</string>
+    <string name="conversion_category_shoe_size">Shoe Size</string>
+    <string name="conversion_category_power">Power</string>
+    <string name="conversion_category_force">Force</string>
+    <string name="conversion_category_torque">Torque</string>
+    <string name="conversion_category_fuel">Fuel Consumption</string>
+    <string name="conversion_category_numeral">Numeral</string>
+    <string name="conversion_category_data">Data</string>
     <!-- Approximate human-readable subtext, e.g. "~9.46 trillion" (%1$s = number, %2$s = scale word) -->
     <string name="unit_approx_value">~%1$s %2$s</string>
     <string name="unit_scale_thousand">thousand</string>

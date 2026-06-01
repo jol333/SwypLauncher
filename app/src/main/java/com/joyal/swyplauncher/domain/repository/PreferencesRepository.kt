@@ -52,6 +52,11 @@ interface PreferencesRepository {
     fun getAppLanguage(): com.joyal.swyplauncher.domain.model.AppLanguage
     fun setAppLanguage(language: com.joyal.swyplauncher.domain.model.AppLanguage)
 
+    // Conversion categories: which categories are enabled in assistant search results.
+    // Returns null on first launch (meaning all enabled); otherwise the persisted set.
+    fun getEnabledConversionCategories(): Set<String>?
+    fun setEnabledConversionCategories(categories: Set<String>)
+
     // Currency rates cache (base currency + rates JSON + fetched timestamp)
     fun getCurrencyRatesJson(): String?
     fun getCurrencyRatesBase(): String?

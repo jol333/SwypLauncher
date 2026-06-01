@@ -191,6 +191,18 @@ class PreferencesRepositoryImpl @Inject constructor(
             .apply()
     }
 
+    override fun getEnabledConversionCategories(): Set<String>? {
+        return if (prefs.contains(KEY_ENABLED_CONVERSION_CATEGORIES)) {
+            prefs.getStringSet(KEY_ENABLED_CONVERSION_CATEGORIES, emptySet()) ?: emptySet()
+        } else {
+            null // First launch — caller treats null as "all enabled"
+        }
+    }
+
+    override fun setEnabledConversionCategories(categories: Set<String>) {
+        prefs.edit().putStringSet(KEY_ENABLED_CONVERSION_CATEGORIES, categories).apply()
+    }
+
     companion object {
         private const val KEY_HANDWRITING_INIT_TOAST_SHOWN = "handwriting_init_toast_shown"
         private const val KEY_HANDWRITING_MODEL_DOWNLOADED = "handwriting_model_downloaded"
@@ -211,5 +223,6 @@ class PreferencesRepositoryImpl @Inject constructor(
         private const val KEY_CURRENCY_RATES_JSON = "currency_rates_json"
         private const val KEY_CURRENCY_RATES_BASE = "currency_rates_base"
         private const val KEY_CURRENCY_RATES_TIMESTAMP = "currency_rates_timestamp"
+        private const val KEY_ENABLED_CONVERSION_CATEGORIES = "enabled_conversion_categories"
     }
 }
