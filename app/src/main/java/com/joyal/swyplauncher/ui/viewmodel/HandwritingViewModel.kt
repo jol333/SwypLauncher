@@ -91,7 +91,7 @@ class HandwritingViewModel @Inject constructor(
     private fun matchGesture(strokes: List<InkStroke>) {
         viewModelScope.launch(Dispatchers.Default) {
             val gestures = preferencesRepository.getCustomGestures()
-            val match = if (gestures.isEmpty() || strokes.isEmpty()) {
+            val match = if (gestures.isEmpty() || strokes.size != 1) {
                 null
             } else {
                 GestureRecognizer.findBestMatch(strokes, gestures)

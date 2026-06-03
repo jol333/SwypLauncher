@@ -231,6 +231,32 @@
     <string name="select_unit">选择单位</string>
     <string name="unit_cannot_convert">无法转换</string>
     <string name="unit_invalid_shoe_size">请输入有效的鞋码</string>
+
+    <!-- Conversion Categories Settings -->
+    <string name="conversions_card_title">换算</string>
+    <string name="categories_enabled_singular">已启用类别</string>
+    <string name="categories_enabled_plural">已启用类别</string>
+    <string name="select_conversion_categories">选择换算类别</string>
+    <string name="conversion_categories_hint">显示在搜索结果中</string>
+    <string name="conversion_category_currency">货币</string>
+    <string name="conversion_category_length">长度</string>
+    <string name="conversion_category_area">面积</string>
+    <string name="conversion_category_density">密度</string>
+    <string name="conversion_category_volume">体积</string>
+    <string name="conversion_category_time">时间</string>
+    <string name="conversion_category_temperature">温度</string>
+    <string name="conversion_category_speed">速度</string>
+    <string name="conversion_category_mass">质量</string>
+    <string name="conversion_category_pressure">压强</string>
+    <string name="conversion_category_energy">能量</string>
+    <string name="conversion_category_angle">角度</string>
+    <string name="conversion_category_shoe_size">鞋码</string>
+    <string name="conversion_category_power">功率</string>
+    <string name="conversion_category_force">力</string>
+    <string name="conversion_category_torque">扭矩</string>
+    <string name="conversion_category_fuel">燃油消耗</string>
+    <string name="conversion_category_numeral">数字系统</string>
+    <string name="conversion_category_data">数据</string>
     <!-- Approximate human-readable subtext, e.g. "~9.46 trillion" (%1$s = number, %2$s = scale word) -->
     <string name="unit_approx_value">~%1$s %2$s</string>
     <string name="unit_scale_thousand">千</string>
@@ -274,4 +300,5 @@
     <string name="handwriting_model_error_download_generic">手写识别模型下载失败，请重试。</string>
     <string name="handwriting_model_error_check_status">检查模型状态失败，请重试。</string>
     <string name="handwriting_model_error_init">初始化手写识别失败，请重试。</string>
+    
 </resources>

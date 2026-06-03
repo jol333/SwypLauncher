@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!--
+      Glance's ColorProvider(@ColorRes Int) overload is annotated @RestrictedApi
+      (LIBRARY_GROUP) yet is the intended way to reference a color resource from an
+      app widget. The widget relies on it throughout, so the false-positive is ignored
+      for this one file; RestrictedApi remains active everywhere else.
+    -->
+    <issue id="RestrictedApi">
+        <ignore regexp="SwypLauncherWidget\.kt" />
+    </issue>
+
+    <!--
+      widget_preview.xml is the app-widget RemoteViews preview layout. RemoteViews uses
+      framework ImageViews (not AppCompat), where app:tint is unsupported and would
+      silently no-op; android:tint is the correct, natively-supported choice (minSdk 34).
+    -->
+    <issue id="UseAppTint">
+        <ignore regexp="widget_preview\.xml" />
+    </issue>
+</lint>

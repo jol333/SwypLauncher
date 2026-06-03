@@ -231,6 +231,32 @@
     <string name="select_unit">इकाई चुनें</string>
     <string name="unit_cannot_convert">रूपांतरण नहीं हो सका</string>
     <string name="unit_invalid_shoe_size">मान्य जूते का साइज़ दर्ज करें</string>
+
+    <!-- Conversion Categories Settings -->
+    <string name="conversions_card_title">रूपांतरण</string>
+    <string name="categories_enabled_singular">श्रेणी सक्षम</string>
+    <string name="categories_enabled_plural">श्रेणियाँ सक्षम</string>
+    <string name="select_conversion_categories">रूपांतरण श्रेणियाँ चुनें</string>
+    <string name="conversion_categories_hint">खोज परिणामों में दिखाया गया</string>
+    <string name="conversion_category_currency">मुद्रा</string>
+    <string name="conversion_category_length">लंबाई</string>
+    <string name="conversion_category_area">क्षेत्रफल</string>
+    <string name="conversion_category_density">घनत्व</string>
+    <string name="conversion_category_volume">आयतन</string>
+    <string name="conversion_category_time">समय</string>
+    <string name="conversion_category_temperature">तापमान</string>
+    <string name="conversion_category_speed">गति</string>
+    <string name="conversion_category_mass">द्रव्यमान</string>
+    <string name="conversion_category_pressure">दाब</string>
+    <string name="conversion_category_energy">ऊर्जा</string>
+    <string name="conversion_category_angle">कोण</string>
+    <string name="conversion_category_shoe_size">जूते का आकार</string>
+    <string name="conversion_category_power">शक्ति</string>
+    <string name="conversion_category_force">बल</string>
+    <string name="conversion_category_torque">बल आघूर्ण</string>
+    <string name="conversion_category_fuel">ईंधन खपत</string>
+    <string name="conversion_category_numeral">अंक प्रणाली</string>
+    <string name="conversion_category_data">डेटा</string>
     <!-- Approximate human-readable subtext, e.g. "~9.46 trillion" (%1$s = number, %2$s = scale word) -->
     <string name="unit_approx_value">~%1$s %2$s</string>
     <string name="unit_scale_thousand">हज़ार</string>
@@ -274,4 +300,5 @@
     <string name="handwriting_model_error_download_generic">हस्तलेखन पहचान मॉडल डाउनलोड करने में विफल। कृपया फिर से प्रयास करें।</string>
     <string name="handwriting_model_error_check_status">मॉडल की स्थिति जांचने में विफल। कृपया फिर से प्रयास करें।</string>
     <string name="handwriting_model_error_init">हस्तलेखन पहचान शुरू करने में विफल। कृपया फिर से प्रयास करें।</string>
+    
 </resources>

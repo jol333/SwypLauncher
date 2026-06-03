@@ -40,6 +40,8 @@ gradle/libs.versions.toml.lock
 # Local Configuration Files
 # ========================================
 local.properties
+# Holds release signing-store/key passwords (read by app/build.gradle.kts)
+keystore.properties
 
 # ========================================
 # IntelliJ IDEA / Android Studio

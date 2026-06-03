@@ -231,6 +231,32 @@
     <string name="select_unit">Selecionar unidade</string>
     <string name="unit_cannot_convert">Não é possível converter</string>
     <string name="unit_invalid_shoe_size">Insira um número de calçado válido</string>
+
+    <!-- Conversion Categories Settings -->
+    <string name="conversions_card_title">CONVERSÕES</string>
+    <string name="categories_enabled_singular">Categoria ativada</string>
+    <string name="categories_enabled_plural">Categorias ativadas</string>
+    <string name="select_conversion_categories">Selecionar categorias de conversão</string>
+    <string name="conversion_categories_hint">Exibido nos resultados da pesquisa</string>
+    <string name="conversion_category_currency">Moeda</string>
+    <string name="conversion_category_length">Comprimento</string>
+    <string name="conversion_category_area">Área</string>
+    <string name="conversion_category_density">Densidade</string>
+    <string name="conversion_category_volume">Volume</string>
+    <string name="conversion_category_time">Tempo</string>
+    <string name="conversion_category_temperature">Temperatura</string>
+    <string name="conversion_category_speed">Velocidade</string>
+    <string name="conversion_category_mass">Massa</string>
+    <string name="conversion_category_pressure">Pressão</string>
+    <string name="conversion_category_energy">Energia</string>
+    <string name="conversion_category_angle">Ângulo</string>
+    <string name="conversion_category_shoe_size">Tamanho de calçado</string>
+    <string name="conversion_category_power">Potência</string>
+    <string name="conversion_category_force">Força</string>
+    <string name="conversion_category_torque">Torque</string>
+    <string name="conversion_category_fuel">Consumo de combustível</string>
+    <string name="conversion_category_numeral">Sistema numérico</string>
+    <string name="conversion_category_data">Dados</string>
     <!-- Approximate human-readable subtext, e.g. "~9.46 trillion" (%1$s = number, %2$s = scale word) -->
     <string name="unit_approx_value">~%1$s %2$s</string>
     <string name="unit_scale_thousand">mil</string>
@@ -274,4 +300,5 @@
     <string name="handwriting_model_error_download_generic">Não foi possível baixar o modelo de reconhecimento de escrita. Tente novamente.</string>
     <string name="handwriting_model_error_check_status">Não foi possível verificar o status do modelo. Tente novamente.</string>
     <string name="handwriting_model_error_init">Não foi possível inicializar o reconhecimento de escrita. Tente novamente.</string>
+    
 </resources>

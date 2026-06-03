@@ -285,128 +285,127 @@ fun HandwritingModeScreen(
         configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
     val canvasHeight = if (isLandscape) 160.dp else 260.dp
 
+    Box(modifier = Modifier.fillMaxSize()) {
+    // Magical ink layer
+    Canvas(
+        modifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer { clip = true }
+    ) {
+        // Read the trigger to ensure recomposition while particles are animating
+        @Suppress("UNUSED_VARIABLE")
+        val unusedTrigger = particleUpdateTrigger
+
+        // Ink shimmer brush
+        val inkColors = listOf(
+            Color.hsv((hue) % 360f, 0.9f, 1f),
+            Color.hsv((hue + 60f) % 360f, 0.9f, 1f),
+            Color.hsv((hue + 120f) % 360f, 0.9f, 1f)
+        )
+        val shimmerBrush = Brush.linearGradient(
+            colors = inkColors,
+            start = Offset.Zero,
+            end = Offset(size.width, size.height)
+        )
+
+        // Helper to draw stroke with shimmer and highlight
+        fun drawStroke(path: Path, highlightAlpha: Float) {
+            drawPath(
+                path = path,
+                brush = shimmerBrush,
+                style = Stroke(width = baseStrokeWidth, cap = StrokeCap.Round)
+            )
+            drawPath(
+                path = path,
+                color = Color.White.copy(alpha = highlightAlpha),
+                style = Stroke(width = baseStrokeWidth * 0.5f, cap = StrokeCap.Round)
+            )
+        }
+
+        // Draw completed strokes
+        handwritingState.strokes.forEach { stroke ->
+            if (stroke.points.size > 1) {
+                drawStroke(
+                    createSmoothPath(stroke.points.map { Offset(it.x, it.y) }),
+                    0.18f
+                )
+            }
+        }
+
+        // Draw current path being drawn
+        if (currentPath.size > 1) {
+            drawStroke(createSmoothPath(currentPath), 0.22f)
+        }
+
+        // Sparkle particles — twinkle and fade
+        particles.forEach { p ->
+            val t = (p.life / p.maxLife).coerceIn(0f, 1f)
+            val alpha =
+                (1f - t) * (0.45f + 0.55f * sin((t * 6f) * PI.toFloat()).coerceIn(0f, 1f))
+            // main sparkle
+            drawCircle(p.color.copy(alpha), p.size, p.position)
+            // soft glow halo
+            drawCircle(
+                Brush.radialGradient(
+                    listOf(p.color.copy(alpha * 0.4f), Color.Transparent),
+                    p.position,
+                    p.size * 3f
+                ),
+                p.size * 3f,
+                p.position
+            )
+        }
+    }
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Drawing canvas area - responsive height based on orientation
+        // Drawing input area.
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(canvasHeight)
-        ) {
-            Canvas(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer { } // Enable hardware acceleration for Canvas
-                    .pointerInput(handwritingState.isInitialized) {
-                        if (handwritingState.isInitialized) {
-                            detectDragGestures(
-                                onDragStart = { offset ->
-                                    currentPath.clear()
-                                    currentPath.add(offset)
-                                    // Burst of particles on start
-                                    emitSparkles(
-                                        particles = particles,
-                                        at = offset,
-                                        baseStrokeWidth = baseStrokeWidth,
-                                        hue = hue
-                                    )
-                                },
-                                onDrag = { change, _ ->
-                                    currentPath.add(change.position)
-                                    // Emit sparkles along the stroke
-                                    emitSparkles(
-                                        particles = particles,
-                                        at = change.position,
-                                        baseStrokeWidth = baseStrokeWidth,
-                                        hue = hue
-                                    )
-                                },
-                                onDragEnd = {
-                                    if (currentPath.isNotEmpty()) {
-                                        val now = System.currentTimeMillis()
-                                        val points = currentPath.mapIndexed { index, offset ->
-                                            InkPoint(
-                                                x = offset.x,
-                                                y = offset.y,
-                                                timestamp = now + index
-                                            )
-                                        }
-                                        handwritingViewModel.addStroke(InkStroke(points))
-                                        currentPath.clear()
+                .pointerInput(handwritingState.isInitialized) {
+                    if (handwritingState.isInitialized) {
+                        detectDragGestures(
+                            onDragStart = { offset ->
+                                currentPath.clear()
+                                currentPath.add(offset)
+                                // Burst of particles on start
+                                emitSparkles(
+                                    particles = particles,
+                                    at = offset,
+                                    baseStrokeWidth = baseStrokeWidth,
+                                    hue = hue
+                                )
+                            },
+                            onDrag = { change, _ ->
+                                currentPath.add(change.position)
+                                // Emit sparkles along the stroke
+                                emitSparkles(
+                                    particles = particles,
+                                    at = change.position,
+                                    baseStrokeWidth = baseStrokeWidth,
+                                    hue = hue
+                                )
+                            },
+                            onDragEnd = {
+                                if (currentPath.isNotEmpty()) {
+                                    val now = System.currentTimeMillis()
+                                    val points = currentPath.mapIndexed { index, offset ->
+                                        InkPoint(
+                                            x = offset.x,
+                                            y = offset.y,
+                                            timestamp = now + index
+                                        )
                                     }
+                                    handwritingViewModel.addStroke(InkStroke(points))
+                                    currentPath.clear()
                                 }
-                            )
-                        }
-                    }
-            ) {
-                // Read the trigger to ensure recomposition while particles are animating
-                @Suppress("UNUSED_VARIABLE")
-                val unusedTrigger = particleUpdateTrigger
-
-                // Ink shimmer brush
-                val inkColors = listOf(
-                    Color.hsv((hue) % 360f, 0.9f, 1f),
-                    Color.hsv((hue + 60f) % 360f, 0.9f, 1f),
-                    Color.hsv((hue + 120f) % 360f, 0.9f, 1f)
-                )
-                val shimmerBrush = Brush.linearGradient(
-                    colors = inkColors,
-                    start = Offset.Zero,
-                    end = Offset(size.width, size.height)
-                )
-
-                // Helper to draw stroke with shimmer and highlight
-                fun drawStroke(path: Path, highlightAlpha: Float) {
-                    drawPath(
-                        path = path,
-                        brush = shimmerBrush,
-                        style = Stroke(width = baseStrokeWidth, cap = StrokeCap.Round)
-                    )
-                    drawPath(
-                        path = path,
-                        color = Color.White.copy(alpha = highlightAlpha),
-                        style = Stroke(width = baseStrokeWidth * 0.5f, cap = StrokeCap.Round)
-                    )
-                }
-
-                // Draw completed strokes
-                handwritingState.strokes.forEach { stroke ->
-                    if (stroke.points.size > 1) {
-                        drawStroke(
-                            createSmoothPath(stroke.points.map { Offset(it.x, it.y) }),
-                            0.18f
+                            }
                         )
                     }
                 }
-
-                // Draw current path being drawn
-                if (currentPath.size > 1) {
-                    drawStroke(createSmoothPath(currentPath), 0.22f)
-                }
-
-                // Sparkle particles — twinkle and fade
-                particles.forEach { p ->
-                    val t = (p.life / p.maxLife).coerceIn(0f, 1f)
-                    val alpha =
-                        (1f - t) * (0.45f + 0.55f * sin((t * 6f) * PI.toFloat()).coerceIn(0f, 1f))
-                    // main sparkle
-                    drawCircle(p.color.copy(alpha), p.size, p.position)
-                    // soft glow halo
-                    drawCircle(
-                        Brush.radialGradient(
-                            listOf(p.color.copy(alpha * 0.4f), Color.Transparent),
-                            p.position,
-                            p.size * 3f
-                        ),
-                        p.size * 3f,
-                        p.position
-                    )
-                }
-
-
-            }
-
+        ) {
             // Initialization and error states - only show if not initialized yet
             when (val result = handwritingState.recognitionResult) {
                 is RecognitionResult.Initializing -> {
@@ -916,6 +915,7 @@ fun HandwritingModeScreen(
                 }
             }
         }
+    }
     }
 }
 

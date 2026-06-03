@@ -59,6 +59,7 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -641,6 +642,21 @@ fun AssistantScreen(
 
                         val authenticateForHiddenApps: () -> Unit = {
                             biometricPrompt.authenticate(promptInfo)
+                        }
+
+                        // Mark the window secure while the unlocked hidden-apps grid is on
+                        // screen so it can't be captured in screenshots or the recents thumbnail.
+                        DisposableEffect(showHiddenApps) {
+                            if (showHiddenApps) {
+                                activity.window.addFlags(
+                                    android.view.WindowManager.LayoutParams.FLAG_SECURE
+                                )
+                            }
+                            onDispose {
+                                activity.window.clearFlags(
+                                    android.view.WindowManager.LayoutParams.FLAG_SECURE
+                                )
+                            }
                         }
 
                         val topPadding = with(LocalDensity.current) {

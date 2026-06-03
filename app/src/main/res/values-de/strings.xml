@@ -231,6 +231,32 @@
     <string name="select_unit">Einheit auswählen</string>
     <string name="unit_cannot_convert">Umrechnung nicht möglich</string>
     <string name="unit_invalid_shoe_size">Gültige Schuhgröße eingeben</string>
+
+    <!-- Conversion Categories Settings -->
+    <string name="conversions_card_title">UMRECHNUNGEN</string>
+    <string name="categories_enabled_singular">Kategorie aktiviert</string>
+    <string name="categories_enabled_plural">Kategorien aktiviert</string>
+    <string name="select_conversion_categories">Umrechnungskategorien auswählen</string>
+    <string name="conversion_categories_hint">In Suchergebnissen angezeigt</string>
+    <string name="conversion_category_currency">Währung</string>
+    <string name="conversion_category_length">Länge</string>
+    <string name="conversion_category_area">Fläche</string>
+    <string name="conversion_category_density">Dichte</string>
+    <string name="conversion_category_volume">Volumen</string>
+    <string name="conversion_category_time">Zeit</string>
+    <string name="conversion_category_temperature">Temperatur</string>
+    <string name="conversion_category_speed">Geschwindigkeit</string>
+    <string name="conversion_category_mass">Masse</string>
+    <string name="conversion_category_pressure">Druck</string>
+    <string name="conversion_category_energy">Energie</string>
+    <string name="conversion_category_angle">Winkel</string>
+    <string name="conversion_category_shoe_size">Schuhgröße</string>
+    <string name="conversion_category_power">Leistung</string>
+    <string name="conversion_category_force">Kraft</string>
+    <string name="conversion_category_torque">Drehmoment</string>
+    <string name="conversion_category_fuel">Kraftstoffverbrauch</string>
+    <string name="conversion_category_numeral">Zahlensystem</string>
+    <string name="conversion_category_data">Daten</string>
     <!-- Approximate human-readable subtext, e.g. "~9.46 trillion" (%1$s = number, %2$s = scale word) -->
     <string name="unit_approx_value">~%1$s %2$s</string>
     <string name="unit_scale_thousand">Tausend</string>
@@ -274,4 +300,5 @@
     <string name="handwriting_model_error_download_generic">Handschrifterkennungsmodell konnte nicht heruntergeladen werden. Bitte versuche es erneut.</string>
     <string name="handwriting_model_error_check_status">Modellstatus konnte nicht geprüft werden. Bitte versuche es erneut.</string>
     <string name="handwriting_model_error_init">Handschrifterkennung konnte nicht initialisiert werden. Bitte versuche es erneut.</string>
+    
 </resources>

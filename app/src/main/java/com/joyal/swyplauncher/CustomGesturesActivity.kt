@@ -870,24 +870,26 @@ private fun GestureDrawingCanvas(
             }
     ) {
         Canvas(
-            modifier = Modifier.fillMaxSize().pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = { offset ->
-                        onDrawingStarted()
-                        currentPath.clear(); currentPath.add(offset)
-                    },
-                    onDrag = { change, _ -> currentPath.add(change.position) },
-                    onDragEnd = {
-                        if (currentPath.size > 1) {
-                            val now = System.currentTimeMillis()
-                            newStrokes.add(InkStroke(currentPath.mapIndexed { i, o ->
-                                InkPoint(o.x, o.y, now + i)
-                            }))
-                            onStrokeEnded()
+            modifier = Modifier.fillMaxSize().pointerInput(newStrokes.size) {
+                if (newStrokes.isEmpty()) {
+                    detectDragGestures(
+                        onDragStart = { offset ->
+                            onDrawingStarted()
+                            currentPath.clear(); currentPath.add(offset)
+                        },
+                        onDrag = { change, _ -> currentPath.add(change.position) },
+                        onDragEnd = {
+                            if (currentPath.size > 1) {
+                                val now = System.currentTimeMillis()
+                                newStrokes.add(InkStroke(currentPath.mapIndexed { i, o ->
+                                    InkPoint(o.x, o.y, now + i)
+                                }))
+                                onStrokeEnded()
+                            }
+                            currentPath.clear()
                         }
-                        currentPath.clear()
-                    }
-                )
+                    )
+                }
             }
         ) {
             if (newStrokes.isEmpty() && existingPreview != null) {
