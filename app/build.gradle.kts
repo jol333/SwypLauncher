@@ -31,7 +31,7 @@ android {
         versionCode = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"))
             .format(DateTimeFormatter.ofPattern("yyyyMMddHH"))
             .toInt()
-        versionName = "1.5"
+        versionName = "1.5.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         

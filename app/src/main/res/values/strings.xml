@@ -191,7 +191,8 @@
     <string name="play_store">Play Store</string>
     <string name="search_google_desc">Search on Google</string>
     <string name="search_play_store_desc">Search on Play Store</string>
-    
+    <string name="no_app_to_handle_action">No app found to handle this action</string>
+
     <string name="copy">Copy</string>
     <string name="share">Share</string>
     <string name="copy_to_clipboard_desc">Copy to clipboard</string>

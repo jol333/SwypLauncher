@@ -192,7 +192,8 @@
     <string name="play_store">പ്ലേ സ്റ്റോർ</string>
     <string name="search_google_desc">ഗൂഗിളിൽ തിരയുക</string>
     <string name="search_play_store_desc">പ്ലേ സ്റ്റോറിൽ തിരയുക</string>
-    
+    <string name="no_app_to_handle_action">ഈ പ്രവർത്തനം കൈകാര്യം ചെയ്യാൻ ആപ്പൊന്നും കണ്ടെത്തിയില്ല</string>
+
     <string name="copy">കോപ്പി ചെയ്യൂ</string>
     <string name="share">ഷെയർ ചെയ്യൂ</string>
     <string name="copy_to_clipboard_desc">ക്ലിപ്പ്ബോർഡിലേക്ക് പകർത്തുക</string>

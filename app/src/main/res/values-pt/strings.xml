@@ -192,7 +192,8 @@
     <string name="play_store">Play Store</string>
     <string name="search_google_desc">Buscar no Google</string>
     <string name="search_play_store_desc">Buscar na Play Store</string>
-    
+    <string name="no_app_to_handle_action">Nenhum app encontrado para executar esta ação</string>
+
     <string name="copy">Copiar</string>
     <string name="share">Compartilhar</string>
     <string name="copy_to_clipboard_desc">Copiar para a área de transferência</string>

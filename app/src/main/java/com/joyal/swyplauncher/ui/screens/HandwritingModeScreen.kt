@@ -9,30 +9,17 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -67,7 +54,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
@@ -76,12 +62,6 @@ import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.InkPoint
 import com.joyal.swyplauncher.domain.model.InkStroke
 import com.joyal.swyplauncher.domain.model.RecognitionResult
-import com.joyal.swyplauncher.ui.components.AppIconItem
-import com.joyal.swyplauncher.ui.components.InteractiveCurrencyConverter
-import com.joyal.swyplauncher.ui.components.InteractiveUnitConverter
-import com.joyal.swyplauncher.ui.components.ResultDisplay
-import com.joyal.swyplauncher.ui.model.AppListItem
-import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
 import com.joyal.swyplauncher.ui.viewmodel.HandwritingViewModel
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
 import kotlin.math.PI
@@ -115,23 +95,6 @@ fun HandwritingModeScreen(
     val autoOpenSingleResult by launcherViewModel.autoOpenSingleResult.collectAsState()
     val sortOrder by launcherViewModel.appSortOrder.collectAsState()
     val context = LocalContext.current
-
-    // Memoize combined app list to avoid recalculation on every recomposition
-    val combinedAppList = remember(
-        launcherState.handwritingSmartApps,
-        launcherState.handwritingFilteredApps,
-        sortOrder,
-        handwritingState.recognizedText,
-        gridSize
-    ) {
-        combineAppListsWithHeaders(
-            launcherState.handwritingSmartApps,
-            launcherState.handwritingFilteredApps,
-            sortOrder,
-            isSearching = handwritingState.recognizedText.isNotEmpty(),
-            gridSize = gridSize
-        )
-    }
 
     // Track menu state outside of LazyGrid items to prevent state loss
     var selectedAppIndex by remember { mutableIntStateOf(-1) }
@@ -563,7 +526,7 @@ fun HandwritingModeScreen(
             }
         }
 
-        // App list - show smart 4 apps initially, all on scroll
+        // Results: loading spinner, then calculator / currency / unit / app grid / no-results
         if (launcherState.isLoading) {
             Box(
                 modifier = Modifier
@@ -573,347 +536,29 @@ fun HandwritingModeScreen(
             ) {
                 androidx.compose.material3.CircularProgressIndicator()
             }
-        } else if (launcherState.handwritingCalculatorResult != null) {
-            ResultDisplay(
-                inputText = com.joyal.swyplauncher.util.CalculatorUtil.normalizeForDisplay(
-                    handwritingState.recognizedText
-                ),
-                resultText = "= ${launcherState.handwritingCalculatorResult}",
-                clipboardValue = launcherState.handwritingCalculatorResult
+        } else {
+            SearchModeResults(
+                query = handwritingState.recognizedText,
+                hideSearchQuery = handwritingState.recognizedText,
+                calculatorResult = launcherState.handwritingCalculatorResult,
+                currencyResult = launcherState.handwritingCurrencyResult,
+                unitResult = launcherState.handwritingUnitResult,
+                smartApps = launcherState.handwritingSmartApps,
+                appsToShow = launcherState.handwritingFilteredApps,
+                hiddenApps = launcherState.hiddenApps,
+                sortOrder = sortOrder,
+                gridSize = gridSize,
+                cornerRadius = cornerRadius,
+                gridState = gridScrollState,
+                newlyInstalledAppPackage = launcherState.newlyInstalledAppPackage,
+                selectedAppIndex = selectedAppIndex,
+                onSetSelectedIndex = { selectedAppIndex = it },
+                launcherViewModel = launcherViewModel,
+                launcherMode = LauncherViewModel.LauncherMode.HANDWRITING,
+                currencyMode = LauncherViewModel.CurrencyMode.HANDWRITING,
+                onAddShortcut = onAddShortcut,
+                onDismiss = onDismiss
             )
-        } else if (launcherState.handwritingCurrencyResult != null) {
-            val currencyState = launcherState.handwritingCurrencyResult!!
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .imePadding(),
-                contentAlignment = Alignment.Center
-            ) {
-                InteractiveCurrencyConverter(
-                    state = currencyState,
-                    onAmountChanged = { isSource, amount ->
-                        launcherViewModel.updateCurrencyConversion(
-                            amount = amount,
-                            fromCode = currencyState.fromCode,
-                            toCode = currencyState.toCode,
-                            isSourceChanged = isSource,
-                            mode = LauncherViewModel.CurrencyMode.HANDWRITING
-                        )
-                    },
-                    onCurrencyChanged = { isSource, newCode ->
-                        if (isSource) {
-                            launcherViewModel.updateCurrencyConversion(
-                                amount = currencyState.targetAmount ?: 0.0,
-                                fromCode = newCode,
-                                toCode = currencyState.toCode,
-                                isSourceChanged = false,
-                                mode = LauncherViewModel.CurrencyMode.HANDWRITING
-                            )
-                        } else {
-                            launcherViewModel.updateCurrencyConversion(
-                                amount = currencyState.sourceAmount,
-                                fromCode = currencyState.fromCode,
-                                toCode = newCode,
-                                isSourceChanged = true,
-                                mode = LauncherViewModel.CurrencyMode.HANDWRITING
-                            )
-                        }
-                    }
-                )
-            }
-        } else if (launcherState.handwritingUnitResult != null) {
-            val unitState = launcherState.handwritingUnitResult!!
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .imePadding(),
-                contentAlignment = Alignment.Center
-            ) {
-                InteractiveUnitConverter(
-                    state = unitState,
-                    onAmountChanged = { isSource, amount ->
-                        launcherViewModel.updateUnitConversion(
-                            amount = amount,
-                            fromId = unitState.fromId,
-                            toId = unitState.toId,
-                            isSourceChanged = isSource,
-                            mode = LauncherViewModel.CurrencyMode.HANDWRITING
-                        )
-                    },
-                    onUnitChanged = { isSource, newId ->
-                        if (isSource) {
-                            launcherViewModel.updateUnitConversion(
-                                amount = unitState.targetAmount ?: 0.0,
-                                fromId = newId,
-                                toId = unitState.toId,
-                                isSourceChanged = false,
-                                mode = LauncherViewModel.CurrencyMode.HANDWRITING
-                            )
-                        } else {
-                            launcherViewModel.updateUnitConversion(
-                                amount = unitState.sourceAmount,
-                                fromId = unitState.fromId,
-                                toId = newId,
-                                isSourceChanged = true,
-                                mode = LauncherViewModel.CurrencyMode.HANDWRITING
-                            )
-                        }
-                    }
-                )
-            }
-        } else if (launcherState.handwritingSmartApps.isNotEmpty() || launcherState.handwritingFilteredApps.isNotEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxSize()
-            ) {
-                val showFade =
-                    gridScrollState.firstVisibleItemIndex > 0 || gridScrollState.firstVisibleItemScrollOffset > 0
-
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(gridSize),
-                    state = gridScrollState,
-                    contentPadding = PaddingValues(
-                        start = 8.dp,
-                        end = 8.dp,
-                        top = 8.dp,
-                        bottom = 100.dp
-                    ),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        8.dp,
-                        Alignment.CenterHorizontally
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(24.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(
-                        count = combinedAppList.size,
-                        key = { index ->
-                            when (val item = combinedAppList[index]) {
-                                is AppListItem.App -> item.appInfo.getIdentifier()
-                                is AppListItem.CategoryHeader -> "header_${item.category}"
-                                is AppListItem.Divider -> "divider"
-                            }
-                        },
-                        span = { index ->
-                            when (combinedAppList[index]) {
-                                is AppListItem.CategoryHeader -> GridItemSpan(gridSize)
-                                is AppListItem.Divider -> GridItemSpan(gridSize)
-                                is AppListItem.App -> GridItemSpan(1)
-                            }
-                        }
-                    ) { index ->
-                        when (val item = combinedAppList[index]) {
-                            is AppListItem.CategoryHeader -> {
-                                Text(
-                                    text = item.category,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(
-                                        top = 16.dp,
-                                        bottom = 8.dp,
-                                        start = 4.dp
-                                    )
-                                )
-                            }
-
-                            is AppListItem.Divider -> {
-                                androidx.compose.material3.HorizontalDivider(
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-                                )
-                            }
-
-                            is AppListItem.App -> {
-                                AppIconItem(
-                                    app = item.appInfo,
-                                    onClick = {
-                                        launcherViewModel.launchApp(
-                                            item.appInfo.packageName,
-                                            item.appInfo.activityName
-                                        )
-                                        onDismiss()
-                                    },
-                                    showBadge = item.appInfo.getIdentifier() == launcherState.newlyInstalledAppPackage,
-                                    onLongClick = { selectedAppIndex = index },
-                                    showContextMenu = selectedAppIndex == index,
-                                    onDismissMenu = { selectedAppIndex = -1 },
-                                    onHide = {
-                                        launcherViewModel.hideApp(
-                                            item.appInfo.getIdentifier(),
-                                            LauncherViewModel.LauncherMode.HANDWRITING,
-                                            handwritingState.recognizedText
-                                        )
-                                        selectedAppIndex = -1
-                                    },
-                                    onAddShortcut = onAddShortcut?.let { callback ->
-                                        { callback(item.appInfo.getIdentifier()) }
-                                    },
-                                    cornerRadiusPercent = cornerRadius
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // Top fade edge - only show when scrolled
-                if (showFade) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .align(Alignment.TopCenter)
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Black,
-                                        Color.Transparent
-                                    )
-                                )
-                            )
-                    )
-                }
-            }
-        } else if (handwritingState.recognizedText.isNotEmpty()) {
-            val isHiddenApp = launcherState.hiddenApps.any {
-                it.label.equals(handwritingState.recognizedText, ignoreCase = true)
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.no_apps_found),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    if (!isHiddenApp) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                androidx.compose.material3.OutlinedButton(
-                                    onClick = {
-                                        val intent =
-                                            android.content.Intent(android.content.Intent.ACTION_VIEW)
-                                                .apply {
-                                                    data = android.net.Uri.parse(
-                                                        "https://www.google.com/search?q=${
-                                                            android.net.Uri.encode(handwritingState.recognizedText)
-                                                        }"
-                                                    )
-                                                }
-                                        context.startActivity(intent)
-                                        onDismiss()
-                                    }
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.google_search),
-                                        contentDescription = stringResource(R.string.search_google_desc),
-                                        modifier = Modifier.size(20.dp),
-                                        tint = Color.Unspecified
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(stringResource(R.string.google))
-                                }
-                                androidx.compose.material3.OutlinedButton(
-                                    onClick = {
-                                        val intent =
-                                            android.content.Intent(android.content.Intent.ACTION_VIEW)
-                                                .apply {
-                                                    data = android.net.Uri.parse(
-                                                        "https://play.google.com/store/search?q=${
-                                                            android.net.Uri.encode(handwritingState.recognizedText)
-                                                        }&c=apps"
-                                                    )
-                                                }
-                                        context.startActivity(intent)
-                                        onDismiss()
-                                    }
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.play_store),
-                                        contentDescription = stringResource(R.string.search_play_store_desc),
-                                        modifier = Modifier.size(20.dp),
-                                        tint = Color.Unspecified
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(stringResource(R.string.play_store))
-                                }
-                            }
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                androidx.compose.material3.OutlinedButton(
-                                    onClick = {
-                                        val clipboardManager =
-                                            context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                        val clip = android.content.ClipData.newPlainText(
-                                            "Copied Text",
-                                            handwritingState.recognizedText
-                                        )
-                                        clipboardManager.setPrimaryClip(clip)
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.ContentCopy,
-                                        contentDescription = stringResource(R.string.copy_to_clipboard_desc),
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        stringResource(R.string.copy),
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                                androidx.compose.material3.OutlinedButton(
-                                    onClick = {
-                                        val intent =
-                                            android.content.Intent(android.content.Intent.ACTION_SEND)
-                                                .apply {
-                                                    type = "text/plain"
-                                                    putExtra(
-                                                        android.content.Intent.EXTRA_TEXT,
-                                                        handwritingState.recognizedText
-                                                    )
-                                                }
-                                        context.startActivity(
-                                            android.content.Intent.createChooser(
-                                                intent,
-                                                context.getString(R.string.share)
-                                            )
-                                        )
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Share,
-                                        contentDescription = stringResource(R.string.share_text_desc),
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        stringResource(R.string.share),
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
     }

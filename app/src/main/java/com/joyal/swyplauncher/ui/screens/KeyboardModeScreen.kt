@@ -2,42 +2,22 @@ package com.joyal.swyplauncher.ui.screens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -53,21 +33,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.joyal.swyplauncher.ui.components.AppIconItem
-import com.joyal.swyplauncher.ui.components.InteractiveCurrencyConverter
-import com.joyal.swyplauncher.ui.components.InteractiveUnitConverter
-import com.joyal.swyplauncher.ui.components.ResultDisplay
-import com.joyal.swyplauncher.ui.model.AppListItem
-import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
 import com.joyal.swyplauncher.ui.viewmodel.KeyboardViewModel
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
 
@@ -91,7 +62,6 @@ fun KeyboardModeScreen(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val gridState = rememberLazyGridState()
-    val context = LocalContext.current
     // Track if we were searching, to detect clear events and reset scroll
     var wasSearching by remember { mutableStateOf(false) }
 
@@ -234,346 +204,31 @@ fun KeyboardModeScreen(
                 ) {
                     CircularProgressIndicator()
                 }
-            } else if (launcherState.keyboardCalculatorResult != null) {
-                ResultDisplay(
-                    inputText = com.joyal.swyplauncher.util.CalculatorUtil.normalizeForDisplay(searchQuery),
-                    resultText = "= ${launcherState.keyboardCalculatorResult}",
-                    clipboardValue = launcherState.keyboardCalculatorResult
-                )
-            } else if (launcherState.keyboardCurrencyResult != null) {
-                val currencyState = launcherState.keyboardCurrencyResult!!
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .imePadding(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    InteractiveCurrencyConverter(
-                        state = currencyState,
-                        onAmountChanged = { isSource, amount ->
-                            launcherViewModel.updateCurrencyConversion(
-                                amount = amount,
-                                fromCode = currencyState.fromCode,
-                                toCode = currencyState.toCode,
-                                isSourceChanged = isSource,
-                                mode = LauncherViewModel.CurrencyMode.KEYBOARD
-                            )
-                        },
-                        onCurrencyChanged = { isSource, newCode ->
-                            if (isSource) {
-                                launcherViewModel.updateCurrencyConversion(
-                                    amount = currencyState.targetAmount ?: 0.0,
-                                    fromCode = newCode,
-                                    toCode = currencyState.toCode,
-                                    isSourceChanged = false,
-                                    mode = LauncherViewModel.CurrencyMode.KEYBOARD
-                                )
-                            } else {
-                                launcherViewModel.updateCurrencyConversion(
-                                    amount = currencyState.sourceAmount,
-                                    fromCode = currencyState.fromCode,
-                                    toCode = newCode,
-                                    isSourceChanged = true,
-                                    mode = LauncherViewModel.CurrencyMode.KEYBOARD
-                                )
-                            }
-                        }
-                    )
-                }
-            } else if (launcherState.keyboardUnitResult != null) {
-                val unitState = launcherState.keyboardUnitResult!!
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .imePadding(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    InteractiveUnitConverter(
-                        state = unitState,
-                        onAmountChanged = { isSource, amount ->
-                            launcherViewModel.updateUnitConversion(
-                                amount = amount,
-                                fromId = unitState.fromId,
-                                toId = unitState.toId,
-                                isSourceChanged = isSource,
-                                mode = LauncherViewModel.CurrencyMode.KEYBOARD
-                            )
-                        },
-                        onUnitChanged = { isSource, newId ->
-                            if (isSource) {
-                                launcherViewModel.updateUnitConversion(
-                                    amount = unitState.targetAmount ?: 0.0,
-                                    fromId = newId,
-                                    toId = unitState.toId,
-                                    isSourceChanged = false,
-                                    mode = LauncherViewModel.CurrencyMode.KEYBOARD
-                                )
-                            } else {
-                                launcherViewModel.updateUnitConversion(
-                                    amount = unitState.sourceAmount,
-                                    fromId = unitState.fromId,
-                                    toId = newId,
-                                    isSourceChanged = true,
-                                    mode = LauncherViewModel.CurrencyMode.KEYBOARD
-                                )
-                            }
-                        }
-                    )
-                }
-            } else if (launcherState.keyboardSmartApps.isNotEmpty() || (searchQuery.isNotEmpty() && launcherState.keyboardFilteredApps.isNotEmpty()) || (searchQuery.isEmpty() && launcherState.apps.isNotEmpty())) {
+            } else {
                 val appsToShow =
                     if (searchQuery.isEmpty()) launcherState.apps else launcherState.keyboardFilteredApps
-
-                val combinedAppList = remember(
-                    launcherState.keyboardSmartApps,
-                    appsToShow,
-                    sortOrder,
-                    searchQuery,
-                    gridSize
-                ) {
-                    combineAppListsWithHeaders(
-                        launcherState.keyboardSmartApps,
-                        appsToShow,
-                        sortOrder,
-                        isSearching = searchQuery.isNotEmpty(),
-                        gridSize = gridSize
-                    )
-                }
-
-                Box(modifier = Modifier.fillMaxSize()) {
-                    val showFade =
-                        gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0
-
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(gridSize),
-                        state = gridState,
-                        contentPadding = PaddingValues(
-                            start = 8.dp,
-                            end = 8.dp,
-                            top = 8.dp,
-                            bottom = 100.dp
-                        ),
-                        horizontalArrangement = Arrangement.spacedBy(
-                            8.dp,
-                            Alignment.CenterHorizontally
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(24.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(
-                            count = combinedAppList.size,
-                            key = { index ->
-                                when (val item = combinedAppList[index]) {
-                                    is AppListItem.App -> item.appInfo.getIdentifier()
-                                    is AppListItem.CategoryHeader -> "header_${item.category}"
-                                    is AppListItem.Divider -> "divider"
-                                }
-                            },
-                            span = { index ->
-                                when (combinedAppList[index]) {
-                                    is AppListItem.CategoryHeader -> GridItemSpan(gridSize)
-                                    is AppListItem.Divider -> GridItemSpan(gridSize)
-                                    is AppListItem.App -> GridItemSpan(1)
-                                }
-                            }
-                        ) { index ->
-                            when (val item = combinedAppList[index]) {
-                                is AppListItem.CategoryHeader -> {
-                                    Text(
-                                        text = item.category,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.padding(
-                                            top = 16.dp,
-                                            bottom = 8.dp,
-                                            start = 4.dp
-                                        )
-                                    )
-                                }
-
-                                is AppListItem.Divider -> {
-                                    androidx.compose.material3.HorizontalDivider(
-                                        modifier = Modifier.padding(vertical = 8.dp),
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-                                    )
-                                }
-
-                                is AppListItem.App -> {
-                                    AppIconItem(
-                                        app = item.appInfo,
-                                        onClick = {
-                                            launcherViewModel.launchApp(
-                                                item.appInfo.packageName,
-                                                item.appInfo.activityName
-                                            )
-                                            onDismiss()
-                                        },
-                                        showBadge = item.appInfo.getIdentifier() == launcherState.newlyInstalledAppPackage,
-                                        onLongClick = { selectedAppIndex = index },
-                                        showContextMenu = selectedAppIndex == index,
-                                        onDismissMenu = { selectedAppIndex = -1 },
-                                        onHide = {
-                                            launcherViewModel.hideApp(
-                                                item.appInfo.getIdentifier(),
-                                                LauncherViewModel.LauncherMode.KEYBOARD,
-                                                searchQuery
-                                            )
-                                            selectedAppIndex = -1
-                                        },
-                                        onAddShortcut = onAddShortcut?.let { callback ->
-                                            { callback(item.appInfo.getIdentifier()) }
-                                        },
-                                        cornerRadiusPercent = cornerRadius
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Top fade edge - only show when scrolled
-                    if (showFade) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp)
-                                .align(Alignment.TopCenter)
-                                .background(
-                                    Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.Black,
-                                            Color.Transparent
-                                        )
-                                    )
-                                )
-                        )
-                    }
-                }
-            } else if (searchQuery.isNotEmpty()) {
-                val isHiddenApp = launcherState.hiddenApps.any {
-                    it.label.equals(searchQuery, ignoreCase = true)
-                }
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Text(
-                            text = stringResource(com.joyal.swyplauncher.R.string.no_apps_found),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        if (!isHiddenApp) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                ) {
-                                    OutlinedButton(
-                                        onClick = {
-                                            val intent =
-                                                android.content.Intent(android.content.Intent.ACTION_VIEW)
-                                                    .apply {
-                                                        data = android.net.Uri.parse(
-                                                            "https://www.google.com/search?q=${
-                                                                android.net.Uri.encode(searchQuery)
-                                                            }"
-                                                        )
-                                                    }
-                                            context.startActivity(intent)
-                                            onDismiss()
-                                        }
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = com.joyal.swyplauncher.R.drawable.google_search),
-                                            contentDescription = stringResource(com.joyal.swyplauncher.R.string.search_google_desc),
-                                            modifier = Modifier.size(20.dp),
-                                            tint = Color.Unspecified
-                                        )
-                                        Spacer(
-                                            modifier = Modifier.width(
-                                                8.dp
-                                            )
-                                        )
-                                        Text(stringResource(com.joyal.swyplauncher.R.string.google))
-                                    }
-                                    OutlinedButton(
-                                        onClick = {
-                                            val intent =
-                                                android.content.Intent(android.content.Intent.ACTION_VIEW)
-                                                    .apply {
-                                                        data = android.net.Uri.parse(
-                                                            "https://play.google.com/store/search?q=${
-                                                                android.net.Uri.encode(searchQuery)
-                                                            }&c=apps"
-                                                        )
-                                                    }
-                                            context.startActivity(intent)
-                                            onDismiss()
-                                        }
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = com.joyal.swyplauncher.R.drawable.play_store),
-                                            contentDescription = stringResource(com.joyal.swyplauncher.R.string.search_play_store_desc),
-                                            modifier = Modifier.size(20.dp),
-                                            tint = Color.Unspecified
-                                        )
-                                        Spacer(
-                                            modifier = Modifier.width(
-                                                8.dp
-                                            )
-                                        )
-                                        Text(stringResource(com.joyal.swyplauncher.R.string.play_store))
-                                    }
-                                }
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                ) {
-                                    OutlinedButton(
-                                        onClick = {
-                                            val clipboardManager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                            val clip = android.content.ClipData.newPlainText("Copied Text", searchQuery)
-                                            clipboardManager.setPrimaryClip(clip)
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.ContentCopy,
-                                            contentDescription = stringResource(com.joyal.swyplauncher.R.string.copy_to_clipboard_desc),
-                                            modifier = Modifier.size(20.dp),
-                                            tint = MaterialTheme.colorScheme.onSurface
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(stringResource(com.joyal.swyplauncher.R.string.copy), color = MaterialTheme.colorScheme.onSurface)
-                                    }
-                                    OutlinedButton(
-                                        onClick = {
-                                            val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                                                type = "text/plain"
-                                                putExtra(android.content.Intent.EXTRA_TEXT, searchQuery)
-                                            }
-                                            context.startActivity(android.content.Intent.createChooser(intent, context.getString(com.joyal.swyplauncher.R.string.share)))
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Share,
-                                            contentDescription = stringResource(com.joyal.swyplauncher.R.string.share_text_desc),
-                                            modifier = Modifier.size(20.dp),
-                                            tint = MaterialTheme.colorScheme.onSurface
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(stringResource(com.joyal.swyplauncher.R.string.share), color = MaterialTheme.colorScheme.onSurface)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                SearchModeResults(
+                    query = searchQuery,
+                    hideSearchQuery = searchQuery,
+                    calculatorResult = launcherState.keyboardCalculatorResult,
+                    currencyResult = launcherState.keyboardCurrencyResult,
+                    unitResult = launcherState.keyboardUnitResult,
+                    smartApps = launcherState.keyboardSmartApps,
+                    appsToShow = appsToShow,
+                    hiddenApps = launcherState.hiddenApps,
+                    sortOrder = sortOrder,
+                    gridSize = gridSize,
+                    cornerRadius = cornerRadius,
+                    gridState = gridState,
+                    newlyInstalledAppPackage = launcherState.newlyInstalledAppPackage,
+                    selectedAppIndex = selectedAppIndex,
+                    onSetSelectedIndex = { selectedAppIndex = it },
+                    launcherViewModel = launcherViewModel,
+                    launcherMode = LauncherViewModel.LauncherMode.KEYBOARD,
+                    currencyMode = LauncherViewModel.CurrencyMode.KEYBOARD,
+                    onAddShortcut = onAddShortcut,
+                    onDismiss = onDismiss
+                )
             }
         }
     }

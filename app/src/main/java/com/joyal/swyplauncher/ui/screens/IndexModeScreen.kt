@@ -10,7 +10,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,7 +23,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
@@ -49,8 +47,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.joyal.swyplauncher.ui.components.AppIconItem
-import com.joyal.swyplauncher.ui.model.AppListItem
 import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
 import com.joyal.swyplauncher.ui.viewmodel.IndexViewModel
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
@@ -243,116 +239,35 @@ fun IndexModeScreen(
                     exit = fadeOut(animationSpec = tween(300)) +
                             scaleOut(animationSpec = tween(300))
                 ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        val showFade =
-                            gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0
-
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(gridSize),
-                            state = gridState,
-                            contentPadding = PaddingValues(bottom = 100.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(24.dp),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            items(
-                                count = allItems.size,
-                                key = { index ->
-                                    when (val item = allItems[index]) {
-                                        is AppListItem.App -> item.appInfo.getIdentifier()
-                                        is AppListItem.CategoryHeader -> "header_${item.category}"
-                                        is AppListItem.Divider -> "divider"
-                                    }
-                                },
-                                span = { index ->
-                                    when (allItems[index]) {
-                                        is AppListItem.CategoryHeader -> GridItemSpan(gridSize)
-                                        is AppListItem.Divider -> GridItemSpan(gridSize)
-                                        is AppListItem.App -> GridItemSpan(1)
-                                    }
-                                }
-                            ) { index ->
-                                when (val item = allItems[index]) {
-                                    is AppListItem.CategoryHeader -> {
-                                        Text(
-                                            text = item.category,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.padding(
-                                                top = 16.dp,
-                                                bottom = 8.dp,
-                                                start = 4.dp
-                                            )
-                                        )
-                                    }
-
-                                    is AppListItem.Divider -> {
-                                        androidx.compose.material3.HorizontalDivider(
-                                            modifier = Modifier.padding(vertical = 8.dp),
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-                                        )
-                                    }
-
-                                    is AppListItem.App -> {
-                                        Box(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            AppIconItem(
-                                                app = item.appInfo,
-                                                onClick = {
-                                                    launcherViewModel.launchApp(
-                                                        item.appInfo.packageName,
-                                                        item.appInfo.activityName
-                                                    )
-                                                    onDismiss()
-                                                },
-                                                showBadge = item.appInfo.getIdentifier() == launcherState.newlyInstalledAppPackage,
-                                                onLongClick = { selectedAppIndex = index },
-                                                showContextMenu = selectedAppIndex == index,
-                                                onDismissMenu = { selectedAppIndex = -1 },
-                                                onHide = {
-                                                    launcherViewModel.hideApp(
-                                                        item.appInfo.getIdentifier(),
-                                                        LauncherViewModel.LauncherMode.INDEX,
-                                                        selectedLetter?.toString() ?: ""
-                                                    )
-                                                    selectedAppIndex = -1
-                                                    // Reset to grid view if no apps left after hiding
-                                                    if (isExpanded && launcherState.indexFilteredApps.size == 1) {
-                                                        indexViewModel.reset()
-                                                        launcherViewModel.resetFilterIndex()
-                                                    }
-                                                },
-                                                onAddShortcut = onAddShortcut?.let { callback ->
-                                                    { callback(item.appInfo.getIdentifier()) }
-                                                },
-                                                cornerRadiusPercent = cornerRadius
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // Top fade edge - only show when scrolled
-                        if (showFade) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(48.dp)
-                                    .align(Alignment.TopCenter)
-                                    .background(
-                                        Brush.verticalGradient(
-                                            colors = listOf(
-                                                Color.Black,
-                                                Color.Transparent
-                                            )
-                                        )
-                                    )
+                    AppResultGrid(
+                        items = allItems,
+                        gridSize = gridSize,
+                        cornerRadius = cornerRadius,
+                        gridState = gridState,
+                        newlyInstalledAppPackage = launcherState.newlyInstalledAppPackage,
+                        selectedAppIndex = selectedAppIndex,
+                        onSetSelectedIndex = { selectedAppIndex = it },
+                        onLaunchApp = { app ->
+                            launcherViewModel.launchApp(app.packageName, app.activityName)
+                            onDismiss()
+                        },
+                        onHideApp = { app ->
+                            launcherViewModel.hideApp(
+                                app.getIdentifier(),
+                                LauncherViewModel.LauncherMode.INDEX,
+                                selectedLetter?.toString() ?: ""
                             )
-                        }
-                    }
+                            // Reset to grid view if no apps left after hiding
+                            if (isExpanded && launcherState.indexFilteredApps.size == 1) {
+                                indexViewModel.reset()
+                                launcherViewModel.resetFilterIndex()
+                            }
+                        },
+                        onAddShortcut = onAddShortcut,
+                        contentPadding = PaddingValues(bottom = 100.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        centerItems = true
+                    )
                 }
             }
 }

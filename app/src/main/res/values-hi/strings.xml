@@ -192,7 +192,8 @@
     <string name="play_store">Play Store</string>
     <string name="search_google_desc">Google पर सर्च करें</string>
     <string name="search_play_store_desc">Play Store पर सर्च करें</string>
-    
+    <string name="no_app_to_handle_action">इस क्रिया के लिए कोई App नहीं मिला</string>
+
     <string name="copy">कॉपी करें</string>
     <string name="share">शेयर करें</string>
     <string name="copy_to_clipboard_desc">क्लिपबोर्ड पर कॉपी करें</string>

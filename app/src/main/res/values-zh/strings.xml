@@ -192,7 +192,8 @@
     <string name="play_store">Play 商店</string>
     <string name="search_google_desc">在 Google 上搜索</string>
     <string name="search_play_store_desc">在 Play 商店搜索</string>
-    
+    <string name="no_app_to_handle_action">未找到可处理此操作的应用</string>
+
     <string name="copy">复制</string>
     <string name="share">分享</string>
     <string name="copy_to_clipboard_desc">复制到剪贴板</string>
