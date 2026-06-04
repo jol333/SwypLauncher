@@ -85,6 +85,8 @@ cd swyplauncher
 - **Gesture**: Swipe diagonally from the bottom corners of your screen
 - **Power Button**: Long-press the power button
 - **App Icon**: Long press app icon and select an interaction mode directly
+- **Mode Shortcut**: Add a shortcut to your homescreen & launch from there
+- **Quick Settings Tile**: Add a quick setting tile to your control center & launch from there
 
 ### Switching Modes
 
