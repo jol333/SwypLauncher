@@ -595,6 +595,20 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Precomputes the smart-app ordering for every first-letter bucket so single-mode Index
+     * letter-paging can render each page (and slide smoothly between adjacent letters) without
+     * recomputing on every swipe. A single usage-map lookup is shared across all letters.
+     */
+    suspend fun computeSmartAppsByLetter(): Map<Char, List<AppInfo>> = withContext(Dispatchers.Default) {
+        val apps = _uiState.value.apps
+        if (apps.isEmpty()) return@withContext emptyMap()
+        val gridSize = preferencesRepository.getGridSize()
+        val usageMap = recordAppUsageUseCase.getUsageMap()
+        apps.groupBy { it.firstLetter }
+            .mapValues { (_, letterApps) -> getSmartAppListUseCase(letterApps, gridSize, usageMap) }
+    }
+
     // Reset filters for a specific mode
     fun resetFilterHandwriting() {
         handwritingFilterJob?.cancel()

@@ -698,7 +698,11 @@ fun AssistantScreen(
                                         modifier = Modifier
                                             .fillMaxHeight()
                                             .weight(1f),
-                                        beyondViewportPageCount = 0
+                                        beyondViewportPageCount = 0,
+                                        // When only one mode is enabled there are no other tabs
+                                        // to switch to, so free up horizontal swipe for the
+                                        // active screen (Index mode pages between letters).
+                                        userScrollEnabled = modes.size > 1
                                     ) { page ->
                                         when (val mode = modes[page]) {
                                             LauncherMode.HANDWRITING -> HandwritingModeScreen(
@@ -714,6 +718,9 @@ fun AssistantScreen(
                                                 onDismiss = { handleDismiss(true) },
                                                 launcherViewModel = launcherViewModel,
                                                 isBlurEnabled = blurEnabled,
+                                                // Only Index mode enabled -> let horizontal swipe
+                                                // move between adjacent letters.
+                                                letterSwipeEnabled = modes.size == 1,
                                                 onAddShortcut = { appId ->
                                                     shortcutAppId = appId
                                                     showShortcutEditor = true
@@ -767,7 +774,11 @@ fun AssistantScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .weight(1f),
-                                        beyondViewportPageCount = 0 // Only compose visible page
+                                        beyondViewportPageCount = 0, // Only compose visible page
+                                        // When only one mode is enabled there are no other tabs
+                                        // to switch to, so free up horizontal swipe for the
+                                        // active screen (Index mode pages between letters).
+                                        userScrollEnabled = modes.size > 1
                                     ) { page ->
                                         when (val mode = modes[page]) {
                                             LauncherMode.HANDWRITING -> HandwritingModeScreen(
@@ -783,6 +794,9 @@ fun AssistantScreen(
                                                 onDismiss = { handleDismiss(true) },
                                                 launcherViewModel = launcherViewModel,
                                                 isBlurEnabled = blurEnabled,
+                                                // Only Index mode enabled -> let horizontal swipe
+                                                // move between adjacent letters.
+                                                letterSwipeEnabled = modes.size == 1,
                                                 onAddShortcut = { appId ->
                                                     shortcutAppId = appId
                                                     showShortcutEditor = true
