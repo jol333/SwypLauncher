@@ -213,6 +213,7 @@ fun KeyboardModeScreen(
                     calculatorResult = launcherState.keyboardCalculatorResult,
                     currencyResult = launcherState.keyboardCurrencyResult,
                     unitResult = launcherState.keyboardUnitResult,
+                    timeZoneResult = launcherState.keyboardTimeZoneResult,
                     smartApps = launcherState.keyboardSmartApps,
                     appsToShow = appsToShow,
                     hiddenApps = launcherState.hiddenApps,

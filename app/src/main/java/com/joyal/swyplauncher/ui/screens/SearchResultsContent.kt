@@ -45,10 +45,12 @@ import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.repository.AppSortOrder
 import com.joyal.swyplauncher.ui.components.AppIconItem
 import com.joyal.swyplauncher.ui.components.InteractiveCurrencyConverter
+import com.joyal.swyplauncher.ui.components.InteractiveTimeZoneConverter
 import com.joyal.swyplauncher.ui.components.InteractiveUnitConverter
 import com.joyal.swyplauncher.ui.components.ResultDisplay
 import com.joyal.swyplauncher.ui.model.AppListItem
 import com.joyal.swyplauncher.ui.state.CurrencyResultState
+import com.joyal.swyplauncher.ui.state.TimeZoneResultState
 import com.joyal.swyplauncher.ui.state.UnitResultState
 import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
@@ -295,6 +297,37 @@ fun UnitResultPanel(
 }
 
 /**
+ * The time-zone conversion panel. Mirrors [CurrencyResultPanel], wiring the
+ * converter's edit / swap / country-switch callbacks to [LauncherViewModel].
+ */
+@Composable
+fun TimeZoneResultPanel(
+    state: TimeZoneResultState,
+    mode: LauncherViewModel.CurrencyMode,
+    launcherViewModel: LauncherViewModel,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .imePadding(),
+        contentAlignment = Alignment.Center
+    ) {
+        InteractiveTimeZoneConverter(
+            state = state,
+            onEditTime = { zoneId, hour, minute, pref ->
+                launcherViewModel.updateTimeZoneTime(zoneId, hour, minute, pref, mode)
+            },
+            onChangeCountry = { isPrimary, iso ->
+                launcherViewModel.changeTimeZoneCountry(isPrimary, iso, mode)
+            },
+            onSwap = { launcherViewModel.swapTimeZones(mode) }
+        )
+    }
+}
+
+/**
  * Fallback shown when a non-empty query matches no apps. Offers web/Play Store search
  * plus copy/share of the query text. Hidden-app matches suppress the action buttons
  * (the app exists, it's just hidden), matching the previous per-screen behaviour.
@@ -418,6 +451,7 @@ fun SearchModeResults(
     calculatorResult: String?,
     currencyResult: CurrencyResultState?,
     unitResult: UnitResultState?,
+    timeZoneResult: TimeZoneResultState?,
     smartApps: List<AppInfo>,
     appsToShow: List<AppInfo>,
     hiddenApps: List<AppInfo>,
@@ -448,6 +482,9 @@ fun SearchModeResults(
 
         unitResult != null ->
             UnitResultPanel(unitResult, currencyMode, launcherViewModel, modifier)
+
+        timeZoneResult != null ->
+            TimeZoneResultPanel(timeZoneResult, currencyMode, launcherViewModel, modifier)
 
         smartApps.isNotEmpty() || appsToShow.isNotEmpty() -> {
             val combinedAppList = remember(smartApps, appsToShow, sortOrder, query, gridSize) {

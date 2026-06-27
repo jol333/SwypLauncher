@@ -192,11 +192,23 @@ class PreferencesRepositoryImpl @Inject constructor(
     }
 
     override fun getEnabledConversionCategories(): Set<String>? {
-        return if (prefs.contains(KEY_ENABLED_CONVERSION_CATEGORIES)) {
-            prefs.getStringSet(KEY_ENABLED_CONVERSION_CATEGORIES, emptySet()) ?: emptySet()
-        } else {
-            null // First launch — caller treats null as "all enabled"
+        if (!prefs.contains(KEY_ENABLED_CONVERSION_CATEGORIES)) {
+            return null // First launch — caller treats null as "all enabled"
         }
+        val stored = prefs.getStringSet(KEY_ENABLED_CONVERSION_CATEGORIES, emptySet()) ?: emptySet()
+        // One-time migration: time-zone conversion shipped after this preference could
+        // already be saved, so a pre-existing set can never contain it. Enable it once
+        // for upgraders (mirrors "new categories default on") without overriding any
+        // category they later choose to disable.
+        if (!prefs.contains(KEY_TIMEZONE_CATEGORY_MIGRATED)) {
+            val migrated = stored + "TIMEZONE"
+            prefs.edit()
+                .putStringSet(KEY_ENABLED_CONVERSION_CATEGORIES, migrated)
+                .putBoolean(KEY_TIMEZONE_CATEGORY_MIGRATED, true)
+                .apply()
+            return migrated
+        }
+        return stored
     }
 
     override fun setEnabledConversionCategories(categories: Set<String>) {
@@ -224,5 +236,6 @@ class PreferencesRepositoryImpl @Inject constructor(
         private const val KEY_CURRENCY_RATES_BASE = "currency_rates_base"
         private const val KEY_CURRENCY_RATES_TIMESTAMP = "currency_rates_timestamp"
         private const val KEY_ENABLED_CONVERSION_CATEGORIES = "enabled_conversion_categories"
+        private const val KEY_TIMEZONE_CATEGORY_MIGRATED = "timezone_category_migrated"
     }
 }

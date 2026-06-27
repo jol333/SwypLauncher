@@ -381,6 +381,7 @@ fun VoiceModeScreen(
                     calculatorResult = launcherState.voiceCalculatorResult,
                     currencyResult = launcherState.voiceCurrencyResult,
                     unitResult = launcherState.voiceUnitResult,
+                    timeZoneResult = launcherState.voiceTimeZoneResult,
                     smartApps = launcherState.voiceSmartApps,
                     appsToShow = appsToShow,
                     hiddenApps = launcherState.hiddenApps,

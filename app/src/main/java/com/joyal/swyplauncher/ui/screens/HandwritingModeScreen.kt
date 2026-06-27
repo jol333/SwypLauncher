@@ -543,6 +543,7 @@ fun HandwritingModeScreen(
                 calculatorResult = launcherState.handwritingCalculatorResult,
                 currencyResult = launcherState.handwritingCurrencyResult,
                 unitResult = launcherState.handwritingUnitResult,
+                timeZoneResult = launcherState.handwritingTimeZoneResult,
                 smartApps = launcherState.handwritingSmartApps,
                 appsToShow = launcherState.handwritingFilteredApps,
                 hiddenApps = launcherState.hiddenApps,

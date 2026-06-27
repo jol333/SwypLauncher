@@ -233,6 +233,10 @@
     <string name="unit_cannot_convert">无法转换</string>
     <string name="unit_invalid_shoe_size">请输入有效的鞋码</string>
 
+    <!-- Time Zone Conversion -->
+    <string name="timezone_swap">切换时区</string>
+    <string name="timezone_select_country">选择国家</string>
+
     <!-- Conversion Categories Settings -->
     <string name="conversions_card_title">换算</string>
     <string name="categories_enabled_singular">已启用类别</string>
@@ -240,6 +244,7 @@
     <string name="select_conversion_categories">选择换算类别</string>
     <string name="conversion_categories_hint">显示在搜索结果中</string>
     <string name="conversion_category_currency">货币</string>
+    <string name="conversion_category_timezone">时区</string>
     <string name="conversion_category_length">长度</string>
     <string name="conversion_category_area">面积</string>
     <string name="conversion_category_density">密度</string>

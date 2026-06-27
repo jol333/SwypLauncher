@@ -233,6 +233,10 @@
     <string name="unit_cannot_convert">പരിവർത്തനം ചെയ്യാനായില്ല</string>
     <string name="unit_invalid_shoe_size">സാധുവായ ഷൂ സൈസ് നൽകുക</string>
 
+    <!-- Time Zone Conversion -->
+    <string name="timezone_swap">സമയ മേഖലകൾ മാറ്റുക</string>
+    <string name="timezone_select_country">രാജ്യം തിരഞ്ഞെടുക്കുക</string>
+
     <!-- Conversion Categories Settings -->
     <string name="conversions_card_title">കൺവേർഷനുകൾ</string>
     <string name="categories_enabled_singular">വിഭാഗം ഓൺ ആണ്</string>
@@ -240,6 +244,7 @@
     <string name="select_conversion_categories">കൺവേർഷൻ വിഭാഗങ്ങൾ തിരഞ്ഞെടുക്കുക</string>
     <string name="conversion_categories_hint">സെർച്ച് റിസൾട്ടിൽ കാണിക്കും</string>
     <string name="conversion_category_currency">കറൻസി</string>
+    <string name="conversion_category_timezone">സമയ മേഖല</string>
     <string name="conversion_category_length">നീളം</string>
     <string name="conversion_category_area">വിസ്തീർണ്ണം</string>
     <string name="conversion_category_density">സാന്ദ്രത</string>

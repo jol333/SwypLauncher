@@ -233,6 +233,10 @@
     <string name="unit_cannot_convert">Não é possível converter</string>
     <string name="unit_invalid_shoe_size">Insira um número de calçado válido</string>
 
+    <!-- Time Zone Conversion -->
+    <string name="timezone_swap">Trocar fusos horários</string>
+    <string name="timezone_select_country">Selecionar país</string>
+
     <!-- Conversion Categories Settings -->
     <string name="conversions_card_title">CONVERSÕES</string>
     <string name="categories_enabled_singular">Categoria ativada</string>
@@ -240,6 +244,7 @@
     <string name="select_conversion_categories">Selecionar categorias de conversão</string>
     <string name="conversion_categories_hint">Exibido nos resultados da pesquisa</string>
     <string name="conversion_category_currency">Moeda</string>
+    <string name="conversion_category_timezone">Fuso horário</string>
     <string name="conversion_category_length">Comprimento</string>
     <string name="conversion_category_area">Área</string>
     <string name="conversion_category_density">Densidade</string>

@@ -232,6 +232,10 @@
     <string name="unit_cannot_convert">Cannot convert</string>
     <string name="unit_invalid_shoe_size">Enter a valid shoe size</string>
 
+    <!-- Time Zone Conversion -->
+    <string name="timezone_swap">Swap time zones</string>
+    <string name="timezone_select_country">Select country</string>
+
     <!-- Conversion Categories Settings -->
     <string name="conversions_card_title">CONVERSIONS</string>
     <string name="categories_enabled_singular">Category enabled</string>
@@ -239,6 +243,7 @@
     <string name="select_conversion_categories">Select conversion categories</string>
     <string name="conversion_categories_hint">Shown in search results</string>
     <string name="conversion_category_currency">Currency</string>
+    <string name="conversion_category_timezone">Time Zone</string>
     <string name="conversion_category_length">Length</string>
     <string name="conversion_category_area">Area</string>
     <string name="conversion_category_density">Density</string>

@@ -233,6 +233,10 @@
     <string name="unit_cannot_convert">रूपांतरण नहीं हो सका</string>
     <string name="unit_invalid_shoe_size">मान्य जूते का साइज़ दर्ज करें</string>
 
+    <!-- Time Zone Conversion -->
+    <string name="timezone_swap">टाइम ज़ोन बदलें</string>
+    <string name="timezone_select_country">देश चुनें</string>
+
     <!-- Conversion Categories Settings -->
     <string name="conversions_card_title">रूपांतरण</string>
     <string name="categories_enabled_singular">श्रेणी सक्षम</string>
@@ -240,6 +244,7 @@
     <string name="select_conversion_categories">रूपांतरण श्रेणियाँ चुनें</string>
     <string name="conversion_categories_hint">खोज परिणामों में दिखाया गया</string>
     <string name="conversion_category_currency">मुद्रा</string>
+    <string name="conversion_category_timezone">टाइम ज़ोन</string>
     <string name="conversion_category_length">लंबाई</string>
     <string name="conversion_category_area">क्षेत्रफल</string>
     <string name="conversion_category_density">घनत्व</string>

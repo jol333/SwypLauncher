@@ -30,8 +30,24 @@ data class LauncherUiState(
     val handwritingUnitResult: UnitResultState? = null,
     val keyboardUnitResult: UnitResultState? = null,
     val voiceUnitResult: UnitResultState? = null,
+    // Time-zone conversion results for each mode
+    val handwritingTimeZoneResult: TimeZoneResultState? = null,
+    val keyboardTimeZoneResult: TimeZoneResultState? = null,
+    val voiceTimeZoneResult: TimeZoneResultState? = null,
     // Tooltip visibility
     val showHideAppTooltip: Boolean = false
+)
+
+// Time-zone conversion display state. Holds both the render-ready rows and the
+// refs/instant needed to recompute after an edit, country switch or swap.
+data class TimeZoneResultState(
+    val epochMillis: Long,
+    val primaryRef: com.joyal.swyplauncher.util.TimeZoneUtil.Ref,
+    val secondaryRef: com.joyal.swyplauncher.util.TimeZoneUtil.Ref,
+    val formatPref: com.joyal.swyplauncher.util.TimeZoneUtil.FormatPref,
+    val primaryRows: List<com.joyal.swyplauncher.util.TimeZoneUtil.Row>,
+    val secondaryRows: List<com.joyal.swyplauncher.util.TimeZoneUtil.Row>,
+    val error: String? = null
 )
 
 // Unit conversion display state

@@ -35,6 +35,7 @@ import com.joyal.swyplauncher.util.UnitData
  */
 val ALL_CONVERSION_CATEGORIES: List<String> = buildList {
     add("CURRENCY")
+    add("TIMEZONE")
     addAll(UnitData.Category.entries.map { it.name })
 }
 
@@ -46,6 +47,7 @@ val TOTAL_CONVERSION_CATEGORIES = ALL_CONVERSION_CATEGORIES.size
  */
 fun conversionCategoryLabelResId(key: String): Int = when (key) {
     "CURRENCY" -> R.string.conversion_category_currency
+    "TIMEZONE" -> R.string.conversion_category_timezone
     "LENGTH" -> R.string.conversion_category_length
     "AREA" -> R.string.conversion_category_area
     "DENSITY" -> R.string.conversion_category_density
@@ -73,6 +75,7 @@ fun conversionCategoryLabelResId(key: String): Int = when (key) {
  */
 fun conversionCategoryExamples(key: String): String = when (key) {
     "CURRENCY" -> "USD, EUR, …"
+    "TIMEZONE" -> "EST, CET, London, …"
     "LENGTH" -> "km, mile, …"
     "AREA" -> "square metre, hectare, …"
     "DENSITY" -> "g/cm³, lb/ft³, …"

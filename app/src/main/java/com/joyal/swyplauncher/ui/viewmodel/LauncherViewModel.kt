@@ -14,8 +14,10 @@ import com.joyal.swyplauncher.domain.usecase.ObserveAppChangesUseCase
 import com.joyal.swyplauncher.domain.usecase.RecordAppUsageUseCase
 import com.joyal.swyplauncher.ui.state.CurrencyResultState
 import com.joyal.swyplauncher.ui.state.LauncherUiState
+import com.joyal.swyplauncher.ui.state.TimeZoneResultState
 import com.joyal.swyplauncher.ui.state.UnitResultState
 import com.joyal.swyplauncher.util.CurrencyUtil
+import com.joyal.swyplauncher.util.TimeZoneUtil
 import com.joyal.swyplauncher.util.UnitData
 import com.joyal.swyplauncher.util.UnitUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -49,6 +51,9 @@ class LauncherViewModel @Inject constructor(
 
     // Region for unit-conversion preferences (imperial vs metric, Indian numbering)
     private val unitRegion: UnitUtil.Region by lazy { UnitUtil.detectRegion(appContext) }
+
+    // Auto-detected home time zone (no GPS) — the default side for time-zone conversion.
+    private val homeTimeZone: TimeZoneUtil.Ref.ZoneRef by lazy { TimeZoneUtil.detectHome(appContext) }
 
     private var keyboardCurrencyJob: Job? = null
     private var voiceCurrencyJob: Job? = null
@@ -240,7 +245,8 @@ class LauncherViewModel @Inject constructor(
                         newlyInstalledAppPackage = newlyInstalled,
                         keyboardCalculatorResult = parseResult.calc,
                         keyboardCurrencyResult = parseResult.currency,
-                        keyboardUnitResult = parseResult.unit
+                        keyboardUnitResult = parseResult.unit,
+                        keyboardTimeZoneResult = parseResult.timeZone
                     )
                     CurrencyMode.VOICE -> s.copy(
                         voiceFilteredApps = filtered,
@@ -248,7 +254,8 @@ class LauncherViewModel @Inject constructor(
                         newlyInstalledAppPackage = newlyInstalled,
                         voiceCalculatorResult = parseResult.calc,
                         voiceCurrencyResult = parseResult.currency,
-                        voiceUnitResult = parseResult.unit
+                        voiceUnitResult = parseResult.unit,
+                        voiceTimeZoneResult = parseResult.timeZone
                     )
                     CurrencyMode.HANDWRITING -> s.copy(
                         handwritingFilteredApps = filtered,
@@ -256,7 +263,8 @@ class LauncherViewModel @Inject constructor(
                         newlyInstalledAppPackage = newlyInstalled,
                         handwritingCalculatorResult = parseResult.calc,
                         handwritingCurrencyResult = parseResult.currency,
-                        handwritingUnitResult = parseResult.unit
+                        handwritingUnitResult = parseResult.unit,
+                        handwritingTimeZoneResult = parseResult.timeZone
                     )
                 }
             }
@@ -274,7 +282,8 @@ class LauncherViewModel @Inject constructor(
         val calc: String?,
         val currency: CurrencyResultState?,
         val parsed: CurrencyUtil.Parsed?,
-        val unit: UnitResultState? = null
+        val unit: UnitResultState? = null,
+        val timeZone: TimeZoneResultState? = null
     )
 
     // Enabled conversion categories — loaded once lazily from preferences.
@@ -288,7 +297,9 @@ class LauncherViewModel @Inject constructor(
         return key in enabled
     }
 
-    // Detect calc vs currency vs unit. Currency first ("$5+5"), then unit ("5 km"), then calc.
+    // Detect calc vs currency vs time-zone vs unit.
+    // Currency first ("$5+5"), then time-zone ("US time now"), then unit ("5 km"), then calc.
+    // Time-zone precedes unit so "9 pm IST" isn't mis-read as picometers.
     private fun computeCalcOrCurrency(input: String): ParseResult {
         val parsed = CurrencyUtil.tryParse(input, currencyRepository.getNativeCurrencyCode())
         if (parsed != null && isCategoryEnabled("CURRENCY")) {
@@ -305,6 +316,11 @@ class LauncherViewModel @Inject constructor(
                 parsed = parsed
             )
         }
+        if (isCategoryEnabled("TIMEZONE")) {
+            TimeZoneUtil.tryParse(input, homeTimeZone)?.let { p ->
+                return ParseResult(calc = null, currency = null, parsed = null, timeZone = buildTimeZoneState(p))
+            }
+        }
         UnitUtil.tryParse(input, unitRegion)?.let { p ->
             if (isCategoryEnabled(p.category.name)) {
                 return ParseResult(null, null, null, buildUnitState(p))
@@ -312,6 +328,75 @@ class LauncherViewModel @Inject constructor(
         }
         val calc = com.joyal.swyplauncher.util.CalculatorUtil.evaluate(input)
         return ParseResult(calc, null, null)
+    }
+
+    private fun buildTimeZoneState(p: TimeZoneUtil.Parsed): TimeZoneResultState {
+        val built = TimeZoneUtil.build(p.primary, p.secondary, p.epochMillis, p.formatPref)
+        return TimeZoneResultState(
+            epochMillis = p.epochMillis,
+            primaryRef = p.primary,
+            secondaryRef = p.secondary,
+            formatPref = p.formatPref,
+            primaryRows = built.primaryRows,
+            secondaryRows = built.secondaryRows
+        )
+    }
+
+    private fun activeTimeZone(mode: CurrencyMode): TimeZoneResultState? = when (mode) {
+        CurrencyMode.KEYBOARD -> _uiState.value.keyboardTimeZoneResult
+        CurrencyMode.VOICE -> _uiState.value.voiceTimeZoneResult
+        CurrencyMode.HANDWRITING -> _uiState.value.handwritingTimeZoneResult
+    }
+
+    private fun commitTimeZone(state: TimeZoneResultState, mode: CurrencyMode) {
+        val built = TimeZoneUtil.build(state.primaryRef, state.secondaryRef, state.epochMillis, state.formatPref)
+        val rebuilt = state.copy(primaryRows = built.primaryRows, secondaryRows = built.secondaryRows)
+        _uiState.update { s ->
+            when (mode) {
+                CurrencyMode.KEYBOARD -> s.copy(keyboardTimeZoneResult = rebuilt)
+                CurrencyMode.VOICE -> s.copy(voiceTimeZoneResult = rebuilt)
+                CurrencyMode.HANDWRITING -> s.copy(handwritingTimeZoneResult = rebuilt)
+            }
+        }
+    }
+
+    /**
+     * User edited the clock on a row — anchor the new instant to that row's zone.
+     * [pref] (non-null when the typed value signalled 24h or am/pm) switches the format
+     * for every row, matching the main search box; null keeps the current format.
+     */
+    fun updateTimeZoneTime(
+        zoneId: String,
+        hour: Int,
+        minute: Int,
+        pref: TimeZoneUtil.FormatPref?,
+        mode: CurrencyMode
+    ) {
+        val active = activeTimeZone(mode) ?: return
+        val newEpoch = TimeZoneUtil.applyEditedTime(zoneId, hour, minute, active.epochMillis)
+        commitTimeZone(active.copy(epochMillis = newEpoch, formatPref = pref ?: active.formatPref), mode)
+    }
+
+    /** Swap which country/zone is primary (on top) and which is the target. */
+    fun swapTimeZones(mode: CurrencyMode) {
+        val active = activeTimeZone(mode) ?: return
+        commitTimeZone(active.copy(primaryRef = active.secondaryRef, secondaryRef = active.primaryRef), mode)
+    }
+
+    /** Change one side to a different country (from the dropdown). */
+    fun changeTimeZoneCountry(isPrimary: Boolean, iso: String, mode: CurrencyMode) {
+        val active = activeTimeZone(mode) ?: return
+        val ref = TimeZoneUtil.Ref.CountryRef(iso)
+        var primary = if (isPrimary) ref else active.primaryRef
+        var secondary = if (isPrimary) active.secondaryRef else ref
+        // Don't let both sides become the same zone — push the untouched side to home/UTC.
+        if (TimeZoneUtil.sameZones(primary, secondary)) {
+            val alt: TimeZoneUtil.Ref =
+                if (!TimeZoneUtil.sameZones(ref, homeTimeZone)) homeTimeZone
+                else TimeZoneUtil.Ref.ZoneRef("Etc/UTC", null)
+            if (isPrimary) secondary = alt else primary = alt
+        }
+        commitTimeZone(active.copy(primaryRef = primary, secondaryRef = secondary), mode)
     }
 
     // Build a complete unit-conversion state (synchronous — no network needed).
@@ -564,7 +649,8 @@ class LauncherViewModel @Inject constructor(
                     newlyInstalledAppPackage = newlyInstalled,
                     handwritingCalculatorResult = null,
                     handwritingCurrencyResult = null,
-                    handwritingUnitResult = null
+                    handwritingUnitResult = null,
+                    handwritingTimeZoneResult = null
                 )
             }
         }
@@ -613,18 +699,18 @@ class LauncherViewModel @Inject constructor(
     fun resetFilterHandwriting() {
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
-        resetFilter { copy(handwritingFilteredApps = apps, handwritingSmartApps = it.first, newlyInstalledAppPackage = it.second, handwritingCalculatorResult = null, handwritingCurrencyResult = null, handwritingUnitResult = null) }
+        resetFilter { copy(handwritingFilteredApps = apps, handwritingSmartApps = it.first, newlyInstalledAppPackage = it.second, handwritingCalculatorResult = null, handwritingCurrencyResult = null, handwritingUnitResult = null, handwritingTimeZoneResult = null) }
     }
     fun resetFilterIndex() = resetFilter { copy(indexFilteredApps = apps, indexSmartApps = it.first, newlyInstalledAppPackage = it.second) }
     fun resetFilterKeyboard() {
         keyboardFilterJob?.cancel()
         keyboardCurrencyJob?.cancel()
-        resetFilter { copy(keyboardFilteredApps = apps, keyboardSmartApps = it.first, newlyInstalledAppPackage = it.second, keyboardCalculatorResult = null, keyboardCurrencyResult = null, keyboardUnitResult = null) }
+        resetFilter { copy(keyboardFilteredApps = apps, keyboardSmartApps = it.first, newlyInstalledAppPackage = it.second, keyboardCalculatorResult = null, keyboardCurrencyResult = null, keyboardUnitResult = null, keyboardTimeZoneResult = null) }
     }
     fun resetFilterVoice() {
         voiceFilterJob?.cancel()
         voiceCurrencyJob?.cancel()
-        resetFilter { copy(voiceFilteredApps = apps, voiceSmartApps = it.first, newlyInstalledAppPackage = it.second, voiceCalculatorResult = null, voiceCurrencyResult = null, voiceUnitResult = null) }
+        resetFilter { copy(voiceFilteredApps = apps, voiceSmartApps = it.first, newlyInstalledAppPackage = it.second, voiceCalculatorResult = null, voiceCurrencyResult = null, voiceUnitResult = null, voiceTimeZoneResult = null) }
     }
     
     // Helper: Reset filter for a mode
