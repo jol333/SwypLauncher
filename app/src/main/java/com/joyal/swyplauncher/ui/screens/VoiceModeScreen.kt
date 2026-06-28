@@ -70,6 +70,8 @@ fun VoiceModeScreen(
     val gridSize by launcherViewModel.gridSize.collectAsState()
     val cornerRadius by launcherViewModel.cornerRadius.collectAsState()
     val sortOrder by launcherViewModel.appSortOrder.collectAsState()
+    val loadAllAppsOnOpen by launcherViewModel.loadAllAppsOnOpen.collectAsState()
+    val allAppsRevealed by launcherViewModel.allAppsRevealed.collectAsState()
     val context = LocalContext.current
     val activity = context as? Activity
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -396,7 +398,10 @@ fun VoiceModeScreen(
                     launcherMode = LauncherViewModel.LauncherMode.VOICE,
                     currencyMode = LauncherViewModel.CurrencyMode.VOICE,
                     onAddShortcut = onAddShortcut,
-                    onDismiss = onDismiss
+                    onDismiss = onDismiss,
+                    loadAllAppsOnOpen = loadAllAppsOnOpen,
+                    allAppsRevealed = allAppsRevealed,
+                    onRevealAllApps = { launcherViewModel.revealAllApps() }
                 )
             }
         }

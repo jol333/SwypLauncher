@@ -52,6 +52,12 @@
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">自动打开应用</string>
     <string name="auto_open_desc">仅有一个搜索结果时自动打开</string>
+
+    <!-- Settings Screen - Load apps on open -->
+    <string name="load_apps_on_open_label">助手打开时</string>
+    <string name="load_all_apps">打开时加载所有应用</string>
+    <string name="load_all_apps_desc">保持关闭以加快启动速度。搜索时应用仍然会显示</string>
+    <string name="show_all_apps">显示所有应用</string>
     
     <!-- Settings Screen - Visual Effects -->
     <string name="visual_effects">视觉效果</string>

@@ -52,6 +52,12 @@
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">ആപ്പ് സ്വയം തുറക്കുക</string>
     <string name="auto_open_desc">ഒരു സെർച്ച് റിസൾട്ട് മാത്രമാണെങ്കിൽ ഉടൻ തുറക്കുക</string>
+
+    <!-- Settings Screen - Load apps on open -->
+    <string name="load_apps_on_open_label">അസിസ്റ്റന്റ് തുറക്കുമ്പോൾ</string>
+    <string name="load_all_apps">തുറക്കുമ്പോൾ തന്നെ എല്ലാ ആപ്പുകളും കാണിക്കുക</string>
+    <string name="load_all_apps_desc">ഇത് ഓഫ് ആക്കിയാൽ അസിസ്റ്റന്റ് തുറക്കുന്നതിന്റെ വേഗം കൂടും</string>
+    <string name="show_all_apps">എല്ലാ ആപ്പുകളും കാണിക്കൂ</string>
     
     <!-- Settings Screen - Visual Effects -->
     <string name="visual_effects">വിഷ്വൽ ഇഫക്റ്റുകൾ</string>

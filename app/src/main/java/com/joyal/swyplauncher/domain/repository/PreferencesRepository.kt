@@ -27,7 +27,12 @@ interface PreferencesRepository {
     
     fun isAutoOpenSingleResultEnabled(): Boolean
     fun setAutoOpenSingleResult(enabled: Boolean)
-    
+
+    // When true (default), the full app list is shown as soon as the assistant opens.
+    // When false, only suggested apps are shown until the user reveals the rest.
+    fun isLoadAllAppsOnOpenEnabled(): Boolean
+    fun setLoadAllAppsOnOpen(enabled: Boolean)
+
     fun getEnabledModes(): List<LauncherMode>
     fun setEnabledModes(modes: List<LauncherMode>)
     

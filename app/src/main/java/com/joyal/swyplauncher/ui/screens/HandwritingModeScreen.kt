@@ -93,6 +93,8 @@ fun HandwritingModeScreen(
     val gridSize by launcherViewModel.gridSize.collectAsState()
     val cornerRadius by launcherViewModel.cornerRadius.collectAsState()
     val autoOpenSingleResult by launcherViewModel.autoOpenSingleResult.collectAsState()
+    val loadAllAppsOnOpen by launcherViewModel.loadAllAppsOnOpen.collectAsState()
+    val allAppsRevealed by launcherViewModel.allAppsRevealed.collectAsState()
     val sortOrder by launcherViewModel.appSortOrder.collectAsState()
     val context = LocalContext.current
 
@@ -558,7 +560,10 @@ fun HandwritingModeScreen(
                 launcherMode = LauncherViewModel.LauncherMode.HANDWRITING,
                 currencyMode = LauncherViewModel.CurrencyMode.HANDWRITING,
                 onAddShortcut = onAddShortcut,
-                onDismiss = onDismiss
+                onDismiss = onDismiss,
+                loadAllAppsOnOpen = loadAllAppsOnOpen,
+                allAppsRevealed = allAppsRevealed,
+                onRevealAllApps = { launcherViewModel.revealAllApps() }
             )
         }
     }

@@ -52,6 +52,12 @@
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">Abrir automaticamente</string>
     <string name="auto_open_desc">Abrir app se houver apenas um resultado</string>
+
+    <!-- Settings Screen - Load apps on open -->
+    <string name="load_apps_on_open_label">AO ABRIR O ASSISTENTE</string>
+    <string name="load_all_apps">Carregar toda a lista de aplicativos ao abrir</string>
+    <string name="load_all_apps_desc">Mantenha desativado para um início mais rápido. Os aplicativos ainda aparecem quando você pesquisa</string>
+    <string name="show_all_apps">Mostrar todos os aplicativos</string>
     
     <!-- Settings Screen - Visual Effects -->
     <string name="visual_effects">EFEITOS VISUAIS</string>

@@ -118,6 +118,11 @@ fun BentoSettingsScreen(
                 ?: com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME
         )
     }
+    var loadAllAppsOnOpen by remember {
+        mutableStateOf(
+            preferencesRepository?.isLoadAllAppsOnOpenEnabled() ?: true
+        )
+    }
     var backgroundBlurEnabled by remember {
         mutableStateOf(
             preferencesRepository?.isBackgroundBlurEnabled() ?: false
@@ -457,29 +462,33 @@ fun BentoSettingsScreen(
                 }
             }
 
-            // Visual Effects Card — only shown when the system can actually honour blur.
-            if (systemBlurSupported) {
-                item {
-                    VisualEffectsCard(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .offset(y = (-32).dp),
-                        blurEnabled = backgroundBlurEnabled,
-                        onBlurEnabledChange = {
-                            backgroundBlurEnabled = it
-                            preferencesRepository?.setBackgroundBlurEnabled(it)
-                            if (it) {
-                                blurLevel = 80
-                                preferencesRepository?.setBlurLevel(blurLevel)
-                            }
-                        },
-                        blurLevel = blurLevel,
-                        onBlurLevelChange = {
-                            blurLevel = it
+            // "When assistant opens" card: load-all-apps toggle + (when supported) blur background.
+            item {
+                WhenAssistantOpensCard(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .offset(y = (-32).dp),
+                    loadAllApps = loadAllAppsOnOpen,
+                    onLoadAllAppsChange = {
+                        loadAllAppsOnOpen = it
+                        preferencesRepository?.setLoadAllAppsOnOpen(it)
+                    },
+                    showBlurOption = systemBlurSupported,
+                    blurEnabled = backgroundBlurEnabled,
+                    onBlurEnabledChange = {
+                        backgroundBlurEnabled = it
+                        preferencesRepository?.setBackgroundBlurEnabled(it)
+                        if (it) {
+                            blurLevel = 80
                             preferencesRepository?.setBlurLevel(blurLevel)
                         }
-                    )
-                }
+                    },
+                    blurLevel = blurLevel,
+                    onBlurLevelChange = {
+                        blurLevel = it
+                        preferencesRepository?.setBlurLevel(blurLevel)
+                    }
+                )
             }
             
             // Language & Conversion Categories Row

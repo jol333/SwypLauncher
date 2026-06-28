@@ -67,6 +67,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -233,6 +234,7 @@ fun AssistantScreen(
     val modes by modeViewModel.enabledModes.collectAsState()
     val launcherViewModel: LauncherViewModel = hiltViewModel()
     val uiState by launcherViewModel.uiState.collectAsState()
+    val allAppsRevealed by launcherViewModel.allAppsRevealed.collectAsState()
     val view = LocalView.current
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -398,6 +400,27 @@ fun AssistantScreen(
                         effectiveMinSheetFraction,
                         motionScheme.defaultSpatialSpec()
                     )
+                }
+            }
+        }
+
+        // When the user has turned off "load all apps on open", expanding the sheet beyond its
+        // resting height is treated as a request to reveal the full app list. The threshold sits
+        // above the resting min so that the sheet merely growing for the IME doesn't trigger it.
+        val deferConfigured = remember { !preferencesRepository.isLoadAllAppsOnOpenEnabled() }
+        if (deferConfigured) {
+            LaunchedEffect(effectiveMinSheetFraction) {
+                snapshotFlow { sheetFractionAnim.value }.collect { fraction ->
+                    if (fraction > effectiveMinSheetFraction + 0.06f) {
+                        launcherViewModel.revealAllApps()
+                    }
+                }
+            }
+            // Once revealed (by scrolling up or tapping "Show all apps"), expand the sheet fully so
+            // the app list appearing and the sheet going full-screen happen in a single motion.
+            LaunchedEffect(allAppsRevealed) {
+                if (allAppsRevealed && sheetFractionAnim.value < maxSheetFraction) {
+                    sheetFractionAnim.animateTo(maxSheetFraction, motionScheme.defaultSpatialSpec())
                 }
             }
         }

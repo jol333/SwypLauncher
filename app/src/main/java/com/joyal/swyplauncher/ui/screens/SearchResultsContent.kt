@@ -1,5 +1,6 @@
 package com.joyal.swyplauncher.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,19 +15,23 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -443,6 +448,9 @@ private fun SearchActionButton(
  * @param hideSearchQuery the query passed to [LauncherViewModel.hideApp]; differs from [query]
  *   for voice, which hides using cleaned-up spoken text
  * @param appsToShow apps to render alongside [smartApps] (all apps when not searching)
+ * @param loadAllAppsOnOpen user preference; when false the full list is deferred on open
+ * @param allAppsRevealed whether the user has already revealed the full list this session
+ * @param onRevealAllApps invoked by the "Show all apps" button to load the rest of the list
  */
 @Composable
 fun SearchModeResults(
@@ -468,7 +476,15 @@ fun SearchModeResults(
     onAddShortcut: ((String) -> Unit)?,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    loadAllAppsOnOpen: Boolean = true,
+    allAppsRevealed: Boolean = true,
+    onRevealAllApps: () -> Unit = {},
 ) {
+    // When the user has turned off "load all apps on open", defer ALL app content — including the
+    // suggested apps row — until they reveal it, so the sheet opens as fast as possible. Only
+    // applies while not searching (a query always shows full results).
+    val deferFullList = !loadAllAppsOnOpen && !allAppsRevealed && query.isEmpty()
+
     when {
         calculatorResult != null -> ResultDisplay(
             inputText = CalculatorUtil.normalizeForDisplay(query),
@@ -485,6 +501,11 @@ fun SearchModeResults(
 
         timeZoneResult != null ->
             TimeZoneResultPanel(timeZoneResult, currencyMode, launcherViewModel, modifier)
+
+        deferFullList -> DeferredAppsPlaceholder(
+            onReveal = onRevealAllApps,
+            modifier = modifier
+        )
 
         smartApps.isNotEmpty() || appsToShow.isNotEmpty() -> {
             val combinedAppList = remember(smartApps, appsToShow, sortOrder, query, gridSize) {
@@ -523,6 +544,68 @@ fun SearchModeResults(
                 isHiddenApp = isHiddenApp,
                 onDismiss = onDismiss,
                 modifier = modifier
+            )
+        }
+    }
+}
+
+/**
+ * Placeholder shown when the app list is deferred ("load all apps on open" is off): no apps are
+ * composed at all, just the "Show all apps" button. The button lives as the single item of a
+ * [LazyColumn] so dragging anywhere — including on the button — scrolls (which the sheet turns
+ * into an expand-and-reveal), while a tap reveals directly. Keeps the open as cheap as possible.
+ */
+@Composable
+fun DeferredAppsPlaceholder(
+    onReveal: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        contentPadding = PaddingValues(bottom = 28.dp)
+    ) {
+        item {
+            ShowAllAppsButton(onClick = onReveal)
+        }
+    }
+}
+
+/**
+ * Subtle translucent pill shown when the full app list is deferred (the "load all apps on open"
+ * preference is off). Tapping it reveals the rest of the list. Kept non-private so the Index mode
+ * screen can reuse it.
+ */
+@Composable
+fun ShowAllAppsButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier,
+        shape = RoundedCornerShape(percent = 50),
+        color = Color.White.copy(alpha = 0.06f),
+        contentColor = Color.White.copy(alpha = 0.85f),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f)),
+        tonalElevation = 0.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 16.dp, end = 18.dp, top = 9.dp, bottom = 9.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowUp,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = Color.White.copy(alpha = 0.55f)
+            )
+            Text(
+                text = stringResource(R.string.show_all_apps),
+                style = MaterialTheme.typography.labelLarge,
+                color = Color.White.copy(alpha = 0.8f)
             )
         }
     }

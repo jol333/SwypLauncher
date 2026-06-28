@@ -4,12 +4,15 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.SwapVert
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -273,6 +276,133 @@ fun AutoOpenCard(
                 style = BentoTypography.bodyMedium
             )
         }
+    }
+}
+
+/**
+ * Full-width card grouping the "when the assistant opens" preferences: the load-all-apps toggle
+ * and — when the device supports cross-window blur — the blur-background option as a second row.
+ */
+@Composable
+fun WhenAssistantOpensCard(
+    loadAllApps: Boolean,
+    onLoadAllAppsChange: (Boolean) -> Unit,
+    showBlurOption: Boolean,
+    blurEnabled: Boolean,
+    onBlurEnabledChange: (Boolean) -> Unit,
+    blurLevel: Int,
+    onBlurLevelChange: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        BentoColors.CardBackground.copy(alpha = 0.6f),
+                        BentoColors.CardBackground
+                    )
+                )
+            )
+            .border(
+                width = 1.dp,
+                color = BentoColors.BorderLight,
+                shape = RoundedCornerShape(24.dp)
+            )
+            .padding(24.dp)
+    ) {
+        Column {
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Apps,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = BentoColors.AccentGreen
+                )
+                Text(
+                    text = stringResource(R.string.load_apps_on_open_label),
+                    color = BentoColors.TextLabel,
+                    style = BentoTypography.labelLarge
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Option 1: load the entire app list on open
+            SettingToggleRow(
+                title = stringResource(R.string.load_all_apps),
+                description = stringResource(R.string.load_all_apps_desc),
+                checked = loadAllApps,
+                onCheckedChange = onLoadAllAppsChange
+            )
+
+            // Option 2: blur background (only when the system can actually honour blur)
+            if (showBlurOption) {
+                Spacer(Modifier.height(16.dp))
+                HorizontalDivider(color = BentoColors.BorderLight)
+                Spacer(Modifier.height(16.dp))
+                BlurBackgroundOption(
+                    blurEnabled = blurEnabled,
+                    onBlurEnabledChange = onBlurEnabledChange,
+                    blurLevel = blurLevel,
+                    onBlurLevelChange = onBlurLevelChange
+                )
+            }
+        }
+    }
+}
+
+/** A title + description on the left with a trailing switch; the whole row toggles on tap. */
+@Composable
+private fun SettingToggleRow(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = title,
+                color = BentoColors.TextPrimary,
+                style = BentoTypography.titleMedium
+            )
+            Text(
+                text = description,
+                color = BentoColors.TextSecondary,
+                style = BentoTypography.bodyMedium
+            )
+        }
+
+        Spacer(Modifier.width(16.dp))
+
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = BentoColors.AccentGreen,
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = BentoColors.CardBackgroundLight,
+                uncheckedBorderColor = Color.Transparent
+            )
+        )
     }
 }
 

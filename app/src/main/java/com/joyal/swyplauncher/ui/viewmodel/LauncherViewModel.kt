@@ -75,6 +75,20 @@ class LauncherViewModel @Inject constructor(
     private val _autoOpenSingleResult = MutableStateFlow(preferencesRepository.isAutoOpenSingleResultEnabled())
     val autoOpenSingleResult: StateFlow<Boolean> = _autoOpenSingleResult.asStateFlow()
 
+    // User preference: load the entire app list as soon as the assistant opens (default true).
+    private val _loadAllAppsOnOpen = MutableStateFlow(preferencesRepository.isLoadAllAppsOnOpenEnabled())
+    val loadAllAppsOnOpen: StateFlow<Boolean> = _loadAllAppsOnOpen.asStateFlow()
+
+    // Transient, per-assistant-session flag. Becomes true once the user reveals the full app
+    // list (via the "Show all apps" button or by expanding the sheet). Only meaningful when
+    // [loadAllAppsOnOpen] is false. Resets on each open since the activity/ViewModel is recreated.
+    private val _allAppsRevealed = MutableStateFlow(false)
+    val allAppsRevealed: StateFlow<Boolean> = _allAppsRevealed.asStateFlow()
+
+    fun revealAllApps() {
+        if (!_allAppsRevealed.value) _allAppsRevealed.value = true
+    }
+
     private val _appSortOrder = MutableStateFlow(preferencesRepository.getAppSortOrder())
     val appSortOrder: StateFlow<com.joyal.swyplauncher.domain.repository.AppSortOrder> = _appSortOrder.asStateFlow()
 

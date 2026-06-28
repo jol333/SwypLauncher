@@ -51,7 +51,13 @@
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">Auto-open app</string>
     <string name="auto_open_desc">Open app automatically if single search result</string>
-    
+
+    <!-- Settings Screen - Load apps on open -->
+    <string name="load_apps_on_open_label">WHEN ASSISTANT OPENS</string>
+    <string name="load_all_apps">Load entire app list on open</string>
+    <string name="load_all_apps_desc">Keep off for a quicker start. Apps still show when you search</string>
+    <string name="show_all_apps">Show all apps</string>
+
     <!-- Settings Screen - Visual Effects -->
     <string name="visual_effects">VISUAL EFFECTS</string>
     <string name="background_blur">Background blur</string>

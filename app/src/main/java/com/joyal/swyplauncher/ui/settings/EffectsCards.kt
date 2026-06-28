@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Rocket
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -57,148 +56,113 @@ import com.joyal.swyplauncher.ui.theme.BentoColors
 import kotlin.math.roundToInt
 import androidx.compose.ui.res.stringResource
 
+/**
+ * The "Blur background" toggle plus its intensity slider, without any card chrome or header.
+ * Rendered as a sub-option inside [WhenAssistantOpensCard].
+ */
 @Composable
-fun VisualEffectsCard(
-    modifier: Modifier = Modifier,
+fun BlurBackgroundOption(
     blurEnabled: Boolean,
     onBlurEnabledChange: (Boolean) -> Unit,
     blurLevel: Int,
-    onBlurLevelChange: (Int) -> Unit
+    onBlurLevelChange: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var sliderBlurLevel by remember(blurLevel) { mutableStateOf(blurLevel.toFloat()) }
     var lastHapticValue by remember { mutableStateOf(blurLevel.toFloat()) }
     val view = LocalView.current
 
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.Transparent,
-                        BentoColors.CardBackground.copy(alpha = 0.6f),
-                        BentoColors.CardBackground
-                    )
-                )
-            )
-            .border(
-                width = 1.dp,
-                color = BentoColors.BorderLight,
-                shape = RoundedCornerShape(24.dp)
-            )
-            .padding(24.dp)
-    ) {
-        Column {
-            // Header
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+    Column(modifier = modifier) {
+        // Blur background toggle
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onBlurEnabledChange(!blurEnabled) },
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.AutoAwesome,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = BentoColors.AccentGreen
+                Text(
+                    text = stringResource(R.string.blur_background),
+                    color = BentoColors.TextPrimary,
+                    style = BentoTypography.titleMedium
                 )
                 Text(
-                    text = stringResource(R.string.visual_effects),
-                    color = BentoColors.TextLabel,
-                    style = BentoTypography.labelLarge
+                    text = stringResource(R.string.blur_background_desc),
+                    color = BentoColors.TextSecondary,
+                    style = BentoTypography.bodyMedium
                 )
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.width(16.dp))
 
-            // Blur background toggle
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onBlurEnabledChange(!blurEnabled) },
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+            Switch(
+                checked = blurEnabled,
+                onCheckedChange = onBlurEnabledChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = BentoColors.AccentGreen,
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = BentoColors.CardBackgroundLight,
+                    uncheckedBorderColor = Color.Transparent
+                )
+            )
+        }
+
+        // Blur intensity slider (only visible when enabled)
+        // The 16dp spacing is INSIDE AnimatedVisibility so it animates out smoothly
+        AnimatedVisibility(
+            visible = blurEnabled,
+            enter = expandVertically(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMediumLow
+                )
+            ),
+            exit = shrinkVertically(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMediumLow
+                )
+            )
+        ) {
+            Column {
+                Spacer(Modifier.height(24.dp)) // 16dp gap + 8dp extra spacing
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = stringResource(R.string.blur_background),
+                        text = stringResource(R.string.blur_intensity),
                         color = BentoColors.TextPrimary,
-                        style = BentoTypography.titleMedium
+                        style = BentoTypography.bodyMedium
                     )
                     Text(
-                        text = stringResource(R.string.blur_background_desc),
+                        text = sliderBlurLevel.roundToInt().toString(),
                         color = BentoColors.TextSecondary,
                         style = BentoTypography.bodyMedium
                     )
                 }
 
-                Switch(
-                    checked = blurEnabled,
-                    onCheckedChange = onBlurEnabledChange,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = BentoColors.AccentGreen,
-                        uncheckedThumbColor = Color.White,
-                        uncheckedTrackColor = BentoColors.CardBackgroundLight,
-                        uncheckedBorderColor = Color.Transparent
-                    )
+                Spacer(Modifier.height(2.dp))
+
+                BentoSlider(
+                    value = sliderBlurLevel,
+                    onValueChange = { newValue ->
+                        if (kotlin.math.abs(newValue - lastHapticValue) >= 5f) {
+                            view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_TICK)
+                            lastHapticValue = newValue
+                        }
+                        sliderBlurLevel = newValue
+                    },
+                    onValueChangeFinished = { onBlurLevelChange(sliderBlurLevel.roundToInt()) },
+                    valueRange = 10f..150f,
+                    steps = 29
                 )
-            }
-
-            // Blur intensity slider (only visible when enabled)
-            // The 16dp spacing is INSIDE AnimatedVisibility so it animates out smoothly
-            AnimatedVisibility(
-                visible = blurEnabled,
-                enter = expandVertically(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMediumLow
-                    )
-                ),
-                exit = shrinkVertically(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMediumLow
-                    )
-                )
-            ) {
-                Column {
-                    Spacer(Modifier.height(24.dp)) // 16dp gap + 8dp extra spacing
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = stringResource(R.string.blur_intensity),
-                            color = BentoColors.TextPrimary,
-                            style = BentoTypography.bodyMedium
-                        )
-                        Text(
-                            text = sliderBlurLevel.roundToInt().toString(),
-                            color = BentoColors.TextSecondary,
-                            style = BentoTypography.bodyMedium
-                        )
-                    }
-
-                    Spacer(Modifier.height(2.dp))
-
-                    BentoSlider(
-                        value = sliderBlurLevel,
-                        onValueChange = { newValue ->
-                            if (kotlin.math.abs(newValue - lastHapticValue) >= 5f) {
-                                view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_TICK)
-                                lastHapticValue = newValue
-                            }
-                            sliderBlurLevel = newValue
-                        },
-                        onValueChangeFinished = { onBlurLevelChange(sliderBlurLevel.roundToInt()) },
-                        valueRange = 10f..150f,
-                        steps = 29
-                    )
-                }
             }
         }
     }

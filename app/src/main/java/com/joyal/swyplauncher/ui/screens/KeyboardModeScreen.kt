@@ -57,6 +57,8 @@ fun KeyboardModeScreen(
     val gridSize by launcherViewModel.gridSize.collectAsState()
     val cornerRadius by launcherViewModel.cornerRadius.collectAsState()
     val autoOpenSingleResult by launcherViewModel.autoOpenSingleResult.collectAsState()
+    val loadAllAppsOnOpen by launcherViewModel.loadAllAppsOnOpen.collectAsState()
+    val allAppsRevealed by launcherViewModel.allAppsRevealed.collectAsState()
     val sortOrder by launcherViewModel.appSortOrder.collectAsState()
     val searchQuery = keyboardState.searchQuery
     val focusRequester = remember { FocusRequester() }
@@ -228,7 +230,10 @@ fun KeyboardModeScreen(
                     launcherMode = LauncherViewModel.LauncherMode.KEYBOARD,
                     currencyMode = LauncherViewModel.CurrencyMode.KEYBOARD,
                     onAddShortcut = onAddShortcut,
-                    onDismiss = onDismiss
+                    onDismiss = onDismiss,
+                    loadAllAppsOnOpen = loadAllAppsOnOpen,
+                    allAppsRevealed = allAppsRevealed,
+                    onRevealAllApps = { launcherViewModel.revealAllApps() }
                 )
             }
         }

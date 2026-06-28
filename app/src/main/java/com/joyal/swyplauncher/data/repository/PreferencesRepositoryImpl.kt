@@ -79,11 +79,18 @@ class PreferencesRepositoryImpl @Inject constructor(
         prefs.edit().putFloat(KEY_CORNER_RADIUS, radius).apply()
     }
 
-    override fun isAutoOpenSingleResultEnabled(): Boolean = 
+    override fun isAutoOpenSingleResultEnabled(): Boolean =
         prefs.getBoolean(KEY_AUTO_OPEN_SINGLE_RESULT, false)
 
     override fun setAutoOpenSingleResult(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_AUTO_OPEN_SINGLE_RESULT, enabled).apply()
+    }
+
+    override fun isLoadAllAppsOnOpenEnabled(): Boolean =
+        prefs.getBoolean(KEY_LOAD_ALL_APPS_ON_OPEN, true)
+
+    override fun setLoadAllAppsOnOpen(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_LOAD_ALL_APPS_ON_OPEN, enabled).apply()
     }
 
     override fun getEnabledModes(): List<LauncherMode> {
@@ -224,6 +231,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         private const val KEY_GRID_SIZE = "grid_size"
         private const val KEY_CORNER_RADIUS = "corner_radius"
         private const val KEY_AUTO_OPEN_SINGLE_RESULT = "auto_open_single_result"
+        private const val KEY_LOAD_ALL_APPS_ON_OPEN = "load_all_apps_on_open"
         private const val KEY_ENABLED_MODES = "enabled_modes"
         private const val KEY_APP_SORT_ORDER = "app_sort_order"
         private const val KEY_USAGE_STATS_PERMISSION_PROMPTED = "usage_stats_permission_prompted"

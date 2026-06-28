@@ -52,6 +52,12 @@
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">App automatisch öffnen</string>
     <string name="auto_open_desc">App sofort öffnen, wenn nur ein Treffer</string>
+
+    <!-- Settings Screen - Load apps on open -->
+    <string name="load_apps_on_open_label">BEIM ÖFFNEN DES ASSISTENTEN</string>
+    <string name="load_all_apps">Ganze App-Liste beim Öffnen laden</string>
+    <string name="load_all_apps_desc">Für einen schnelleren Start deaktiviert lassen. Apps werden bei der Suche weiterhin angezeigt</string>
+    <string name="show_all_apps">Alle Apps anzeigen</string>
     
     <!-- Settings Screen - Visual Effects -->
     <string name="visual_effects">VISUELLE EFFEKTE</string>
