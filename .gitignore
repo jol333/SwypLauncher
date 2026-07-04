@@ -423,6 +423,8 @@ dependencyGraph/
 incremental/
 transforms/
 model/
+# "model/" above targets IDE caches — keep source packages like domain/model tracked
+!app/src/**/model/
 
 # ========================================
 # ML Kit & TensorFlow

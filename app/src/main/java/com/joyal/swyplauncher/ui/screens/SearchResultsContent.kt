@@ -47,8 +47,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.domain.model.ShortcutIcon
+import com.joyal.swyplauncher.domain.model.ShortcutSearchItem
 import com.joyal.swyplauncher.domain.repository.AppSortOrder
 import com.joyal.swyplauncher.ui.components.AppIconItem
+import com.joyal.swyplauncher.ui.components.ShortcutIconItem
 import com.joyal.swyplauncher.ui.components.InteractiveCurrencyConverter
 import com.joyal.swyplauncher.ui.components.InteractiveTimeZoneConverter
 import com.joyal.swyplauncher.ui.components.InteractiveUnitConverter
@@ -95,6 +98,10 @@ fun AppResultGrid(
     onHideApp: (AppInfo) -> Unit,
     onAddShortcut: ((String) -> Unit)?,
     modifier: Modifier = Modifier,
+    onLaunchShortcut: ((ShortcutSearchItem) -> Unit)? = null,
+    loadShortcutIcon: (suspend (ShortcutSearchItem) -> ShortcutIcon?)? = null,
+    onHideShortcut: ((ShortcutSearchItem) -> Unit)? = null,
+    onSaveShortcutAlias: ((ShortcutSearchItem, String) -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 100.dp),
     horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(24.dp),
@@ -117,8 +124,11 @@ fun AppResultGrid(
                 key = { index ->
                     when (val item = items[index]) {
                         is AppListItem.App -> item.appInfo.getIdentifier()
+                        is AppListItem.Shortcut ->
+                            "shortcut_${item.shortcut.packageName}/${item.shortcut.id}"
                         is AppListItem.CategoryHeader -> "header_${item.category}"
-                        is AppListItem.Divider -> "divider"
+                        // Index-suffixed: the apps/shortcuts sections can each contribute one
+                        is AppListItem.Divider -> "divider_$index"
                     }
                 },
                 span = { index ->
@@ -126,6 +136,7 @@ fun AppResultGrid(
                         is AppListItem.CategoryHeader -> GridItemSpan(gridSize)
                         is AppListItem.Divider -> GridItemSpan(gridSize)
                         is AppListItem.App -> GridItemSpan(1)
+                        is AppListItem.Shortcut -> GridItemSpan(1)
                     }
                 }
             ) { index ->
@@ -163,6 +174,35 @@ fun AppResultGrid(
                             ) { appIcon() }
                         } else {
                             appIcon()
+                        }
+                    }
+
+                    is AppListItem.Shortcut -> {
+                        val shortcutIcon: @Composable () -> Unit = {
+                            ShortcutIconItem(
+                                shortcut = item.shortcut,
+                                onClick = { onLaunchShortcut?.invoke(item.shortcut) },
+                                loadIcon = loadShortcutIcon ?: { null },
+                                cornerRadiusPercent = cornerRadius,
+                                onLongClick = { onSetSelectedIndex(index) },
+                                showContextMenu = selectedAppIndex == index,
+                                onDismissMenu = { onSetSelectedIndex(-1) },
+                                onHide = {
+                                    onHideShortcut?.invoke(item.shortcut)
+                                    onSetSelectedIndex(-1)
+                                },
+                                onSaveAlias = { word ->
+                                    onSaveShortcutAlias?.invoke(item.shortcut, word)
+                                }
+                            )
+                        }
+                        if (centerItems) {
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) { shortcutIcon() }
+                        } else {
+                            shortcutIcon()
                         }
                     }
                 }
@@ -476,6 +516,7 @@ fun SearchModeResults(
     onAddShortcut: ((String) -> Unit)?,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    shortcutResults: List<ShortcutSearchItem> = emptyList(),
     loadAllAppsOnOpen: Boolean = true,
     allAppsRevealed: Boolean = true,
     onRevealAllApps: () -> Unit = {},
@@ -507,15 +548,24 @@ fun SearchModeResults(
             modifier = modifier
         )
 
-        smartApps.isNotEmpty() || appsToShow.isNotEmpty() -> {
-            val combinedAppList = remember(smartApps, appsToShow, sortOrder, query, gridSize) {
-                combineAppListsWithHeaders(
+        smartApps.isNotEmpty() || appsToShow.isNotEmpty() || shortcutResults.isNotEmpty() -> {
+            val combinedAppList = remember(
+                smartApps, appsToShow, shortcutResults, sortOrder, query, gridSize
+            ) {
+                val apps = combineAppListsWithHeaders(
                     smartApps,
                     appsToShow,
                     sortOrder,
                     isSearching = query.isNotEmpty(),
                     gridSize = gridSize
                 )
+                // Shortcut matches follow the app matches, visually separated when both exist
+                when {
+                    shortcutResults.isEmpty() || query.isEmpty() -> apps
+                    apps.isEmpty() -> shortcutResults.map { AppListItem.Shortcut(it) }
+                    else -> apps + AppListItem.Divider +
+                        shortcutResults.map { AppListItem.Shortcut(it) }
+                }
             }
             AppResultGrid(
                 items = combinedAppList,
@@ -533,7 +583,16 @@ fun SearchModeResults(
                     launcherViewModel.hideApp(app.getIdentifier(), launcherMode, hideSearchQuery)
                 },
                 onAddShortcut = onAddShortcut,
-                modifier = modifier
+                modifier = modifier,
+                onLaunchShortcut = { shortcut ->
+                    launcherViewModel.launchShortcut(shortcut)
+                    onDismiss()
+                },
+                loadShortcutIcon = { launcherViewModel.loadShortcutIcon(it) },
+                onHideShortcut = { launcherViewModel.hideShortcut(it) },
+                onSaveShortcutAlias = { shortcut, word ->
+                    launcherViewModel.addShortcutAlias(word, shortcut)
+                }
             )
         }
 

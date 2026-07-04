@@ -4,10 +4,12 @@ import com.joyal.swyplauncher.data.repository.AppRepositoryImpl
 import com.joyal.swyplauncher.data.repository.CurrencyRepositoryImpl
 import com.joyal.swyplauncher.data.repository.MLKitRepositoryImpl
 import com.joyal.swyplauncher.data.repository.PreferencesRepositoryImpl
+import com.joyal.swyplauncher.data.repository.ShortcutSearchRepositoryImpl
 import com.joyal.swyplauncher.domain.repository.AppRepository
 import com.joyal.swyplauncher.domain.repository.CurrencyRepository
 import com.joyal.swyplauncher.domain.repository.MLKitRepository
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
+import com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -41,4 +43,10 @@ abstract class RepositoryModule {
     abstract fun bindCurrencyRepository(
         currencyRepositoryImpl: CurrencyRepositoryImpl
     ): CurrencyRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindShortcutSearchRepository(
+        shortcutSearchRepositoryImpl: ShortcutSearchRepositoryImpl
+    ): ShortcutSearchRepository
 }

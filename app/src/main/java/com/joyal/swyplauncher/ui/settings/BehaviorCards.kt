@@ -57,6 +57,46 @@ fun AutoOpenCard(
     modifier: Modifier = Modifier,
     offsetX: Float = 0f
 ) {
+    ToggleSettingCard(
+        title = stringResource(R.string.auto_open_app),
+        description = stringResource(R.string.auto_open_desc),
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = modifier,
+        offsetX = offsetX
+    )
+}
+
+/**
+ * App-shortcut search toggle. Same card layout as [AutoOpenCard]; full-width, so the
+ * content wraps instead of stretching to the 180dp two-column card height.
+ */
+@Composable
+fun ShortcutSearchCard(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ToggleSettingCard(
+        title = stringResource(R.string.shortcut_search_title),
+        description = stringResource(R.string.shortcut_search_desc),
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = modifier,
+        fillHeight = false
+    )
+}
+
+@Composable
+fun ToggleSettingCard(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    offsetX: Float = 0f,
+    fillHeight: Boolean = true
+) {
     val coroutineScope = rememberCoroutineScope()
     
     // Track card size for calculating relative tap position
@@ -213,8 +253,9 @@ fun AutoOpenCard(
                 // Add perspective for 3D depth
                 cameraDistance = 12f * density
             }
-            .heightIn(min = 180.dp)
-            .fillMaxHeight()
+            .then(
+                if (fillHeight) Modifier.heightIn(min = 180.dp).fillMaxHeight() else Modifier
+            )
             .clip(RoundedCornerShape(24.dp))
             .background(
                 brush = Brush.linearGradient(
@@ -260,18 +301,22 @@ fun AutoOpenCard(
                 )
             )
             
-            Spacer(Modifier.weight(1f).heightIn(min = 12.dp))
-            
+            if (fillHeight) {
+                Spacer(Modifier.weight(1f).heightIn(min = 12.dp))
+            } else {
+                Spacer(Modifier.height(12.dp))
+            }
+
             Text(
-                text = stringResource(R.string.auto_open_app),
+                text = title,
                 color = BentoColors.TextPrimary,
                 style = BentoTypography.titleMedium
             )
-            
+
             Spacer(Modifier.height(4.dp))
-            
+
             Text(
-                text = stringResource(R.string.auto_open_desc),
+                text = description,
                 color = BentoColors.TextSecondary,
                 style = BentoTypography.bodyMedium
             )

@@ -147,6 +147,11 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             // Always update the preference to reflect the current role status
             preferencesRepository.setDefaultAssistantConfigured(isAssistant)
+            // Shortcut search only works while holding the assistant role — turn it off
+            // automatically when the role is revoked
+            if (!isAssistant) {
+                preferencesRepository.setShortcutSearchEnabled(false)
+            }
             isAssistantConfigured.value = isAssistant
         }
     }

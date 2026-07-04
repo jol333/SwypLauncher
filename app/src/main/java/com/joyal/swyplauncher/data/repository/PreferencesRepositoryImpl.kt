@@ -93,6 +93,50 @@ class PreferencesRepositoryImpl @Inject constructor(
         prefs.edit().putBoolean(KEY_LOAD_ALL_APPS_ON_OPEN, enabled).apply()
     }
 
+    override fun isShortcutSearchEnabled(): Boolean =
+        prefs.getBoolean(KEY_SHORTCUT_SEARCH_ENABLED, false)
+
+    override fun setShortcutSearchEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_SHORTCUT_SEARCH_ENABLED, enabled).apply()
+    }
+
+    override fun getHiddenShortcuts(): Set<String> =
+        prefs.getStringSet(KEY_HIDDEN_SHORTCUTS, emptySet()) ?: emptySet()
+
+    override fun addHiddenShortcut(identifier: String) {
+        val current = getHiddenShortcuts().toMutableSet()
+        current.add(identifier)
+        prefs.edit().putStringSet(KEY_HIDDEN_SHORTCUTS, current).apply()
+    }
+
+    // Shortcut ids can contain arbitrary characters, so use JSON rather than the delimiter
+    // scheme used for app aliases (which would be ambiguous here).
+    override fun getShortcutSearchAliases(): Map<String, Set<String>> {
+        val raw = prefs.getString(KEY_SHORTCUT_SEARCH_ALIASES, null) ?: return emptyMap()
+        return try {
+            val json = org.json.JSONObject(raw)
+            buildMap {
+                json.keys().forEach { word ->
+                    val arr = json.getJSONArray(word)
+                    val ids = buildSet {
+                        for (i in 0 until arr.length()) add(arr.getString(i))
+                    }
+                    if (ids.isNotEmpty()) put(word, ids)
+                }
+            }
+        } catch (e: Exception) {
+            emptyMap()
+        }
+    }
+
+    override fun setShortcutSearchAliases(aliases: Map<String, Set<String>>) {
+        val json = org.json.JSONObject()
+        aliases.forEach { (word, ids) ->
+            json.put(word, org.json.JSONArray(ids.toList()))
+        }
+        prefs.edit().putString(KEY_SHORTCUT_SEARCH_ALIASES, json.toString()).apply()
+    }
+
     override fun getEnabledModes(): List<LauncherMode> {
         val saved = prefs.getString(KEY_ENABLED_MODES, null)
         return if (saved != null) {
@@ -232,6 +276,9 @@ class PreferencesRepositoryImpl @Inject constructor(
         private const val KEY_CORNER_RADIUS = "corner_radius"
         private const val KEY_AUTO_OPEN_SINGLE_RESULT = "auto_open_single_result"
         private const val KEY_LOAD_ALL_APPS_ON_OPEN = "load_all_apps_on_open"
+        private const val KEY_SHORTCUT_SEARCH_ENABLED = "shortcut_search_enabled"
+        private const val KEY_HIDDEN_SHORTCUTS = "hidden_shortcuts"
+        private const val KEY_SHORTCUT_SEARCH_ALIASES = "shortcut_search_aliases"
         private const val KEY_ENABLED_MODES = "enabled_modes"
         private const val KEY_APP_SORT_ORDER = "app_sort_order"
         private const val KEY_USAGE_STATS_PERMISSION_PROMPTED = "usage_stats_permission_prompted"

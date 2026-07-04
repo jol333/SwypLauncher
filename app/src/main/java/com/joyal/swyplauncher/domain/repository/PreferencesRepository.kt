@@ -33,6 +33,20 @@ interface PreferencesRepository {
     fun isLoadAllAppsOnOpenEnabled(): Boolean
     fun setLoadAllAppsOnOpen(enabled: Boolean)
 
+    // App shortcut search in assistant results (default off). Requires the assistant role;
+    // automatically switched off when the role is revoked.
+    fun isShortcutSearchEnabled(): Boolean
+    fun setShortcutSearchEnabled(enabled: Boolean)
+
+    // Individually hidden app-shortcut search results, keyed by "packageName/shortcutId".
+    fun getHiddenShortcuts(): Set<String>
+    fun addHiddenShortcut(identifier: String)
+
+    // Search aliases (magic word -> set of "packageName/shortcutId") for app shortcuts,
+    // set only from the assistant long-press menu.
+    fun getShortcutSearchAliases(): Map<String, Set<String>>
+    fun setShortcutSearchAliases(aliases: Map<String, Set<String>>)
+
     fun getEnabledModes(): List<LauncherMode>
     fun setEnabledModes(modes: List<LauncherMode>)
     

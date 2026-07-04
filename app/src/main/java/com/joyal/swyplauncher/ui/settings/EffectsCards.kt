@@ -319,7 +319,8 @@ fun DonateSection(
 @Composable
 fun AssistantBottomSheet(
     onDismiss: () -> Unit,
-    onSetupClick: () -> Unit
+    onSetupClick: () -> Unit,
+    message: String? = null
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -377,7 +378,7 @@ fun AssistantBottomSheet(
                 Spacer(Modifier.height(8.dp))
 
                 Text(
-                    text = stringResource(R.string.to_launch_using_gesture),
+                    text = message ?: stringResource(R.string.to_launch_using_gesture),
                     color = BentoColors.TextSecondary,
                     style = BentoTypography.bodyMedium,
                     textAlign = TextAlign.Center

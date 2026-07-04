@@ -1,6 +1,7 @@
 package com.joyal.swyplauncher.ui.state
 
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.domain.model.ShortcutSearchItem
 
 data class LauncherUiState(
     val apps: List<AppInfo> = emptyList(),
@@ -34,6 +35,10 @@ data class LauncherUiState(
     val handwritingTimeZoneResult: TimeZoneResultState? = null,
     val keyboardTimeZoneResult: TimeZoneResultState? = null,
     val voiceTimeZoneResult: TimeZoneResultState? = null,
+    // App shortcut search results for each search-driven mode (only populated while searching)
+    val handwritingShortcutResults: List<ShortcutSearchItem> = emptyList(),
+    val keyboardShortcutResults: List<ShortcutSearchItem> = emptyList(),
+    val voiceShortcutResults: List<ShortcutSearchItem> = emptyList(),
     // Tooltip visibility
     val showHideAppTooltip: Boolean = false
 )

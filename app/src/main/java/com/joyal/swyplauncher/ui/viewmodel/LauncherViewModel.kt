@@ -5,7 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.domain.model.ShortcutIcon
+import com.joyal.swyplauncher.domain.model.ShortcutSearchItem
 import com.joyal.swyplauncher.domain.repository.CurrencyRepository
+import com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository
 import com.joyal.swyplauncher.domain.usecase.GetCachedInstalledAppsUseCase
 import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
 import com.joyal.swyplauncher.domain.usecase.GetSmartAppListUseCase
@@ -44,6 +47,7 @@ class LauncherViewModel @Inject constructor(
     private val recordAppUsageUseCase: RecordAppUsageUseCase,
     private val preferencesRepository: com.joyal.swyplauncher.domain.repository.PreferencesRepository,
     private val currencyRepository: CurrencyRepository,
+    private val shortcutSearchRepository: ShortcutSearchRepository,
     @param:ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
@@ -114,6 +118,15 @@ class LauncherViewModel @Inject constructor(
     init {
         loadApps()
         observeAppChanges()
+        prewarmShortcutSearch()
+    }
+
+    // Builds the shortcut index off the critical path so neither assistant opening nor the
+    // first search keystroke pays for it. Skipped entirely while the preference is off.
+    private fun prewarmShortcutSearch() {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { shortcutSearchRepository.prewarm() }
+        }
     }
     
     fun setAppSortOrder(order: com.joyal.swyplauncher.domain.repository.AppSortOrder) {
@@ -223,18 +236,41 @@ class LauncherViewModel @Inject constructor(
             listOf(keyboard, voice, handwriting, index)
         }
 
+        // Recompute app-shortcut results for the active queries too, so a refresh commits apps
+        // and shortcuts together. Otherwise a refresh landing mid-search could publish a single
+        // filtered app while the shortcut list is momentarily empty, tripping auto-open.
+        // Off the main thread; each search is a cheap in-memory scan once the index is warm,
+        // and blank queries short-circuit to empty (the common non-searching refresh).
+        val (keyboardShortcuts, voiceShortcuts, handwritingShortcuts) =
+            withContext(Dispatchers.Default) {
+                suspend fun shortcutsFor(query: String, prefixMatch: Boolean) =
+                    if (query.isBlank()) emptyList()
+                    else runCatching { shortcutSearchRepository.search(query, prefixMatch) }
+                        .getOrDefault(emptyList())
+
+                Triple(
+                    shortcutsFor(keyboardQuery, prefixMatch = false),
+                    shortcutsFor(voiceQuery, prefixMatch = false),
+                    if (handwritingGestureIds != null) emptyList()
+                    else shortcutsFor(handwritingPrefix, prefixMatch = true)
+                )
+            }
+
         _uiState.update {
             it.copy(
                 apps = result.apps,
                 availableLetters = letters,
                 handwritingFilteredApps = handwriting.first,
                 handwritingSmartApps = handwriting.second,
+                handwritingShortcutResults = handwritingShortcuts,
                 indexFilteredApps = index.first,
                 indexSmartApps = index.second,
                 keyboardFilteredApps = keyboard.first,
                 keyboardSmartApps = keyboard.second,
+                keyboardShortcutResults = keyboardShortcuts,
                 voiceFilteredApps = voice.first,
                 voiceSmartApps = voice.second,
+                voiceShortcutResults = voiceShortcuts,
                 newlyInstalledAppPackage = result.newlyInstalledPackage,
                 isLoading = isLoading,
                 error = null
@@ -259,7 +295,8 @@ class LauncherViewModel @Inject constructor(
     private fun observeAppChanges() {
         viewModelScope.launch {
             observeAppChangesUseCase().collect {
-                // Reload apps when changes detected
+                // Reload apps when changes detected; the shortcut index is stale too
+                shortcutSearchRepository.invalidate()
                 loadApps()
             }
         }
@@ -312,6 +349,14 @@ class LauncherViewModel @Inject constructor(
                 smartList to getNewlyInstalledPackage(smartList)
             }
 
+            // In-memory match against the prewarmed index; empty when the feature is off.
+            val shortcutResults = if (query.isBlank()) {
+                emptyList()
+            } else {
+                runCatching { shortcutSearchRepository.search(query, prefixMatch) }
+                    .getOrDefault(emptyList())
+            }
+
             ensureActive()
 
             _uiState.update { s ->
@@ -319,6 +364,7 @@ class LauncherViewModel @Inject constructor(
                     CurrencyMode.KEYBOARD -> s.copy(
                         keyboardFilteredApps = filtered,
                         keyboardSmartApps = smart,
+                        keyboardShortcutResults = shortcutResults,
                         newlyInstalledAppPackage = newlyInstalled,
                         keyboardCalculatorResult = parseResult.calc,
                         keyboardCurrencyResult = parseResult.currency,
@@ -328,6 +374,7 @@ class LauncherViewModel @Inject constructor(
                     CurrencyMode.VOICE -> s.copy(
                         voiceFilteredApps = filtered,
                         voiceSmartApps = smart,
+                        voiceShortcutResults = shortcutResults,
                         newlyInstalledAppPackage = newlyInstalled,
                         voiceCalculatorResult = parseResult.calc,
                         voiceCurrencyResult = parseResult.currency,
@@ -337,6 +384,7 @@ class LauncherViewModel @Inject constructor(
                     CurrencyMode.HANDWRITING -> s.copy(
                         handwritingFilteredApps = filtered,
                         handwritingSmartApps = smart,
+                        handwritingShortcutResults = shortcutResults,
                         newlyInstalledAppPackage = newlyInstalled,
                         handwritingCalculatorResult = parseResult.calc,
                         handwritingCurrencyResult = parseResult.currency,
@@ -725,6 +773,7 @@ class LauncherViewModel @Inject constructor(
                 it.copy(
                     handwritingFilteredApps = filtered,
                     handwritingSmartApps = smart,
+                    handwritingShortcutResults = emptyList(),
                     newlyInstalledAppPackage = newlyInstalled,
                     handwritingCalculatorResult = null,
                     handwritingCurrencyResult = null,
@@ -781,7 +830,7 @@ class LauncherViewModel @Inject constructor(
         activeHandwritingGestureAppIds = null
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
-        resetFilter { copy(handwritingFilteredApps = apps, handwritingSmartApps = it.first, newlyInstalledAppPackage = it.second, handwritingCalculatorResult = null, handwritingCurrencyResult = null, handwritingUnitResult = null, handwritingTimeZoneResult = null) }
+        resetFilter { copy(handwritingFilteredApps = apps, handwritingSmartApps = it.first, handwritingShortcutResults = emptyList(), newlyInstalledAppPackage = it.second, handwritingCalculatorResult = null, handwritingCurrencyResult = null, handwritingUnitResult = null, handwritingTimeZoneResult = null) }
     }
     fun resetFilterIndex() {
         activeIndexLetter = null
@@ -791,13 +840,13 @@ class LauncherViewModel @Inject constructor(
         activeKeyboardQuery = ""
         keyboardFilterJob?.cancel()
         keyboardCurrencyJob?.cancel()
-        resetFilter { copy(keyboardFilteredApps = apps, keyboardSmartApps = it.first, newlyInstalledAppPackage = it.second, keyboardCalculatorResult = null, keyboardCurrencyResult = null, keyboardUnitResult = null, keyboardTimeZoneResult = null) }
+        resetFilter { copy(keyboardFilteredApps = apps, keyboardSmartApps = it.first, keyboardShortcutResults = emptyList(), newlyInstalledAppPackage = it.second, keyboardCalculatorResult = null, keyboardCurrencyResult = null, keyboardUnitResult = null, keyboardTimeZoneResult = null) }
     }
     fun resetFilterVoice() {
         activeVoiceQuery = ""
         voiceFilterJob?.cancel()
         voiceCurrencyJob?.cancel()
-        resetFilter { copy(voiceFilteredApps = apps, voiceSmartApps = it.first, newlyInstalledAppPackage = it.second, voiceCalculatorResult = null, voiceCurrencyResult = null, voiceUnitResult = null, voiceTimeZoneResult = null) }
+        resetFilter { copy(voiceFilteredApps = apps, voiceSmartApps = it.first, voiceShortcutResults = emptyList(), newlyInstalledAppPackage = it.second, voiceCalculatorResult = null, voiceCurrencyResult = null, voiceUnitResult = null, voiceTimeZoneResult = null) }
     }
     
     // Helper: Reset filter for a mode
@@ -861,6 +910,47 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
+    /** Launches an app-shortcut search result and counts it as usage of the parent app. */
+    fun launchShortcut(shortcut: ShortcutSearchItem) {
+        viewModelScope.launch {
+            recordAppUsageUseCase(shortcut.packageName, null)
+            val launched = shortcutSearchRepository.launchShortcut(shortcut)
+            if (!launched) {
+                _uiState.update {
+                    it.copy(error = appContext.getString(R.string.error_failed_to_launch_app))
+                }
+            }
+        }
+    }
+
+    /** Icon for a shortcut search result (cached in the repository). Null while unavailable. */
+    suspend fun loadShortcutIcon(shortcut: ShortcutSearchItem): ShortcutIcon? =
+        runCatching { shortcutSearchRepository.getIcon(shortcut) }.getOrNull()
+
+    /** Hides a single app shortcut from search results and drops it from the current lists. */
+    fun hideShortcut(shortcut: ShortcutSearchItem) {
+        preferencesRepository.addHiddenShortcut(shortcut.identifier())
+        val id = shortcut.identifier()
+        _uiState.update {
+            it.copy(
+                keyboardShortcutResults = it.keyboardShortcutResults.filterNot { s -> s.identifier() == id },
+                voiceShortcutResults = it.voiceShortcutResults.filterNot { s -> s.identifier() == id },
+                handwritingShortcutResults = it.handwritingShortcutResults.filterNot { s -> s.identifier() == id }
+            )
+        }
+    }
+
+    /** Maps a magic word to an app shortcut so typing that word surfaces it in search. */
+    fun addShortcutAlias(word: String, shortcut: ShortcutSearchItem) {
+        val trimmed = word.trim()
+        if (trimmed.isEmpty()) return
+        val current = preferencesRepository.getShortcutSearchAliases().toMutableMap()
+        val ids = current[trimmed]?.toMutableSet() ?: mutableSetOf()
+        ids.add(shortcut.identifier())
+        current[trimmed] = ids
+        preferencesRepository.setShortcutSearchAliases(current)
+    }
+
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
@@ -875,6 +965,7 @@ class LauncherViewModel @Inject constructor(
 
     fun hideApp(identifier: String, mode: LauncherMode, searchQuery: String = "") {
         preferencesRepository.addHiddenApp(identifier)
+        val hiddenPackage = identifier.substringBefore('/')
         viewModelScope.launch {
             val currentState = _uiState.value
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -981,6 +1072,14 @@ class LauncherViewModel @Inject constructor(
                             LauncherMode.HANDWRITING -> handwritingNewlyInstalled
                             LauncherMode.INDEX -> indexNewlyInstalled
                         },
+                        // Hidden apps are excluded from shortcut search, so drop the
+                        // hidden app's shortcuts from the currently displayed results too
+                        keyboardShortcutResults = it.keyboardShortcutResults
+                            .filterNot { s -> s.packageName == hiddenPackage },
+                        voiceShortcutResults = it.voiceShortcutResults
+                            .filterNot { s -> s.packageName == hiddenPackage },
+                        handwritingShortcutResults = it.handwritingShortcutResults
+                            .filterNot { s -> s.packageName == hiddenPackage },
                         isLoading = false,
                         showHideAppTooltip = true
                     )

@@ -15,10 +15,12 @@ import com.google.mlkit.vision.digitalink.recognition.Ink
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.InkStroke
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
@@ -126,7 +128,14 @@ class MLKitDataSource @Inject constructor(
             }
         }
 
+    // Runs on Default so building the Ink object (one point at a time) doesn't
+    // block the main thread while the user may be drawing the next stroke
     override suspend fun recognizeHandwriting(strokes: List<InkStroke>): Result<String> =
+        withContext(Dispatchers.Default) {
+            recognizeHandwritingInternal(strokes)
+        }
+
+    private suspend fun recognizeHandwritingInternal(strokes: List<InkStroke>): Result<String> =
         suspendCancellableCoroutine { continuation ->
             val recognizer = digitalInkRecognizer
             if (recognizer == null) {

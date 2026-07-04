@@ -177,7 +177,8 @@ fun AppIconItem(
                 app = app,
                 onDismiss = onDismissMenu,
                 onHide = onHide,
-                onAddShortcut = onAddShortcut
+                onAddShortcut = onAddShortcut,
+                cornerRadiusPercent = cornerRadiusPercent
             )
         }
     }

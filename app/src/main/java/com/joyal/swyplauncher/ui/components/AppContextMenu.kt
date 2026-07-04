@@ -47,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -72,7 +73,8 @@ fun AppContextMenu(
     onHide: () -> Unit = {},
     onUnhide: () -> Unit = {},
     showHideOption: Boolean = true,
-    onAddShortcut: (() -> Unit)? = null
+    onAddShortcut: (() -> Unit)? = null,
+    cornerRadiusPercent: Float = 0.85f
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -206,7 +208,7 @@ fun AppContextMenu(
                 pinnedShortcuts to LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED
             ).forEach { (shortcuts, flag) ->
                 shortcuts.forEach { shortcut ->
-                    ShortcutOption(shortcut) { launchShortcut(shortcut, flag) }
+                    ShortcutOption(shortcut, cornerRadiusPercent) { launchShortcut(shortcut, flag) }
                 }
             }
 
@@ -311,7 +313,11 @@ fun AppContextMenu(
 }
 
 @Composable
-private fun ShortcutOption(shortcut: AppShortcut, onClick: () -> Unit) {
+private fun ShortcutOption(
+    shortcut: AppShortcut,
+    cornerRadiusPercent: Float,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .width(220.dp)
@@ -319,12 +325,38 @@ private fun ShortcutOption(shortcut: AppShortcut, onClick: () -> Unit) {
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        shortcut.icon?.let {
-            Image(
-                bitmap = it.toBitmap().asImageBitmap(),
-                contentDescription = shortcut.shortLabel.toString(),
-                modifier = Modifier.size(24.dp)
-            )
+        shortcut.icon?.let { drawable ->
+            // Convert once, then reuse for both the dark-check and rendering
+            val bitmap = remember(drawable) { drawable.toBitmap() }
+            val isDark = remember(bitmap) {
+                com.joyal.swyplauncher.util.isBitmapDark(bitmap)
+            }
+            // A 24dp icon's max corner radius is 12dp (half); honor the user's setting
+            val iconShape = RoundedCornerShape(12.dp * cornerRadiusPercent)
+            if (isDark) {
+                // Dark icons vanish on the near-black menu, so give them a white backing
+                androidx.compose.foundation.layout.Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(iconShape)
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = shortcut.shortLabel.toString(),
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+            } else {
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = shortcut.shortLabel.toString(),
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(iconShape)
+                )
+            }
         }
         Spacer(modifier = Modifier.width(16.dp))
         Text(

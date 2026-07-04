@@ -40,6 +40,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -122,6 +123,21 @@ fun BentoSettingsScreen(
         mutableStateOf(
             preferencesRepository?.isLoadAllAppsOnOpenEnabled() ?: true
         )
+    }
+    var shortcutSearchEnabled by remember {
+        mutableStateOf(
+            preferencesRepository?.isShortcutSearchEnabled() ?: false
+        )
+    }
+    // Bottom sheet asking the user to become the default assistant before enabling
+    // shortcut search (the OS only grants shortcut access to the role holder)
+    var showShortcutSearchAssistantSheet by remember { mutableStateOf(false) }
+    // Role revoked → shortcut access is gone, so the setting switches itself off
+    LaunchedEffect(isAssistantConfigured) {
+        if (!isAssistantConfigured && shortcutSearchEnabled) {
+            shortcutSearchEnabled = false
+            preferencesRepository?.setShortcutSearchEnabled(false)
+        }
     }
     var backgroundBlurEnabled by remember {
         mutableStateOf(
@@ -462,6 +478,30 @@ fun BentoSettingsScreen(
                 }
             }
 
+            // App shortcut search toggle (needs the default-assistant role for shortcut access)
+            item {
+                ShortcutSearchCard(
+                    checked = shortcutSearchEnabled,
+                    onCheckedChange = { wantEnabled ->
+                        when {
+                            !wantEnabled -> {
+                                shortcutSearchEnabled = false
+                                preferencesRepository?.setShortcutSearchEnabled(false)
+                            }
+                            isAssistantConfigured -> {
+                                shortcutSearchEnabled = true
+                                preferencesRepository?.setShortcutSearchEnabled(true)
+                            }
+                            else -> showShortcutSearchAssistantSheet = true
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .offset(y = (-32).dp)
+                )
+            }
+
             // "When assistant opens" card: load-all-apps toggle + (when supported) blur background.
             item {
                 WhenAssistantOpensCard(
@@ -654,6 +694,19 @@ fun BentoSettingsScreen(
                     onSetupAssistant()
                     userDismissedBottomSheet = true
                 }
+            )
+        }
+
+        // Same sheet, shown when enabling shortcut search without holding the assistant role.
+        // The toggle stays off; once the user grants the role and returns, they can enable it.
+        if (showShortcutSearchAssistantSheet) {
+            AssistantBottomSheet(
+                onDismiss = { showShortcutSearchAssistantSheet = false },
+                onSetupClick = {
+                    onSetupAssistant()
+                    showShortcutSearchAssistantSheet = false
+                },
+                message = stringResource(R.string.shortcut_search_assistant_needed)
             )
         }
 

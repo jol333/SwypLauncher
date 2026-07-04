@@ -13,6 +13,8 @@ import com.joyal.swyplauncher.util.GestureRecognizer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +40,16 @@ class HandwritingViewModel @Inject constructor(
 
     private val _matchedGesture = MutableStateFlow<CustomGesture?>(null)
     val matchedGesture: StateFlow<CustomGesture?> = _matchedGesture.asStateFlow()
+
+    private var recognitionJob: Job? = null
+
+    private companion object {
+        // Wait for a short pause in drawing before recognizing. Fast consecutive
+        // strokes keep pushing this back, so recognition results (and the app-grid
+        // recomposition they trigger) never land on the main thread mid-stroke,
+        // which would delay pointer events for the next stroke.
+        const val RECOGNITION_DEBOUNCE_MS = 250L
+    }
 
     init {
         initializeRecognizer()
@@ -81,52 +93,66 @@ class HandwritingViewModel @Inject constructor(
         initializeRecognizer()
     }
 
+    /**
+     * Called when the user puts their finger down for a new stroke. Cancels any
+     * pending or in-flight recognition so its result can't recompose the results
+     * grid while the stroke is being drawn.
+     */
+    fun onStrokeDrawingStarted() {
+        recognitionJob?.cancel()
+    }
+
     fun addStroke(stroke: InkStroke) {
         val updatedStrokes = _uiState.value.strokes + stroke
         _uiState.update { it.copy(strokes = updatedStrokes) }
-        recognizeStrokes(updatedStrokes)
-        matchGesture(updatedStrokes)
+        scheduleRecognition(updatedStrokes)
     }
 
-    private fun matchGesture(strokes: List<InkStroke>) {
-        viewModelScope.launch(Dispatchers.Default) {
-            val gestures = preferencesRepository.getCustomGestures()
-            val match = if (gestures.isEmpty() || strokes.size != 1) {
-                null
-            } else {
-                GestureRecognizer.findBestMatch(strokes, gestures)
+    private fun scheduleRecognition(
+        strokes: List<InkStroke>,
+        debounceMillis: Long = RECOGNITION_DEBOUNCE_MS
+    ) {
+        recognitionJob?.cancel()
+        recognitionJob = viewModelScope.launch {
+            if (debounceMillis > 0) delay(debounceMillis)
+            // Gesture matching runs concurrently with text recognition
+            launch(Dispatchers.Default) {
+                val gestures = preferencesRepository.getCustomGestures()
+                _matchedGesture.value = if (gestures.isEmpty() || strokes.size != 1) {
+                    null
+                } else {
+                    GestureRecognizer.findBestMatch(strokes, gestures)
+                }
             }
-            _matchedGesture.value = match
+            recognizeStrokes(strokes)
         }
     }
 
-    private fun recognizeStrokes(strokes: List<InkStroke>) {
+    private suspend fun recognizeStrokes(strokes: List<InkStroke>) {
         if (!_uiState.value.isInitialized) {
             // Don't attempt recognition if not initialized yet
             return
         }
-        
-        viewModelScope.launch {
-            _uiState.update { it.copy(recognitionResult = RecognitionResult.Loading) }
-            
-            val result = recognizeHandwritingUseCase(strokes)
-            
-            if (result.isSuccess) {
-                val text = result.getOrNull() ?: ""
-                _uiState.update {
-                    it.copy(
-                        recognizedText = text,
-                        recognitionResult = RecognitionResult.Success(text)
+
+        _uiState.update { it.copy(recognitionResult = RecognitionResult.Loading) }
+
+        val result = recognizeHandwritingUseCase(strokes)
+
+        if (result.isSuccess) {
+            val text = result.getOrNull() ?: ""
+            _uiState.update {
+                it.copy(
+                    recognizedText = text,
+                    recognitionResult = RecognitionResult.Success(text)
+                )
+            }
+        } else {
+            _uiState.update {
+                it.copy(
+                    recognitionResult = RecognitionResult.Error(
+                        result.exceptionOrNull()?.message ?: context.getString(R.string.handwriting_recognition_failed)
                     )
-                }
-            } else {
-                _uiState.update {
-                    it.copy(
-                        recognitionResult = RecognitionResult.Error(
-                            result.exceptionOrNull()?.message ?: context.getString(R.string.handwriting_recognition_failed)
-                        )
-                    )
-                }
+                )
             }
         }
     }
@@ -138,8 +164,8 @@ class HandwritingViewModel @Inject constructor(
             _uiState.update { it.copy(strokes = updatedStrokes) }
 
             if (updatedStrokes.isNotEmpty()) {
-                recognizeStrokes(updatedStrokes)
-                matchGesture(updatedStrokes)
+                // No debounce — undo is a deliberate action, update results immediately
+                scheduleRecognition(updatedStrokes, debounceMillis = 0L)
             } else {
                 // No strokes left, clear everything
                 clearStrokes()
@@ -148,6 +174,7 @@ class HandwritingViewModel @Inject constructor(
     }
 
     fun clearStrokes() {
+        recognitionJob?.cancel()
         _uiState.update {
             it.copy(
                 strokes = emptyList(),

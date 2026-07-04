@@ -52,6 +52,13 @@
     <string name="auto_open_app">Auto-open app</string>
     <string name="auto_open_desc">Open app automatically if single search result</string>
 
+    <!-- Settings Screen - App shortcut search -->
+    <string name="shortcut_search_title">Search app shortcuts</string>
+    <string name="shortcut_search_desc">Show app shortcut actions in search results</string>
+    <string name="shortcut_search_assistant_needed">Searching app shortcuts needs Swyp Launcher to be your default digital assistant</string>
+    <string name="hide_shortcut">Hide shortcut</string>
+    <string name="shortcut_alias_hint">Type a magic word to find \"%1$s\" in search</string>
+
     <!-- Settings Screen - Load apps on open -->
     <string name="load_apps_on_open_label">WHEN ASSISTANT OPENS</string>
     <string name="load_all_apps">Load entire app list on open</string>
