@@ -95,6 +95,15 @@ class LauncherViewModel @Inject constructor(
     private var loadJob: Job? = null
     private var cachedUsageMap: Map<String, Int> = emptyMap()
 
+    // Active per-mode filters, re-applied whenever a background app refresh lands so a refresh
+    // that completes mid-search never replaces the user's results with the full app list.
+    // Read/written on the main thread only (all filter entry points and loadApps run there).
+    private var activeKeyboardQuery: String = ""
+    private var activeVoiceQuery: String = ""
+    private var activeHandwritingPrefix: String = ""
+    private var activeHandwritingGestureAppIds: Set<String>? = null
+    private var activeIndexLetter: Char? = null
+
     private data class AppLoadResult(
         val apps: List<AppInfo>,
         val smartApps: List<AppInfo>,
@@ -175,26 +184,76 @@ class LauncherViewModel @Inject constructor(
         )
     }
 
-    private fun applyAppLoadResult(result: AppLoadResult, isLoading: Boolean) {
+    private suspend fun applyAppLoadResult(result: AppLoadResult, isLoading: Boolean) {
         // Pre-compute available letters for Index mode performance
         val letters = result.apps.map { it.firstLetter }.distinct().sorted()
+
+        // Snapshot the active filters on the main thread before recomputing on Default.
+        val keyboardQuery = activeKeyboardQuery
+        val voiceQuery = activeVoiceQuery
+        val handwritingPrefix = activeHandwritingPrefix
+        val handwritingGestureIds = activeHandwritingGestureAppIds
+        val indexLetter = activeIndexLetter
+
+        val (keyboard, voice, handwriting, index) = withContext(Dispatchers.Default) {
+            val shortcuts =
+                if (keyboardQuery.isNotBlank() || voiceQuery.isNotBlank() || handwritingPrefix.isNotBlank()) {
+                    preferencesRepository.getAppShortcuts()
+                } else emptyMap()
+
+            val keyboard = refilterForRefresh(result) { apps ->
+                if (keyboardQuery.isBlank()) null
+                else apps.filter { matchesQueryOrShortcut(it, keyboardQuery, shortcuts, prefixMatch = false) }
+            }
+            val voice = refilterForRefresh(result) { apps ->
+                if (voiceQuery.isBlank()) null
+                else apps.filter { matchesQueryOrShortcut(it, voiceQuery, shortcuts, prefixMatch = false) }
+            }
+            val handwriting = refilterForRefresh(result) { apps ->
+                when {
+                    handwritingGestureIds != null -> apps.filter { it.getIdentifier() in handwritingGestureIds }
+                    handwritingPrefix.isNotBlank() ->
+                        apps.filter { matchesQueryOrShortcut(it, handwritingPrefix, shortcuts, prefixMatch = true) }
+                    else -> null
+                }
+            }
+            val index = refilterForRefresh(result) { apps ->
+                indexLetter?.let { letter -> apps.filter { it.firstLetter == letter } }
+            }
+            listOf(keyboard, voice, handwriting, index)
+        }
+
         _uiState.update {
             it.copy(
                 apps = result.apps,
                 availableLetters = letters,
-                handwritingFilteredApps = result.apps,
-                handwritingSmartApps = result.smartApps,
-                indexFilteredApps = result.apps,
-                indexSmartApps = result.smartApps,
-                keyboardFilteredApps = result.apps,
-                keyboardSmartApps = result.smartApps,
-                voiceFilteredApps = result.apps,
-                voiceSmartApps = result.smartApps,
+                handwritingFilteredApps = handwriting.first,
+                handwritingSmartApps = handwriting.second,
+                indexFilteredApps = index.first,
+                indexSmartApps = index.second,
+                keyboardFilteredApps = keyboard.first,
+                keyboardSmartApps = keyboard.second,
+                voiceFilteredApps = voice.first,
+                voiceSmartApps = voice.second,
                 newlyInstalledAppPackage = result.newlyInstalledPackage,
                 isLoading = isLoading,
                 error = null
             )
         }
+    }
+
+    /**
+     * (filtered, smart) lists for one mode after a refresh. [filter] returns null when the mode
+     * has no active filter, in which case the full refreshed lists are used as-is.
+     */
+    private suspend fun refilterForRefresh(
+        result: AppLoadResult,
+        filter: (List<AppInfo>) -> List<AppInfo>?
+    ): Pair<List<AppInfo>, List<AppInfo>> {
+        val filtered = filter(result.apps) ?: return result.apps to result.smartApps
+        if (filtered.isEmpty()) return filtered to emptyList()
+        val gridSize = preferencesRepository.getGridSize()
+        return filtered to getSmartAppListUseCase(filtered, gridSize, result.usageMap)
     }
 
     private fun observeAppChanges() {
@@ -208,6 +267,7 @@ class LauncherViewModel @Inject constructor(
 
     // Keyboard mode filter
     fun filterAppsKeyboard(query: String) {
+        activeKeyboardQuery = query
         keyboardFilterJob?.cancel()
         keyboardCurrencyJob?.cancel()
         keyboardFilterJob = launchModeFilter(query, CurrencyMode.KEYBOARD, prefixMatch = false)
@@ -215,6 +275,7 @@ class LauncherViewModel @Inject constructor(
 
     // Voice mode filter
     fun filterAppsVoice(query: String) {
+        activeVoiceQuery = query
         voiceFilterJob?.cancel()
         voiceCurrencyJob?.cancel()
         voiceFilterJob = launchModeFilter(query, CurrencyMode.VOICE, prefixMatch = false)
@@ -222,6 +283,8 @@ class LauncherViewModel @Inject constructor(
 
     // Handwriting mode filter by prefix
     fun filterAppsByPrefixHandwriting(prefix: String) {
+        activeHandwritingPrefix = prefix
+        activeHandwritingGestureAppIds = null
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
         handwritingFilterJob = launchModeFilter(prefix, CurrencyMode.HANDWRITING, prefixMatch = true)
@@ -650,6 +713,8 @@ class LauncherViewModel @Inject constructor(
 
     // Handwriting mode filter by matched custom gesture's assigned apps
     fun filterAppsByCustomGestureHandwriting(appIds: Set<String>) {
+        activeHandwritingGestureAppIds = appIds
+        activeHandwritingPrefix = ""
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
         handwritingFilterJob = viewModelScope.launch(Dispatchers.Default) {
@@ -688,6 +753,7 @@ class LauncherViewModel @Inject constructor(
 
     // Index mode filter by first letter
     fun filterAppsByFirstLetterIndex(letter: Char) {
+        activeIndexLetter = letter.uppercaseChar()
         viewModelScope.launch(Dispatchers.Default) {
             val filtered = _uiState.value.apps.filter { it.firstLetter == letter.uppercaseChar() }
             val (smart, newlyInstalled) = computeSmartApps(filtered)
@@ -711,17 +777,24 @@ class LauncherViewModel @Inject constructor(
 
     // Reset filters for a specific mode
     fun resetFilterHandwriting() {
+        activeHandwritingPrefix = ""
+        activeHandwritingGestureAppIds = null
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
         resetFilter { copy(handwritingFilteredApps = apps, handwritingSmartApps = it.first, newlyInstalledAppPackage = it.second, handwritingCalculatorResult = null, handwritingCurrencyResult = null, handwritingUnitResult = null, handwritingTimeZoneResult = null) }
     }
-    fun resetFilterIndex() = resetFilter { copy(indexFilteredApps = apps, indexSmartApps = it.first, newlyInstalledAppPackage = it.second) }
+    fun resetFilterIndex() {
+        activeIndexLetter = null
+        resetFilter { copy(indexFilteredApps = apps, indexSmartApps = it.first, newlyInstalledAppPackage = it.second) }
+    }
     fun resetFilterKeyboard() {
+        activeKeyboardQuery = ""
         keyboardFilterJob?.cancel()
         keyboardCurrencyJob?.cancel()
         resetFilter { copy(keyboardFilteredApps = apps, keyboardSmartApps = it.first, newlyInstalledAppPackage = it.second, keyboardCalculatorResult = null, keyboardCurrencyResult = null, keyboardUnitResult = null, keyboardTimeZoneResult = null) }
     }
     fun resetFilterVoice() {
+        activeVoiceQuery = ""
         voiceFilterJob?.cancel()
         voiceCurrencyJob?.cancel()
         resetFilter { copy(voiceFilteredApps = apps, voiceSmartApps = it.first, newlyInstalledAppPackage = it.second, voiceCalculatorResult = null, voiceCurrencyResult = null, voiceUnitResult = null, voiceTimeZoneResult = null) }

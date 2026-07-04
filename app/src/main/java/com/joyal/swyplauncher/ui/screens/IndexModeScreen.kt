@@ -3,9 +3,15 @@ package com.joyal.swyplauncher.ui.screens
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.StartOffset
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -229,6 +235,16 @@ fun IndexModeScreen(
                                     )
                                 }
                             }
+                        } else if (availableLetters.isEmpty() && launcherState.error == null) {
+                            // App list (and therefore the letters) still loading — show a
+                            // representative shimmer grid instead of an empty area.
+                            LetterIndexShimmerGrid(
+                                columns = alphabetGridColumns,
+                                itemSize = alphabetItemSize,
+                                itemSpacing = alphabetItemSpacing,
+                                rows = if (isLandscape) 2 else 3,
+                                isBlurEnabled = isBlurEnabled
+                            )
                         } else {
                             // Grid layout - more columns in landscape
                             LazyVerticalGrid(
@@ -529,6 +545,63 @@ private fun IndexLetterPager(
     }
 }
 
+
+/**
+ * Placeholder for the alphabet grid while the app list is still loading (e.g. first open after
+ * a day or two, when reading the cache takes a moment). Renders representative letter tiles —
+ * same size, shape and colors as [LetterIndexItem] — with a soft diagonal shimmer wave so the
+ * area reads as "loading" rather than empty.
+ */
+@Composable
+private fun LetterIndexShimmerGrid(
+    columns: Int,
+    itemSize: androidx.compose.ui.unit.Dp,
+    itemSpacing: androidx.compose.ui.unit.Dp,
+    rows: Int,
+    isBlurEnabled: Boolean
+) {
+    val transition = rememberInfiniteTransition(label = "letterIndexShimmer")
+    val tileColor = if (isBlurEnabled) Color(0x330E0E0E) else Color(0xFF0E0E0E)
+    val borderBrush = Brush.horizontalGradient(
+        colors = listOf(
+            Color(0x0AFFFFFF),
+            Color(0x0FFFFFFF)
+        )
+    )
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(columns),
+        contentPadding = PaddingValues(0.dp),
+        horizontalArrangement = Arrangement.spacedBy(itemSpacing),
+        verticalArrangement = Arrangement.spacedBy(itemSpacing),
+        userScrollEnabled = false,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        items(rows * columns) { index ->
+            // Stagger by row + column so the highlight sweeps diagonally across the tiles.
+            val highlight by transition.animateFloat(
+                initialValue = 0f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 700),
+                    repeatMode = RepeatMode.Reverse,
+                    initialStartOffset = StartOffset((index % columns + index / columns) * 90)
+                ),
+                label = "shimmerTile$index"
+            )
+            Box(
+                modifier = Modifier
+                    .size(itemSize)
+                    .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(16.dp))
+                    .background(tileColor, RoundedCornerShape(16.dp))
+                    .background(
+                        Color.White.copy(alpha = 0.02f + highlight * 0.06f),
+                        RoundedCornerShape(16.dp)
+                    )
+            )
+        }
+    }
+}
 
 @Composable
 fun LetterIndexItem(
