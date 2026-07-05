@@ -1108,6 +1108,22 @@ class LauncherViewModel @Inject constructor(
         }
         return _uiState.value.hiddenApps
     }
+
+    /** Loads the currently-hidden app shortcuts into state so they can be un-hidden. */
+    fun getHiddenShortcuts() {
+        viewModelScope.launch {
+            val hidden = shortcutSearchRepository.getHiddenShortcuts()
+            _uiState.update { it.copy(hiddenShortcuts = hidden) }
+        }
+    }
+
+    /** Un-hides a single app shortcut and refreshes the hidden-shortcuts list. */
+    fun unhideShortcut(identifier: String) {
+        preferencesRepository.removeHiddenShortcut(identifier)
+        _uiState.update {
+            it.copy(hiddenShortcuts = it.hiddenShortcuts.filterNot { s -> s.identifier() == identifier })
+        }
+    }
     
     fun shouldPromptForUsageStatsPermission(): Boolean {
         return !preferencesRepository.hasPromptedForUsageStatsPermission() &&

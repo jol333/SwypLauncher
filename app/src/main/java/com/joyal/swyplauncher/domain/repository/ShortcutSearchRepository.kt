@@ -24,6 +24,20 @@ interface ShortcutSearchRepository {
      */
     suspend fun search(query: String, prefixMatch: Boolean): List<ShortcutSearchItem>
 
+    /**
+     * All shortcuts available in the system. Returns empty when the feature is disabled,
+     * or the assistant role isn't held.
+     */
+    suspend fun getAllShortcuts(): List<ShortcutSearchItem>
+
+    /**
+     * The currently-hidden shortcuts that are still resolvable in the system (so they can be
+     * un-hidden from the hidden-apps screen). Independent of the feature toggle — only the
+     * assistant role is required to resolve them. Entries whose parent app was uninstalled
+     * are omitted, since they can no longer be rendered or launched.
+     */
+    suspend fun getHiddenShortcuts(): List<ShortcutSearchItem>
+
     /** Loads (and caches) the icon for a shortcut, with dark-icon detection. Null on failure. */
     suspend fun getIcon(item: ShortcutSearchItem): ShortcutIcon?
 

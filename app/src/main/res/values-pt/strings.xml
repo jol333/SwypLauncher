@@ -25,9 +25,9 @@
     <string name="long_press_drag_reorder">Toque e segure para reordenar</string>
     
     <!-- Settings Screen - App Shortcuts -->
-    <string name="app_shortcuts">ATALHOS DE APP</string>
-    <string name="active_shortcut">Atalho ativo</string>
-    <string name="active_shortcuts">Atalhos ativos</string>
+    <string name="app_shortcuts">PALAVRAS MÁGICAS</string>
+    <string name="active_shortcut">Ativo palavra mágica</string>
+    <string name="active_shortcuts">Ativos palavra mágicas</string>
     
     <!-- Settings Screen - Appearance -->
     <string name="appearance">APARÊNCIA</string>
@@ -52,6 +52,13 @@
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">Abrir automaticamente</string>
     <string name="auto_open_desc">Abrir app se houver apenas um resultado</string>
+
+    <!-- Settings Screen - App shortcut search -->
+    <string name="shortcut_search_title">Buscar atalhos de apps</string>
+    <string name="shortcut_search_desc">Mostrar ações de atalhos de apps nos resultados de busca</string>
+    <string name="shortcut_search_assistant_needed">Buscar atalhos de apps requer que o Swyp Launcher seja seu assistente digital padrão</string>
+    <string name="hide_shortcut">Ocultar</string>
+    <string name="shortcut_alias_hint">Digite uma palavra mágica para encontrar \"%1$s\" na busca</string>
 
     <!-- Settings Screen - Load apps on open -->
     <string name="load_apps_on_open_label">AO ABRIR O ASSISTENTE</string>
@@ -82,7 +89,7 @@
     <string name="access_assistant">Você pode acessar o Swyp Launcher de várias maneiras</string>
     <string name="default_digital_assistant">Definir como assistente padrão</string>
     <string name="add_home_screen_widget">Adicionar widget</string>
-    <string name="add_shortcut_home">Adicionar atalho</string>
+    <string name="add_shortcut_home">Adicionar palavra mágica</string>
     <string name="quick_settings_tile">Bloco de configurações rápidas</string>
     <string name="widget_description">Acesso rápido aos modos</string>
     <string name="swyp_launcher_tile_label">Swyp Launcher</string>
@@ -94,18 +101,20 @@
     
     <!-- Hidden Apps Screen -->
     <string name="hidden_apps">Apps Ocultos</string>
+    <string name="hidden_shortcuts">Atalhos ocultos</string>
     <string name="back">Voltar</string>
     <string name="no_hidden_apps">Nenhum app oculto</string>
+    <string name="unhide_shortcut">Mostrar</string>
     
     <!-- App Shortcuts Screen -->
-    <string name="new_shortcut">Novo atalho</string>
+    <string name="new_shortcut">Nova palavra mágica</string>
     <string name="create">Criar</string>
-    <string name="no_shortcuts_yet">Sem atalhos ainda</string>
-    <string name="shortcuts_empty_desc">Crie comandos para mostrar apps específicos na busca</string>
+    <string name="no_shortcuts_yet">Sem palavra mágicas ainda</string>
+    <string name="shortcuts_empty_desc">Crie comandos personalizados para mostrar apps específicos nos resultados</string>
     <string name="delete">Excluir</string>
     
     <!-- Shortcut Editor Screen -->
-    <string name="edit_shortcut">Editar atalho</string>
+    <string name="edit_shortcut">Editar palavra mágica</string>
     <string name="close">Fechar</string>
     <string name="magic_word">PALAVRA MÁGICA</string>
     <string name="magic_word_placeholder">Digite o atalho (min 2 letras)</string>
@@ -116,21 +125,21 @@
     <string name="search">Buscar</string>
     <string name="search_apps_placeholder">Buscar apps para adicionar...</string>
     <string name="clear">Limpar</string>
-    <string name="save_shortcut">Salvar atalho</string>
+    <string name="save_shortcut">Salvar palavra mágica</string>
     <string name="remove">Remover</string>
     <string name="selected">Selecionado</string>
     <string name="please_type_magic_word">Por favor digite uma palavra mágica</string>
     <string name="shortcut_min_chars">O atalho deve ter pelo menos 2 caracteres</string>
     <string name="select_at_least_one_app">Por favor selecione pelo menos um app</string>
-    <string name="shortcut_exists_title">Atalho já existe</string>
-    <string name="shortcut_exists_message">Um atalho com o nome \"%1$s\" já existe. Deseja substituir?</string>
+    <string name="shortcut_exists_title">Palavra mágica já existe</string>
+    <string name="shortcut_exists_message">Uma palavra mágica com o nome \"%1$s\" já existe. Deseja substituí-la?</string>
     
     <!-- Context Menu -->
     <string name="app_info">Info do app</string>
     <string name="hide_app">Ocultar</string>
     <string name="unhide_app">Mostrar</string>
     <string name="uninstall">Desinstalar</string>
-    <string name="set_a_shortcut">Criar atalho</string>
+    <string name="set_a_shortcut">Definir palavra mágica</string>
     <string name="view_in_app_store">Ver na loja</string>
     <string name="cannot_uninstall">Não pode desinstalar</string>
     <string name="cannot_uninstall_message">Este app não pode ser desinstalado. Quer ocultar ele?</string>
@@ -156,11 +165,12 @@
     <string name="support_development">Apoie o desenvolvimento</string>
     <string name="buy_me_coffee">Me pague um café</string>
     <string name="donate_message">Se este app te ajuda, considere me pagar um café. Seu apoio ajuda a manter meus projetos gratuitos.</string>
-    
+    <string name="no_browser_found">Nenhum navegador encontrado para abrir o link</string>
+
     <!-- Additional UI strings -->
     <string name="launch">Abrir</string>
-    <string name="active_shortcut_singular">Atalho ativo</string>
-    <string name="active_shortcuts_plural">Atalhos ativos</string>
+    <string name="active_shortcut_singular">Ativo palavra mágica</string>
+    <string name="active_shortcuts_plural">Ativos palavra mágicas</string>
     <string name="blur_background">Desfocar fundo</string>
     <string name="blur_background_desc">Efeito de vidro fosco translúcido</string>
     <string name="apps_per_row">Apps por linha</string>
@@ -312,5 +322,4 @@
     <string name="handwriting_model_error_download_generic">Não foi possível baixar o modelo de reconhecimento de escrita. Tente novamente.</string>
     <string name="handwriting_model_error_check_status">Não foi possível verificar o status do modelo. Tente novamente.</string>
     <string name="handwriting_model_error_init">Não foi possível inicializar o reconhecimento de escrita. Tente novamente.</string>
-    
 </resources>

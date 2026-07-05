@@ -24,9 +24,9 @@
     <string name="long_press_drag_reorder">Long press &amp; drag handle to reorder</string>
     
     <!-- Settings Screen - App Shortcuts -->
-    <string name="app_shortcuts">APP SHORTCUTS</string>
-    <string name="active_shortcut">Active shortcut</string>
-    <string name="active_shortcuts">Active shortcuts</string>
+    <string name="app_shortcuts">MAGIC WORDS</string>
+    <string name="active_shortcut">Active magic word</string>
+    <string name="active_shortcuts">Active magic words</string>
     
     <!-- Settings Screen - Appearance -->
     <string name="appearance">APPEARANCE</string>
@@ -56,7 +56,7 @@
     <string name="shortcut_search_title">Search app shortcuts</string>
     <string name="shortcut_search_desc">Show app shortcut actions in search results</string>
     <string name="shortcut_search_assistant_needed">Searching app shortcuts needs Swyp Launcher to be your default digital assistant</string>
-    <string name="hide_shortcut">Hide shortcut</string>
+    <string name="hide_shortcut">Hide</string>
     <string name="shortcut_alias_hint">Type a magic word to find \"%1$s\" in search</string>
 
     <!-- Settings Screen - Load apps on open -->
@@ -88,7 +88,7 @@
     <string name="access_assistant">You can access Swyp Launcher in multiple ways</string>
     <string name="default_digital_assistant">Set as default assistant</string>
     <string name="add_home_screen_widget">Add home screen widget</string>
-    <string name="add_shortcut_home">Add shortcut</string>
+    <string name="add_shortcut_home">Add magic word</string>
     <string name="quick_settings_tile">Quick settings tile</string>
     <string name="widget_description">Quick access to Swyp Launcher modes</string>
     <string name="swyp_launcher_tile_label">Swyp Launcher</string>
@@ -100,18 +100,20 @@
     
     <!-- Hidden Apps Screen -->
     <string name="hidden_apps">Hidden Apps</string>
+    <string name="hidden_shortcuts">Hidden Shortcuts</string>
     <string name="back">Back</string>
     <string name="no_hidden_apps">No hidden apps</string>
+    <string name="unhide_shortcut">Unhide</string>
     
     <!-- App Shortcuts Screen -->
-    <string name="new_shortcut">New shortcut</string>
+    <string name="new_shortcut">New magic word</string>
     <string name="create">Create</string>
-    <string name="no_shortcuts_yet">No shortcuts yet</string>
+    <string name="no_shortcuts_yet">No magic words yet</string>
     <string name="shortcuts_empty_desc">Create custom commands to show specific apps in search results</string>
     <string name="delete">Delete</string>
     
     <!-- Shortcut Editor Screen -->
-    <string name="edit_shortcut">Edit shortcut</string>
+    <string name="edit_shortcut">Edit magic word</string>
     <string name="close">Close</string>
     <string name="magic_word">MAGIC WORD</string>
     <string name="magic_word_placeholder">Type shortcut (min 2 chars)</string>
@@ -122,21 +124,21 @@
     <string name="search">Search</string>
     <string name="search_apps_placeholder">Search apps to add...</string>
     <string name="clear">Clear</string>
-    <string name="save_shortcut">Save shortcut</string>
+    <string name="save_shortcut">Save magic word</string>
     <string name="remove">Remove</string>
     <string name="selected">Selected</string>
     <string name="please_type_magic_word">Please type a magic word</string>
     <string name="shortcut_min_chars">Shortcut name must be at least 2 characters</string>
     <string name="select_at_least_one_app">Please select at least one app</string>
-    <string name="shortcut_exists_title">Shortcut already exists</string>
-    <string name="shortcut_exists_message">A shortcut with the name \"%1$s\" already exists. Do you want to replace it?</string>
+    <string name="shortcut_exists_title">Magic word already exists</string>
+    <string name="shortcut_exists_message">A magic word with the name \"%1$s\" already exists. Do you want to replace it?</string>
     
     <!-- Context Menu -->
     <string name="app_info">App info</string>
     <string name="hide_app">Hide</string>
     <string name="unhide_app">Unhide</string>
     <string name="uninstall">Uninstall</string>
-    <string name="set_a_shortcut">Set a shortcut</string>
+    <string name="set_a_shortcut">Set a magic word</string>
     <string name="view_in_app_store">View in app store</string>
     <string name="cannot_uninstall">Cannot Uninstall</string>
     <string name="cannot_uninstall_message">This app cannot be uninstalled. Would you like to hide it instead?</string>
@@ -162,11 +164,12 @@
     <string name="support_development">Support Development</string>
     <string name="buy_me_coffee">Buy me a coffee</string>
     <string name="donate_message">If this app saves you time, consider buying me a coffee. Your support helps fuel my free side projects.</string>
-    
+    <string name="no_browser_found">No browser found to open the link</string>
+
     <!-- Additional UI strings -->
     <string name="launch">Launch</string>
-    <string name="active_shortcut_singular">Active shortcut</string>
-    <string name="active_shortcuts_plural">Active shortcuts</string>
+    <string name="active_shortcut_singular">Active magic word</string>
+    <string name="active_shortcuts_plural">Active magic words</string>
     <string name="blur_background">Blur background</string>
     <string name="blur_background_desc">Semi-transparent frosted glass look</string>
     <string name="apps_per_row">Apps per row</string>

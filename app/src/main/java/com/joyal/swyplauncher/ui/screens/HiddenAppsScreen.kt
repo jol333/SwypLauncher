@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -34,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.joyal.swyplauncher.ui.components.AppContextMenu
 import com.joyal.swyplauncher.ui.components.AppIconItem
+import com.joyal.swyplauncher.ui.components.ShortcutIconItem
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
 import com.joyal.swyplauncher.R
 import androidx.compose.ui.res.stringResource
@@ -48,10 +51,12 @@ fun HiddenAppsScreen(
     val gridSize by launcherViewModel.gridSize.collectAsState()
     val cornerRadius by launcherViewModel.cornerRadius.collectAsState()
     var selectedAppIdentifier by remember { mutableStateOf<String?>(null) }
+    var selectedShortcutIdentifier by remember { mutableStateOf<String?>(null) }
     var isInitialLoad by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         launcherViewModel.getHiddenApps()
+        launcherViewModel.getHiddenShortcuts()
     }
 
     // Track when the initial load completes
@@ -63,6 +68,9 @@ fun HiddenAppsScreen(
 
     // Handle back press to dismiss hidden apps screen
     BackHandler(onBack = onDismiss)
+
+    val hasHiddenApps = launcherState.hiddenApps.isNotEmpty()
+    val hasHiddenShortcuts = launcherState.hiddenShortcuts.isNotEmpty()
 
     Scaffold(
         topBar = {
@@ -96,8 +104,8 @@ fun HiddenAppsScreen(
                 }
             }
 
-            launcherState.hiddenApps.isEmpty() -> {
-                // Show "No hidden apps" message when list is empty after loading
+            !hasHiddenApps && !hasHiddenShortcuts -> {
+                // Show "No hidden apps" message when nothing is hidden after loading
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -113,7 +121,7 @@ fun HiddenAppsScreen(
             }
 
             else -> {
-                // Show the grid of hidden apps
+                // Show the grid of hidden apps and hidden shortcuts, each under its own header
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(gridSize),
                     contentPadding = PaddingValues(16.dp),
@@ -123,42 +131,94 @@ fun HiddenAppsScreen(
                         .fillMaxSize()
                         .padding(padding)
                 ) {
-                    itemsIndexed(
-                        items = launcherState.hiddenApps,
-                        key = { _, app -> app.getIdentifier() }
-                    ) { _, app ->
-                        Box {
-                            AppIconItem(
-                                app = app,
-                                onClick = {
-                                    launcherViewModel.launchApp(
-                                        app.packageName,
-                                        app.activityName
+                    if (hasHiddenApps) {
+                        // Only show the section header when both sections are present
+                        if (hasHiddenShortcuts) {
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                SectionHeader(stringResource(R.string.hidden_apps))
+                            }
+                        }
+                        itemsIndexed(
+                            items = launcherState.hiddenApps,
+                            key = { _, app -> "app:${app.getIdentifier()}" }
+                        ) { _, app ->
+                            Box {
+                                AppIconItem(
+                                    app = app,
+                                    onClick = {
+                                        launcherViewModel.launchApp(
+                                            app.packageName,
+                                            app.activityName
+                                        )
+                                        onDismiss()
+                                    },
+                                    onLongClick = {
+                                        selectedAppIdentifier = app.getIdentifier()
+                                    },
+                                    cornerRadiusPercent = cornerRadius
+                                )
+
+                                if (selectedAppIdentifier == app.getIdentifier()) {
+                                    AppContextMenu(
+                                        app = app,
+                                        onDismiss = { selectedAppIdentifier = null },
+                                        onUnhide = {
+                                            launcherViewModel.unhideApp(app.getIdentifier())
+                                            launcherViewModel.getHiddenApps()
+                                            selectedAppIdentifier = null
+                                        },
+                                        showHideOption = false
                                     )
+                                }
+                            }
+                        }
+                    }
+
+                    if (hasHiddenShortcuts) {
+                        if (hasHiddenApps) {
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                SectionHeader(stringResource(R.string.hidden_shortcuts))
+                            }
+                        }
+                        itemsIndexed(
+                            items = launcherState.hiddenShortcuts,
+                            key = { _, shortcut -> "shortcut:${shortcut.identifier()}" }
+                        ) { _, shortcut ->
+                            ShortcutIconItem(
+                                shortcut = shortcut,
+                                onClick = {
+                                    launcherViewModel.launchShortcut(shortcut)
                                     onDismiss()
                                 },
+                                loadIcon = { launcherViewModel.loadShortcutIcon(it) },
+                                cornerRadiusPercent = cornerRadius,
                                 onLongClick = {
-                                    selectedAppIdentifier = app.getIdentifier()
+                                    selectedShortcutIdentifier = shortcut.identifier()
                                 },
-                                cornerRadiusPercent = cornerRadius
+                                showContextMenu = selectedShortcutIdentifier == shortcut.identifier(),
+                                onDismissMenu = { selectedShortcutIdentifier = null },
+                                onUnhide = {
+                                    launcherViewModel.unhideShortcut(shortcut.identifier())
+                                    selectedShortcutIdentifier = null
+                                },
+                                showHideOption = false
                             )
-
-                            if (selectedAppIdentifier == app.getIdentifier()) {
-                                AppContextMenu(
-                                    app = app,
-                                    onDismiss = { selectedAppIdentifier = null },
-                                    onUnhide = {
-                                        launcherViewModel.unhideApp(app.getIdentifier())
-                                        launcherViewModel.getHiddenApps()
-                                        selectedAppIdentifier = null
-                                    },
-                                    showHideOption = false
-                                )
-                            }
                         }
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleSmall,
+        color = Color.White.copy(alpha = 0.7f),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    )
 }

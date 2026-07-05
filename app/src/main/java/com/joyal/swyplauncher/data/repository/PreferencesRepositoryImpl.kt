@@ -109,6 +109,12 @@ class PreferencesRepositoryImpl @Inject constructor(
         prefs.edit().putStringSet(KEY_HIDDEN_SHORTCUTS, current).apply()
     }
 
+    override fun removeHiddenShortcut(identifier: String) {
+        val current = getHiddenShortcuts().toMutableSet()
+        current.remove(identifier)
+        prefs.edit().putStringSet(KEY_HIDDEN_SHORTCUTS, current).apply()
+    }
+
     // Shortcut ids can contain arbitrary characters, so use JSON rather than the delimiter
     // scheme used for app aliases (which would be ambiguous here).
     override fun getShortcutSearchAliases(): Map<String, Set<String>> {

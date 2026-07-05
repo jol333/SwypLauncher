@@ -112,6 +112,7 @@ import com.joyal.swyplauncher.ui.screens.HandwritingModeScreen
 import com.joyal.swyplauncher.ui.screens.IndexModeScreen
 import com.joyal.swyplauncher.ui.screens.KeyboardModeScreen
 import com.joyal.swyplauncher.ui.screens.VoiceModeScreen
+import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
 import com.joyal.swyplauncher.ui.theme.SwypLauncherTheme
 import com.joyal.swyplauncher.ui.util.rememberSystemBlurSupported
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
@@ -133,6 +134,9 @@ class AssistActivity : AppCompatActivity() {
 
     @Inject
     lateinit var getInstalledAppsUseCase: com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
+
+    @Inject
+    lateinit var shortcutSearchRepository: com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -173,6 +177,7 @@ class AssistActivity : AppCompatActivity() {
                     activity = this,
                     preferencesRepository = preferencesRepository,
                     getInstalledAppsUseCase = getInstalledAppsUseCase,
+                    shortcutSearchRepository = shortcutSearchRepository,
                     initialMode = initialMode
                 )
             }
@@ -225,14 +230,17 @@ class AssistActivity : AppCompatActivity() {
 fun AssistantScreen(
     onDismiss: () -> Unit,
     activity: AppCompatActivity,
-    modeViewModel: ModeViewModel = hiltViewModel(),
     preferencesRepository: com.joyal.swyplauncher.domain.repository.PreferencesRepository,
     getInstalledAppsUseCase: com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase,
-    initialMode: LauncherMode? = null
+    shortcutSearchRepository: com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository,
+    initialMode: LauncherMode? = null,
+    isFromAssistant: Boolean = false,
+    isFromHome: Boolean = false,
+    launcherViewModel: LauncherViewModel = hiltViewModel(),
+    modeViewModel: ModeViewModel = hiltViewModel()
 ) {
     val selectedMode by modeViewModel.selectedMode.collectAsState()
     val modes by modeViewModel.enabledModes.collectAsState()
-    val launcherViewModel: LauncherViewModel = hiltViewModel()
     val uiState by launcherViewModel.uiState.collectAsState()
     val allAppsRevealed by launcherViewModel.allAppsRevealed.collectAsState()
     val view = LocalView.current
@@ -241,7 +249,6 @@ fun AssistantScreen(
     val motionScheme = remember { MotionScheme.expressive() }
     val context = LocalContext.current
 
-    // Track shortcut editor state at top level
     var showShortcutEditor by remember { mutableStateOf(false) }
     var shortcutAppId by remember { mutableStateOf<String?>(null) }
 
@@ -252,45 +259,37 @@ fun AssistantScreen(
         }
     }
 
-    // Track blur state (user preference + system runtime state)
     val blurEnabled = rememberEffectiveBlurEnabled(preferencesRepository)
 
     val visibleState = remember { MutableTransitionState(false).apply { targetState = true } }
     var showUsageStatsPrompt by remember { mutableStateOf(false) }
 
-    // Refresh enabled modes and check usage stats permission on launch
     LaunchedEffect(Unit) {
         modeViewModel.refreshEnabledModes()
         if (launcherViewModel.shouldPromptForUsageStatsPermission()) {
-            delay(500) // Small delay to let the UI settle
+            delay(500)
             showUsageStatsPrompt = true
         }
     }
 
-    // Track the initial mode to determine if keyboard should open immediately
     val initialMode = remember { selectedMode }
 
-    // Orientation detection
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
-    // Constants and core state - landscape uses 90% height, portrait uses 64%-100%
     val minSheetFraction = if (isLandscape) 0.90f else 0.64f
     val maxSheetFraction = 1f
     val dismissThresholdPx = 300f
     val sheetFractionAnim = remember(isLandscape) { Animatable(minSheetFraction) }
     val dragOffsetY = remember { Animatable(0f) }
 
-    // Pager state for horizontal swiping between modes
     val pagerState = rememberPagerState(
         initialPage = modes.indexOf(selectedMode).coerceAtLeast(0),
         pageCount = { modes.size }
     )
 
-    // Tracks programmatic pager animations to prevent sync conflicts
     var programmaticScrolls by remember { mutableStateOf(0) }
 
-    // Sync pager state with selected mode when user swipes
     LaunchedEffect(pagerState.currentPage) {
         if (programmaticScrolls == 0) {
             val current = modes[pagerState.currentPage]
@@ -298,7 +297,6 @@ fun AssistantScreen(
         }
     }
 
-    // Sync selected mode with pager state (for button clicks)
     LaunchedEffect(selectedMode) {
         val targetPage = modes.indexOf(selectedMode)
         if (targetPage != pagerState.currentPage && targetPage >= 0) {
@@ -311,19 +309,17 @@ fun AssistantScreen(
         }
     }
 
-    // Get device corner radius
     val cornerRadius = remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val topLeft =
-                view.display?.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT)?.radius ?: 0
+                view.display?.getRoundedCorner(android.view.RoundedCorner.POSITION_TOP_LEFT)?.radius ?: 0
             val topRight =
-                view.display?.getRoundedCorner(RoundedCorner.POSITION_TOP_RIGHT)?.radius ?: 0
+                view.display?.getRoundedCorner(android.view.RoundedCorner.POSITION_TOP_RIGHT)?.radius ?: 0
             val radiusPx = max(topLeft, topRight)
             if (radiusPx > 0) (radiusPx / view.resources.displayMetrics.density).dp else 24.dp
         } else 24.dp
     }
 
-    // Dismiss handler: resetOffset=false keeps current drag position for smooth exit
     val handleDismiss: (Boolean) -> Unit = { resetOffset ->
         scope.launch {
             view.clearFocus()
@@ -340,15 +336,6 @@ fun AssistantScreen(
         val screenWidth = maxWidth
         val fullHeightPx = with(density) { maxHeight.toPx() }
 
-        // Bottom system insets. We treat the navigation bar and the IME differently because
-        // they have wildly different magnitudes:
-        //  - navigation bar (~24–48 dp): small. Grow the sheet by this amount so the natural
-        //    content area is preserved above the navbar.
-        //  - IME (~250–400 dp): large. Growing by the full IME would push the sheet to
-        //    fullscreen and leave 2–3 rows visible — more than the user wants. Instead, grow
-        //    just enough that the search input plus ~1 row of apps sits above the keyboard.
-        // The Box inside Surface still gets padded by the full bottom inset so nothing ever
-        // renders behind the navbar or IME.
         val navbarBottomPx = WindowInsets.navigationBars.getBottom(density).toFloat()
         val imeBottomPx = WindowInsets.ime.getBottom(density).toFloat()
         val bottomInsetPx = max(navbarBottomPx, imeBottomPx)
@@ -356,16 +343,12 @@ fun AssistantScreen(
 
         val cornerRadiusPx = with(density) { cornerRadius.toPx() }
 
-        // Approximate "ModeSwitcher (72dp) + search input (88dp) + 1 app row (~80dp) + small
-        // buffer" — the minimum visible content the keyboard mode needs above the IME.
         val keyboardMinVisibleContentPx = with(density) { 256.dp.toPx() }
 
-        // (A) Sheet target driven by navigation bar (or no inset): preserve base content area.
         val navbarTargetFraction = if (fullHeightPx > 0f) {
             minSheetFraction + navbarBottomPx / fullHeightPx
         } else minSheetFraction
 
-        // (B) Sheet target driven by IME: just enough for header + ~1 row above the keyboard.
         val imeTargetFraction = if (fullHeightPx > 0f && imeBottomPx > 0f) {
             (keyboardMinVisibleContentPx + imeBottomPx + cornerRadiusPx) / fullHeightPx
         } else 0f
@@ -375,9 +358,6 @@ fun AssistantScreen(
 
         val expansionRangePx = fullHeightPx * (maxSheetFraction - effectiveMinSheetFraction)
 
-        // Track the previous min so we can shrink back when the IME (or other inset) goes
-        // away — but only if the sheet was sitting at that previous min. If the user manually
-        // expanded above it, their expansion is preserved.
         val previousEffectiveMin = remember { mutableStateOf(effectiveMinSheetFraction) }
 
         LaunchedEffect(effectiveMinSheetFraction) {
@@ -387,15 +367,12 @@ fun AssistantScreen(
 
             when {
                 sheetFractionAnim.value < effectiveMinSheetFraction -> {
-                    // Bottom inset grew (e.g. keyboard opened): grow the sheet to the new min.
                     sheetFractionAnim.animateTo(
                         effectiveMinSheetFraction,
                         motionScheme.defaultSpatialSpec()
                     )
                 }
                 sheetWasAtPreviousMin && effectiveMinSheetFraction < sheetFractionAnim.value -> {
-                    // Bottom inset shrank (e.g. keyboard dismissed) and the sheet was at the
-                    // previous min: return to the new (lower) regular height.
                     sheetFractionAnim.animateTo(
                         effectiveMinSheetFraction,
                         motionScheme.defaultSpatialSpec()
@@ -404,9 +381,6 @@ fun AssistantScreen(
             }
         }
 
-        // When the user has turned off "load all apps on open", expanding the sheet beyond its
-        // resting height is treated as a request to reveal the full app list. The threshold sits
-        // above the resting min so that the sheet merely growing for the IME doesn't trigger it.
         val deferConfigured = remember { !preferencesRepository.isLoadAllAppsOnOpenEnabled() }
         if (deferConfigured) {
             LaunchedEffect(effectiveMinSheetFraction) {
@@ -416,8 +390,6 @@ fun AssistantScreen(
                     }
                 }
             }
-            // Once revealed (by scrolling up or tapping "Show all apps"), expand the sheet fully so
-            // the app list appearing and the sheet going full-screen happen in a single motion.
             LaunchedEffect(allAppsRevealed) {
                 if (allAppsRevealed && sheetFractionAnim.value < maxSheetFraction) {
                     sheetFractionAnim.animateTo(maxSheetFraction, motionScheme.defaultSpatialSpec())
@@ -425,21 +397,18 @@ fun AssistantScreen(
             }
         }
 
-        // Nested scroll with clear priorities
         val nestedScrollConnection = remember(expansionRangePx, effectiveMinSheetFraction) {
             object : NestedScrollConnection {
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                     if (source != NestedScrollSource.UserInput) return Offset.Zero
                     val dy = available.y
 
-                    // Priority 1: Cancel drag-down offset on upward scroll
                     if (dy < 0f && dragOffsetY.value > 0f) {
                         val consume = (-dy).coerceAtMost(dragOffsetY.value)
                         scope.launch { dragOffsetY.snapTo(dragOffsetY.value - consume) }
                         return Offset(0f, -consume)
                     }
 
-                    // Priority 2: Expand sheet on upward scroll (only if no active dismiss drag)
                     if (dy < 0f && dragOffsetY.value <= 0.01f && sheetFractionAnim.value < maxSheetFraction && expansionRangePx > 0f) {
                         val deltaFraction = (-dy) / expansionRangePx
                         val newFraction =
@@ -462,7 +431,6 @@ fun AssistantScreen(
                     if (source != NestedScrollSource.UserInput || available.y <= 0f) return Offset.Zero
                     val dy = available.y
 
-                    // Priority 1: Collapse sheet when pulling down
                     if (sheetFractionAnim.value > effectiveMinSheetFraction && expansionRangePx > 0f) {
                         val deltaFraction = dy / expansionRangePx
                         val newFraction =
@@ -475,7 +443,6 @@ fun AssistantScreen(
                         }
                     }
 
-                    // Priority 2: Drag-to-dismiss at base height
                     if (sheetFractionAnim.value <= effectiveMinSheetFraction) {
                         scope.launch { dragOffsetY.snapTo((dragOffsetY.value + dy).coerceAtLeast(0f)) }
                         return Offset(0f, dy)
@@ -484,7 +451,6 @@ fun AssistantScreen(
                 }
 
                 override suspend fun onPreFling(available: Velocity): Velocity {
-                    // Only expand on upward fling if there's no significant drag offset
                     if (available.y < 0f && dragOffsetY.value <= 0.01f && sheetFractionAnim.value < maxSheetFraction) {
                         sheetFractionAnim.animateTo(
                             maxSheetFraction,
@@ -492,7 +458,6 @@ fun AssistantScreen(
                         )
                         return available
                     }
-                    // Reset drag offset on upward fling if it's small
                     if (available.y < 0f && dragOffsetY.value > 0f) {
                         dragOffsetY.animateTo(0f, motionScheme.fastSpatialSpec())
                         return available
@@ -504,7 +469,6 @@ fun AssistantScreen(
                     consumed: Velocity,
                     available: Velocity
                 ): Velocity {
-                    // Snap to nearest state
                     if (sheetFractionAnim.value in (effectiveMinSheetFraction + 0.001f)..<maxSheetFraction) {
                         val target =
                             if (sheetFractionAnim.value >= (effectiveMinSheetFraction + maxSheetFraction) / 2f)
@@ -512,7 +476,6 @@ fun AssistantScreen(
                         sheetFractionAnim.animateTo(target, motionScheme.defaultSpatialSpec())
                     }
 
-                    // Handle dismiss gesture
                     if (sheetFractionAnim.value <= effectiveMinSheetFraction && dragOffsetY.value > 0f) {
                         if (dragOffsetY.value > dismissThresholdPx) handleDismiss(false)
                         else dragOffsetY.animateTo(0f, motionScheme.fastSpatialSpec())
@@ -523,7 +486,6 @@ fun AssistantScreen(
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
-            // Backdrop with opacity based on sheet expansion
             val backdropRange = (maxSheetFraction - effectiveMinSheetFraction).coerceAtLeast(0.0001f)
             val backdropOpacity =
                 ((sheetFractionAnim.value - effectiveMinSheetFraction) / backdropRange)
@@ -540,7 +502,6 @@ fun AssistantScreen(
                     )
             )
 
-            // Assistant UI with inverted corners and slide animation
             AnimatedVisibility(
                 visibleState = visibleState,
                 enter = slideInVertically(
@@ -562,7 +523,6 @@ fun AssistantScreen(
                         .offset { IntOffset(0, dragOffsetY.value.roundToInt()) }
                         .nestedScroll(nestedScrollConnection)
                         .pointerInput(sheetFractionAnim.value, effectiveMinSheetFraction) {
-                            // Fallback for non-scrollable areas
                             detectVerticalDragGestures(
                                 onDragEnd = {
                                     scope.launch {
@@ -608,8 +568,8 @@ fun AssistantScreen(
                         }
                 ) {
                     val backgroundColor = if (blurEnabled)
-                        Color(0xAA000000) // Semi-transparent for frosted glass effect
-                    else Color.Black // Opaque when blur is disabled
+                        Color(0xAA000000)
+                    else Color.Black
                     val noiseBrush = if (blurEnabled) rememberNoiseBrush() else null
 
                     InvertedCorners(
@@ -627,7 +587,7 @@ fun AssistantScreen(
                                     Modifier.drawBehind {
                                         drawRect(
                                             brush = noiseBrush,
-                                            alpha = 0.15f, // Thick/visible noise for frosted glass
+                                            alpha = 0.15f,
                                             blendMode = BlendMode.Screen
                                         )
                                     }
@@ -641,7 +601,7 @@ fun AssistantScreen(
 
                         val biometricPrompt = remember {
                             val executor = ContextCompat.getMainExecutor(activity)
-                            BiometricPrompt(
+                            androidx.biometric.BiometricPrompt(
                                 activity,
                                 executor,
                                 object : BiometricPrompt.AuthenticationCallback() {
@@ -667,16 +627,15 @@ fun AssistantScreen(
                             biometricPrompt.authenticate(promptInfo)
                         }
 
-                        // Mark the window secure while the unlocked hidden-apps grid is on
-                        // screen so it can't be captured in screenshots or the recents thumbnail.
                         DisposableEffect(showHiddenApps) {
+                            val window = activity.window
                             if (showHiddenApps) {
-                                activity.window.addFlags(
+                                window?.addFlags(
                                     android.view.WindowManager.LayoutParams.FLAG_SECURE
                                 )
                             }
                             onDispose {
-                                activity.window.clearFlags(
+                                window?.clearFlags(
                                     android.view.WindowManager.LayoutParams.FLAG_SECURE
                                 )
                             }
@@ -692,12 +651,8 @@ fun AssistantScreen(
                                 .fillMaxSize()
                                 .padding(bottom = bottomInsetDp)
                         ) {
-                            // Orientation-aware layout
                             if (isLandscape) {
-                                // Landscape: Horizontal layout with vertical mode switcher on left
                                 Row(modifier = Modifier.fillMaxSize()) {
-                                    // Left side: Vertical mode switcher with dynamic insets for camera notch
-                                    // Use status bar height (notch area in landscape) + 8dp for proper spacing
                                     val notchPadding = with(LocalDensity.current) {
                                         WindowInsets.statusBars.getTop(this).toDp() + 8.dp
                                     }
@@ -715,16 +670,12 @@ fun AssistantScreen(
                                             .padding(start = leftSystemInset + notchPadding, end = 12.dp)
                                     )
 
-                                    // Right side: Mode content with HorizontalPager
                                     HorizontalPager(
                                         state = pagerState,
                                         modifier = Modifier
                                             .fillMaxHeight()
                                             .weight(1f),
                                         beyondViewportPageCount = 0,
-                                        // When only one mode is enabled there are no other tabs
-                                        // to switch to, so free up horizontal swipe for the
-                                        // active screen (Index mode pages between letters).
                                         userScrollEnabled = modes.size > 1
                                     ) { page ->
                                         when (val mode = modes[page]) {
@@ -741,8 +692,6 @@ fun AssistantScreen(
                                                 onDismiss = { handleDismiss(true) },
                                                 launcherViewModel = launcherViewModel,
                                                 isBlurEnabled = blurEnabled,
-                                                // Only Index mode enabled -> let horizontal swipe
-                                                // move between adjacent letters.
                                                 letterSwipeEnabled = modes.size == 1,
                                                 onAddShortcut = { appId ->
                                                     shortcutAppId = appId
@@ -775,7 +724,6 @@ fun AssistantScreen(
                                     }
                                 }
                             } else {
-                                // Portrait: Vertical layout (unchanged from original)
                                 Column(modifier = Modifier.fillMaxSize()) {
 
                                     ModeSwitcher(
@@ -790,17 +738,12 @@ fun AssistantScreen(
                                             .padding(horizontal = 16.dp, vertical = 12.dp)
                                     )
 
-
-                                    // Mode-specific content with HorizontalPager
                                     HorizontalPager(
                                         state = pagerState,
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .weight(1f),
-                                        beyondViewportPageCount = 0, // Only compose visible page
-                                        // When only one mode is enabled there are no other tabs
-                                        // to switch to, so free up horizontal swipe for the
-                                        // active screen (Index mode pages between letters).
+                                        beyondViewportPageCount = 0,
                                         userScrollEnabled = modes.size > 1
                                     ) { page ->
                                         when (val mode = modes[page]) {
@@ -817,8 +760,6 @@ fun AssistantScreen(
                                                 onDismiss = { handleDismiss(true) },
                                                 launcherViewModel = launcherViewModel,
                                                 isBlurEnabled = blurEnabled,
-                                                // Only Index mode enabled -> let horizontal swipe
-                                                // move between adjacent letters.
                                                 letterSwipeEnabled = modes.size == 1,
                                                 onAddShortcut = { appId ->
                                                     shortcutAppId = appId
@@ -851,7 +792,6 @@ fun AssistantScreen(
                                     }
                                 }
 
-                                // Tooltip positioned below ModeSwitcher, aligned to the right (portrait only)
                                 androidx.compose.animation.AnimatedVisibility(
                                     visible = uiState.showHideAppTooltip,
                                     enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
@@ -862,7 +802,7 @@ fun AssistantScreen(
                                 ) {
                                     val numButtons = modes.size + 1
                                     val totalGapSize = 8.dp * modes.size
-                                    val horizontalPadding = 32.dp // 16.dp * 2
+                                    val horizontalPadding = 32.dp
                                     val availableWidth = screenWidth - horizontalPadding - totalGapSize
                                     val buttonWidth = availableWidth / numButtons
                                     val caretOffset = buttonWidth / 2
@@ -875,7 +815,6 @@ fun AssistantScreen(
                                 }
                             }
 
-                            // Hidden apps screen overlay
                             androidx.compose.animation.AnimatedVisibility(
                                 visible = showHiddenApps,
                                 enter = slideInVertically(tween(400, easing = EaseOut)) { it },
@@ -906,14 +845,15 @@ fun AssistantScreen(
             }
         }
 
-        // Shortcut editor overlay - full screen
         if (showShortcutEditor) {
             val shortcuts = preferencesRepository.getAppShortcuts()
             com.joyal.swyplauncher.ui.components.ShortcutEditorScreen(
                 initialShortcut = "",
                 initialSelectedApps = shortcutAppId?.let { setOf(it) } ?: emptySet(),
                 existingShortcutNames = shortcuts.keys,
+                preferencesRepository = preferencesRepository,
                 getInstalledAppsUseCase = getInstalledAppsUseCase,
+                shortcutSearchRepository = shortcutSearchRepository,
                 onSave = { name, apps ->
                     val newShortcuts = shortcuts + (name to apps)
                     preferencesRepository.setAppShortcuts(newShortcuts)

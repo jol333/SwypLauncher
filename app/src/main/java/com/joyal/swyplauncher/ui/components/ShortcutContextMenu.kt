@@ -1,6 +1,5 @@
 package com.joyal.swyplauncher.ui.components
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.net.Uri
@@ -14,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,6 +24,7 @@ import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
@@ -67,7 +68,9 @@ fun ShortcutContextMenu(
     shortcut: ShortcutSearchItem,
     onDismiss: () -> Unit,
     onHide: () -> Unit,
-    onSaveAlias: (String) -> Unit
+    onSaveAlias: (String) -> Unit,
+    onUnhide: () -> Unit = {},
+    showHideOption: Boolean = true
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -132,13 +135,20 @@ fun ShortcutContextMenu(
                 .padding(8.dp)
         ) {
             // Set a search shortcut (magic word) for this app shortcut
-            ShortcutMenuOption(Icons.AutoMirrored.Outlined.Label, stringResource(R.string.set_a_shortcut)) {
+            ShortcutMenuOption(
+                Icons.AutoMirrored.Outlined.Label,
+                stringResource(R.string.set_a_shortcut)
+            ) {
                 showAliasDialog = true
             }
 
-            // Hide this shortcut
-            ShortcutMenuOption(Icons.Outlined.VisibilityOff, stringResource(R.string.hide_shortcut)) {
-                onHide()
+            // Hide / un-hide this shortcut
+            ShortcutMenuOption(
+                if (showHideOption) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                if (showHideOption) stringResource(R.string.hide_shortcut)
+                else stringResource(R.string.unhide_shortcut)
+            ) {
+                if (showHideOption) onHide() else onUnhide()
                 dismissWithAnimation()
             }
 
@@ -159,7 +169,10 @@ fun ShortcutContextMenu(
             }
 
             // Parent app: view in Play Store
-            ShortcutMenuOption(Icons.Outlined.ShoppingCart, stringResource(R.string.view_in_app_store)) {
+            ShortcutMenuOption(
+                Icons.Outlined.ShoppingCart,
+                stringResource(R.string.view_in_app_store)
+            ) {
                 runCatching {
                     val intent = Intent(Intent.ACTION_VIEW).apply {
                         data = Uri.parse("market://details?id=${shortcut.packageName}")
@@ -207,7 +220,7 @@ fun ShortcutContextMenu(
                         text = stringResource(R.string.shortcut_alias_hint, shortcut.label),
                         style = MaterialTheme.typography.bodyMedium
                     )
-                    Spacer(Modifier.width(0.dp))
+                    Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
                         value = word,
                         onValueChange = { word = it },

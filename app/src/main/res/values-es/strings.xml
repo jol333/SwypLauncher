@@ -25,9 +25,9 @@
     <string name="long_press_drag_reorder">Mantén pulsado y arrastra para reordenar</string>
     
     <!-- Settings Screen - App Shortcuts -->
-    <string name="app_shortcuts">ACCESOS DIRECTOS</string>
-    <string name="active_shortcut">Acceso directo activo</string>
-    <string name="active_shortcuts">Accesos directos activos</string>
+    <string name="app_shortcuts">PALABRAS MÁGICAS</string>
+    <string name="active_shortcut">Palabra mágica activa</string>
+    <string name="active_shortcuts">Palabras mágicas activas</string>
     
     <!-- Settings Screen - Appearance -->
     <string name="appearance">APARIENCIA</string>
@@ -52,6 +52,13 @@
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">Auto-abrir app</string>
     <string name="auto_open_desc">Abrir app automáticamente si hay un solo resultado</string>
+
+    <!-- Settings Screen - App shortcut search -->
+    <string name="shortcut_search_title">Buscar atajos de apps</string>
+    <string name="shortcut_search_desc">Mostrar acciones de atajos de apps en los resultados de búsqueda</string>
+    <string name="shortcut_search_assistant_needed">Buscar atajos de apps requiere que Swyp Launcher sea tu asistente digital predeterminado</string>
+    <string name="hide_shortcut">Ocultar</string>
+    <string name="shortcut_alias_hint">Escribe una palabra mágica para encontrar \"%1$s\" en la búsqueda</string>
 
     <!-- Settings Screen - Load apps on open -->
     <string name="load_apps_on_open_label">AL ABRIR EL ASISTENTE</string>
@@ -82,7 +89,7 @@
     <string name="access_assistant">Puedes abrir Swyp Launcher de varias maneras</string>
     <string name="default_digital_assistant">Establecer asistente predeterminado</string>
     <string name="add_home_screen_widget">Añadir widget</string>
-    <string name="add_shortcut_home">Añadir acceso directo</string>
+    <string name="add_shortcut_home">Añadir palabra mágica</string>
     <string name="quick_settings_tile">Mosaico de ajustes rápidos</string>
     <string name="widget_description">Acceso rápido a Swyp Launcher</string>
     <string name="swyp_launcher_tile_label">Swyp Launcher</string>
@@ -94,18 +101,20 @@
     
     <!-- Hidden Apps Screen -->
     <string name="hidden_apps">Apps Ocultas</string>
+    <string name="hidden_shortcuts">Atajos ocultos</string>
     <string name="back">Atrás</string>
     <string name="no_hidden_apps">No hay apps ocultas</string>
+    <string name="unhide_shortcut">Mostrar</string>
     
     <!-- App Shortcuts Screen -->
-    <string name="new_shortcut">Nuevo acceso directo</string>
+    <string name="new_shortcut">Nueva palabra mágica</string>
     <string name="create">Crear</string>
-    <string name="no_shortcuts_yet">Sin accesos directos aún</string>
+    <string name="no_shortcuts_yet">Sin palabra mágicas aún</string>
     <string name="shortcuts_empty_desc">Crea comandos personalizados para mostrar apps específicas en los resultados</string>
     <string name="delete">Eliminar</string>
     
     <!-- Shortcut Editor Screen -->
-    <string name="edit_shortcut">Editar acceso directo</string>
+    <string name="edit_shortcut">Editar palabra mágica</string>
     <string name="close">Cerrar</string>
     <string name="magic_word">PALABRA MÁGICA</string>
     <string name="magic_word_placeholder">Escribe el atajo (mín. 2 caracteres)</string>
@@ -116,21 +125,21 @@
     <string name="search">Buscar</string>
     <string name="search_apps_placeholder">Buscar apps para añadir...</string>
     <string name="clear">Borrar</string>
-    <string name="save_shortcut">Guardar acceso directo</string>
+    <string name="save_shortcut">Guardar palabra mágica</string>
     <string name="remove">Quitar</string>
     <string name="selected">Seleccionado</string>
     <string name="please_type_magic_word">Por favor escribe una palabra mágica</string>
     <string name="shortcut_min_chars">El nombre del atajo debe tener al menos 2 caracteres</string>
     <string name="select_at_least_one_app">Por favor selecciona al menos una app</string>
-    <string name="shortcut_exists_title">El acceso directo ya existe</string>
-    <string name="shortcut_exists_message">Un acceso directo con el nombre \"%1$s\" ya existe. ¿Quieres reemplazarlo?</string>
+    <string name="shortcut_exists_title">Palabra mágica ya existe</string>
+    <string name="shortcut_exists_message">Una palabra mágica con el nombre \"%1$s\" ya existe. ¿Quieres reemplazarla?</string>
     
     <!-- Context Menu -->
     <string name="app_info">Info de la app</string>
     <string name="hide_app">Ocultar</string>
     <string name="unhide_app">Mostrar</string>
     <string name="uninstall">Desinstalar</string>
-    <string name="set_a_shortcut">Crear acceso directo</string>
+    <string name="set_a_shortcut">Establecer palabra mágica</string>
     <string name="view_in_app_store">Ver en tienda</string>
     <string name="cannot_uninstall">No se puede desinstalar</string>
     <string name="cannot_uninstall_message">Esta app no puede ser desinstalada. ¿Te gustaría ocultarla en su lugar?</string>
@@ -156,11 +165,12 @@
     <string name="support_development">Apoya el desarrollo</string>
     <string name="buy_me_coffee">Invítame a un café</string>
     <string name="donate_message">Si este app te ahorra tiempo, considera invitarme a un café. Tu apoyo ayuda a impulsar mis proyectos paralelos gratuitos.</string>
-    
+    <string name="no_browser_found">No se encontró navegador para abrir el enlace</string>
+
     <!-- Additional UI strings -->
     <string name="launch">Lanzar</string>
-    <string name="active_shortcut_singular">Acceso directo activo</string>
-    <string name="active_shortcuts_plural">Accesos directos activos</string>
+    <string name="active_shortcut_singular">Palabra mágica activa</string>
+    <string name="active_shortcuts_plural">Palabras mágicas activas</string>
     <string name="blur_background">Desenfocar fondo</string>
     <string name="blur_background_desc">Aspecto de vidrio esmerilado semitransparente</string>
     <string name="apps_per_row">Apps por fila</string>
@@ -312,5 +322,4 @@
     <string name="handwriting_model_error_download_generic">No se pudo descargar el modelo de reconocimiento de escritura. Inténtalo de nuevo.</string>
     <string name="handwriting_model_error_check_status">No se pudo comprobar el estado del modelo. Inténtalo de nuevo.</string>
     <string name="handwriting_model_error_init">No se pudo inicializar el reconocimiento de escritura. Inténtalo de nuevo.</string>
-    
 </resources>

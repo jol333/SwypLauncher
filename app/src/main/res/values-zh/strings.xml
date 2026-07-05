@@ -25,9 +25,9 @@
     <string name="long_press_drag_reorder">长按拖动排序</string>
     
     <!-- Settings Screen - App Shortcuts -->
-    <string name="app_shortcuts">应用快捷方式</string>
-    <string name="active_shortcut">启用快捷方式</string>
-    <string name="active_shortcuts">启用快捷方式</string>
+    <string name="app_shortcuts">快捷指令</string>
+    <string name="active_shortcut">启用的快捷指令</string>
+    <string name="active_shortcuts">启用的快捷指令</string>
     
     <!-- Settings Screen - Appearance -->
     <string name="appearance">外观</string>
@@ -52,6 +52,13 @@
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">自动打开应用</string>
     <string name="auto_open_desc">仅有一个搜索结果时自动打开</string>
+
+    <!-- Settings Screen - App shortcut search -->
+    <string name="shortcut_search_title">搜索应用快捷指令</string>
+    <string name="shortcut_search_desc">在搜索结果中显示应用快捷指令操作</string>
+    <string name="shortcut_search_assistant_needed">搜索应用快捷指令需要将 Swyp Launcher 设为默认数字助手</string>
+    <string name="hide_shortcut">隐藏</string>
+    <string name="shortcut_alias_hint">输入快捷指令以在搜索中找到 \"%1$s\"</string>
 
     <!-- Settings Screen - Load apps on open -->
     <string name="load_apps_on_open_label">助手打开时</string>
@@ -82,7 +89,7 @@
     <string name="access_assistant">可以通过多种方式打开 Swyp Launcher</string>
     <string name="default_digital_assistant">设为默认助手</string>
     <string name="add_home_screen_widget">添加主屏幕小部件</string>
-    <string name="add_shortcut_home">添加快捷方式</string>
+    <string name="add_shortcut_home">添加快捷指令</string>
     <string name="quick_settings_tile">快速设置磁贴</string>
     <string name="widget_description">快速访问 Swyp Launcher</string>
     <string name="swyp_launcher_tile_label">Swyp Launcher</string>
@@ -94,18 +101,20 @@
     
     <!-- Hidden Apps Screen -->
     <string name="hidden_apps">隐藏应用</string>
+    <string name="hidden_shortcuts">隐藏的快捷指令</string>
     <string name="back">返回</string>
     <string name="no_hidden_apps">无隐藏应用</string>
+    <string name="unhide_shortcut">取消隐藏</string>
     
     <!-- App Shortcuts Screen -->
-    <string name="new_shortcut">新建快捷方式</string>
+    <string name="new_shortcut">新建快捷指令</string>
     <string name="create">创建</string>
-    <string name="no_shortcuts_yet">暂无快捷方式</string>
-    <string name="shortcuts_empty_desc">创建自定义指令以在搜索结果中显示特定应用</string>
+    <string name="no_shortcuts_yet">暂无快捷指令</string>
+    <string name="shortcuts_empty_desc">创建自定义命令以在搜索结果中显示特定应用</string>
     <string name="delete">删除</string>
     
     <!-- Shortcut Editor Screen -->
-    <string name="edit_shortcut">编辑快捷方式</string>
+    <string name="edit_shortcut">编辑快捷指令</string>
     <string name="close">关闭</string>
     <string name="magic_word">快捷指令</string>
     <string name="magic_word_placeholder">输入指令 (至少 2 个字符)</string>
@@ -116,21 +125,21 @@
     <string name="search">搜索</string>
     <string name="search_apps_placeholder">搜索应用...</string>
     <string name="clear">清除</string>
-    <string name="save_shortcut">保存快捷方式</string>
+    <string name="save_shortcut">保存快捷指令</string>
     <string name="remove">移除</string>
     <string name="selected">已选</string>
     <string name="please_type_magic_word">请输入快捷指令</string>
     <string name="shortcut_min_chars">快捷指令至少需要 2 个字符</string>
     <string name="select_at_least_one_app">请至少选择一个应用</string>
-    <string name="shortcut_exists_title">快捷方式已存在</string>
-    <string name="shortcut_exists_message">名称为“%1$s”的快捷方式已存在。是否替换？</string>
+    <string name="shortcut_exists_title">快捷指令已存在</string>
+    <string name="shortcut_exists_message">名称为“%1$s”的快捷指令已存在。是否替换？</string>
     
     <!-- Context Menu -->
     <string name="app_info">应用信息</string>
     <string name="hide_app">隐藏</string>
     <string name="unhide_app">取消隐藏</string>
     <string name="uninstall">卸载</string>
-    <string name="set_a_shortcut">设置快捷方式</string>
+    <string name="set_a_shortcut">设置快捷指令</string>
     <string name="view_in_app_store">在应用商店查看</string>
     <string name="cannot_uninstall">无法卸载</string>
     <string name="cannot_uninstall_message">此应用无法卸载。是否隐藏？</string>
@@ -156,11 +165,12 @@
     <string name="support_development">支持开发</string>
     <string name="buy_me_coffee">请我喝杯咖啡</string>
     <string name="donate_message">如果这个应用节省了您的时间，考虑请我喝杯咖啡吧。您的支持将资助我的免费业余项目。</string>
-    
+    <string name="no_browser_found">未找到可打开链接的浏览器</string>
+
     <!-- Additional UI strings -->
     <string name="launch">启动</string>
-    <string name="active_shortcut_singular">个启用快捷方式</string>
-    <string name="active_shortcuts_plural">个启用快捷方式</string>
+    <string name="active_shortcut_singular">个启用的快捷指令</string>
+    <string name="active_shortcuts_plural">个启用的快捷指令</string>
     <string name="blur_background">背景模糊</string>
     <string name="blur_background_desc">半透明磨砂玻璃效果</string>
     <string name="apps_per_row">每行应用数</string>
@@ -312,5 +322,4 @@
     <string name="handwriting_model_error_download_generic">手写识别模型下载失败，请重试。</string>
     <string name="handwriting_model_error_check_status">检查模型状态失败，请重试。</string>
     <string name="handwriting_model_error_init">初始化手写识别失败，请重试。</string>
-    
 </resources>

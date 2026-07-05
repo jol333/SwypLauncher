@@ -1,8 +1,10 @@
 package com.joyal.swyplauncher.ui.settings
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
@@ -240,7 +242,16 @@ fun DonateSection(
             )
             .clickable {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://buymeacoffee.com/joyel"))
-                context.startActivity(intent)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                try {
+                    context.startActivity(intent)
+                } catch (e: ActivityNotFoundException) {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.no_browser_found),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
             .padding(24.dp),
         contentAlignment = Alignment.Center

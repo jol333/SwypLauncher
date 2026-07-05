@@ -83,6 +83,36 @@ class ShortcutSearchRepositoryImpl @Inject constructor(
             .toList()
     }
 
+    override suspend fun getAllShortcuts(): List<ShortcutSearchItem> {
+        if (!preferencesRepository.isShortcutSearchEnabled()) return emptyList()
+        val entries = ensureIndex(maxAgeMs = Long.MAX_VALUE) ?: return emptyList()
+        if (entries.isEmpty()) return emptyList()
+
+        val hiddenApps = preferencesRepository.getHiddenApps()
+        val hiddenShortcuts = preferencesRepository.getHiddenShortcuts()
+
+        return entries.asSequence()
+            .filter { entry -> entry.item.identifier() !in hiddenShortcuts }
+            .filter { entry -> !isPackageHidden(entry.item.packageName, hiddenApps) }
+            .map { it.item }
+            .sortedBy { it.label.lowercase() }
+            .toList()
+    }
+
+    override suspend fun getHiddenShortcuts(): List<ShortcutSearchItem> {
+        val hiddenShortcuts = preferencesRepository.getHiddenShortcuts()
+        if (hiddenShortcuts.isEmpty()) return emptyList()
+        // Deliberately ignores the feature toggle: a user who disabled shortcut search must
+        // still be able to un-hide entries they hid earlier. ensureIndex only needs the role.
+        val entries = ensureIndex(maxAgeMs = Long.MAX_VALUE) ?: return emptyList()
+
+        return entries.asSequence()
+            .map { it.item }
+            .filter { it.identifier() in hiddenShortcuts }
+            .sortedBy { it.label.lowercase() }
+            .toList()
+    }
+
     override suspend fun getIcon(item: ShortcutSearchItem): ShortcutIcon? {
         val cacheKey = "${item.packageName}/${item.id}"
         iconCache.get(cacheKey)?.let { return it }

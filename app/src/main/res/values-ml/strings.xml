@@ -25,9 +25,9 @@
     <string name="long_press_drag_reorder">ക്രമം മാറ്റാൻ ഹാൻഡിലിൽ അമർത്തിപ്പിടിച്ച് നീക്കുക</string>
     
     <!-- Settings Screen - App Shortcuts -->
-    <string name="app_shortcuts">ആപ്പ് ഷോർട്ട്‌കട്ടുകൾ</string>
-    <string name="active_shortcut">ഷോർട്ട്‌കട്ട് ഉണ്ട്</string>
-    <string name="active_shortcuts">ഷോർട്ട്‌കട്ടുകൾ ഉണ്ട്</string>
+    <string name="app_shortcuts">മാന്ത്രിക വാക്കുകൾ</string>
+    <string name="active_shortcut">സജീവ മാന്ത്രിക വാക്ക്</string>
+    <string name="active_shortcuts">സജീവ മാന്ത്രിക വാക്കുകൾ</string>
     
     <!-- Settings Screen - Appearance -->
     <string name="appearance">കാണേണ്ടത് എങ്ങനെ</string>
@@ -52,6 +52,13 @@
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">ആപ്പ് സ്വയം തുറക്കുക</string>
     <string name="auto_open_desc">ഒരു സെർച്ച് റിസൾട്ട് മാത്രമാണെങ്കിൽ ഉടൻ തുറക്കുക</string>
+
+    <!-- Settings Screen - App shortcut search -->
+    <string name="shortcut_search_title">ആപ്പ് ഷോർട്ട്കട്ടുകൾ തിരയുക</string>
+    <string name="shortcut_search_desc">സെർച്ച് റിസൾട്ടുകളിൽ ആപ്പ് ഷോർട്ട്കട്ടുകൾ കാണിക്കൂ</string>
+    <string name="shortcut_search_assistant_needed">ഷോർട്ട്കട്ടുകൾ തിരയാൻ സ്വൈപ് ലോഞ്ചർ നിങ്ങളുടെ ഡിഫോൾട്ട് അസിസ്റ്റന്റ് ആയിരിക്കണം</string>
+    <string name="hide_shortcut">ഒളിപ്പിക്കുക</string>
+    <string name="shortcut_alias_hint">സെർച്ചിൽ \"%1$s\" കണ്ടെത്താൻ ഒരു മാന്ത്രിക വാക്ക് ടൈപ്പ് ചെയ്യുക</string>
 
     <!-- Settings Screen - Load apps on open -->
     <string name="load_apps_on_open_label">അസിസ്റ്റന്റ് തുറക്കുമ്പോൾ</string>
@@ -82,7 +89,7 @@
     <string name="access_assistant">സ്വൈപ് ലോഞ്ചർ പല വഴികളിലൂടെ തുറക്കാം</string>
     <string name="default_digital_assistant">ഡിഫോൾട്ട് അസിസ്റ്റന്റായി സെറ്റ് ചെയ്യുക</string>
     <string name="add_home_screen_widget">ഹോം സ്ക്രീൻ വിഡ്ജെറ്റ് ചേർക്കുക</string>
-    <string name="add_shortcut_home">ഷോർട്ട് കട്ട് ചേർക്കുക</string>
+    <string name="add_shortcut_home">മാന്ത്രിക വാക്ക് ചേർക്കുക</string>
     <string name="quick_settings_tile">ക്വിക്ക് സെറ്റിംഗ്സ് ടൈൽ</string>
     <string name="widget_description">ഇത് വഴി എളുപ്പത്തിൽ Swyp Launcher തുറക്കാം</string>
     <string name="swyp_launcher_tile_label">സ്വൈപ് ലോഞ്ചർ</string>
@@ -94,18 +101,20 @@
     
     <!-- Hidden Apps Screen -->
     <string name="hidden_apps">ഒളിപ്പിച്ചു വെച്ച ആപ്പുകൾ</string>
+    <string name="hidden_shortcuts">ഒളിപ്പിച്ചു വെച്ച ഷോർട്ട്കട്ടുകൾ</string>
     <string name="back">പിന്നിലേക്ക്</string>
     <string name="no_hidden_apps">നിലവിൽ ഒന്നും ഒളിപ്പിച്ചു വെച്ചിട്ടില്ല</string>
+    <string name="unhide_shortcut">കാണിക്കുക</string>
     
     <!-- App Shortcuts Screen -->
-    <string name="new_shortcut">പുതിയ ഷോർട്ട്‌കട്ട്</string>
+    <string name="new_shortcut">പുതിയ മാന്ത്രിക വാക്ക്</string>
     <string name="create">സൃഷ്ടിക്കുക</string>
-    <string name="no_shortcuts_yet">ഷോർട്ട്‌കട്ടുകൾ ഇല്ല</string>
-    <string name="shortcuts_empty_desc">ഷോർട്ട്‌കട്ട് സെറ്റ് ചെയ്‌താൽ അത് അടിക്കുമ്പോൾ ആ ആപ്പുകൾ കാണിക്കും</string>
+    <string name="no_shortcuts_yet">ഇതുവരെ മാന്ത്രിക വാക്കുകൾ ഇല്ല</string>
+    <string name="shortcuts_empty_desc">തിരയൽ ഫലങ്ങളിൽ നിർദ്ദിഷ്ട അപ്ലിക്കേഷനുകൾ കാണിക്കാൻ ഇഷ്ടാനുസൃത കമാൻഡുകൾ സൃഷ്ടിക്കുക</string>
     <string name="delete">കളഞ്ഞേക്കൂ</string>
     
     <!-- Shortcut Editor Screen -->
-    <string name="edit_shortcut">ഷോർട്ട്‌കട്ടിൽ മാറ്റം വരുത്തുക</string>
+    <string name="edit_shortcut">മാന്ത്രിക വാക്ക് എഡിറ്റ് ചെയ്യുക</string>
     <string name="close">അടയ്ക്കുക</string>
     <string name="magic_word">ഷോർട്ട്‌കട്ട് വാക്ക്</string>
     <string name="magic_word_placeholder">ഷോർട്ട്‌കട്ട് ടൈപ്പ് ചെയ്യുക (കുറഞ്ഞത് 2 അക്ഷരം)</string>
@@ -116,21 +125,21 @@
     <string name="search">തിരയുക</string>
     <string name="search_apps_placeholder">ഇവിടെ സേർച്ച് ചെയ്യൂ...</string>
     <string name="clear">മായ്ക്കുക</string>
-    <string name="save_shortcut">ഷോർട്ട്‌കട്ട് സേവ് ചെയ്യുക</string>
+    <string name="save_shortcut">മാന്ത്രിക വാക്ക് സേവ് ചെയ്യുക</string>
     <string name="remove">നീക്കം ചെയ്യുക</string>
     <string name="selected">തിരഞ്ഞെടുത്തു</string>
     <string name="please_type_magic_word">ദയവായി ഇവിടെ എന്തെങ്കിലും ടൈപ്പ് ചെയ്യുക</string>
     <string name="shortcut_min_chars">ഷോർട്ട്‌കട്ടിന്‌ കുറഞ്ഞത് 2 അക്ഷരമെങ്കിലും വേണം</string>
     <string name="select_at_least_one_app">ദയവായി ഒരു ആപ്പെങ്കിലും തിരഞ്ഞെടുക്കുക</string>
-    <string name="shortcut_exists_title">ഇതേ പേരിൽ ഒരു ഷോർട്ട്‌കട്ട് നിലവിലുണ്ട്</string>
-    <string name="shortcut_exists_message">\"%1$s\" എന്ന പേരിൽ ഒരു ഷോർട്ട്‌കട്ട് നിലവിലുണ്ട്, പകരം ഇത് വെക്കണോ?</string>
+    <string name="shortcut_exists_title">മാന്ത്രിക വാക്ക് ഇതിനകം നിലവിലുണ്ട്</string>
+    <string name="shortcut_exists_message">\"%1$s\" എന്ന പേരിൽ ഒരു മാന്ത്രിക വാക്ക് ഇതിനകം നിലവിലുണ്ട്. പകരം വെക്കണോ?</string>
     
     <!-- Context Menu -->
     <string name="app_info">ആപ്പ് വിവരം</string>
     <string name="hide_app">ഒളിപ്പിക്കുക</string>
     <string name="unhide_app">കാണിക്കുക</string>
     <string name="uninstall">കളയുക</string>
-    <string name="set_a_shortcut">ഒരു ഷോർട്ട്‌കട്ട് സെറ്റ് ചെയ്യുക</string>
+    <string name="set_a_shortcut">ഒരു മാന്ത്രിക വാക്ക് സജ്ജമാക്കുക</string>
     <string name="view_in_app_store">ആപ്പ് സ്റ്റോറിൽ കാണുക</string>
     <string name="cannot_uninstall">കളയാൻ കഴിയില്ല</string>
     <string name="cannot_uninstall_message">ഈ ആപ്പ് കളയാൻ കഴിയില്ല, പകരം ഒളിപ്പിച്ചു വെക്കണോ?</string>
@@ -156,11 +165,12 @@
     <string name="support_development">വികസനത്തെ പിന്തുണയ്ക്കുക</string>
     <string name="buy_me_coffee">ഈ ആപ്പിനെ സഹായിക്കൂ</string>
     <string name="donate_message">ഈ ആപ്പ് നിങ്ങളുടെ സമയം ലാഭിക്കുന്നെങ്കിൽ, എനിക്ക് ഒരു കാപ്പി വാങ്ങിത്തരൂ. നിങ്ങളുടെ പിന്തുണ എന്റെ സൗജന്യ സൈഡ് പ്രോജക്ടുകൾക്ക് ഊർജ്ജം പകരുന്നു.</string>
-    
+    <string name="no_browser_found">ലിങ്ക് തുറക്കാൻ ബ്രൗസർ കണ്ടെത്താനായില്ല</string>
+
     <!-- Additional UI strings -->
     <string name="launch">ലോഞ്ച്</string>
-    <string name="active_shortcut_singular">ആക്ടീവ് ഷോർട്ട്‌കട്ട്</string>
-    <string name="active_shortcuts_plural">ആക്ടീവ് ഷോർട്ട്‌കട്ടുകൾ</string>
+    <string name="active_shortcut_singular">സജീവ മാന്ത്രിക വാക്ക്</string>
+    <string name="active_shortcuts_plural">സജീവ മാന്ത്രിക വാക്കുകൾ</string>
     <string name="blur_background">ബ്ലർ ബാക്ക്ഗ്രൗണ്ട്</string>
     <string name="blur_background_desc">അർദ്ധ സുതാര്യമായ ഫ്രോസ്റ്റഡ് ഗ്ലാസ് ലുക്ക്</string>
     <string name="apps_per_row">ഓരോ വരിയിലും എത്ര ആപ്പുകൾ</string>
@@ -269,6 +279,7 @@
     <string name="conversion_category_fuel">ഇന്ധന ഉപഭോഗം</string>
     <string name="conversion_category_numeral">സംഖ്യാ വ്യവസ്ഥ</string>
     <string name="conversion_category_data">ഡാറ്റ</string>
+    <!-- Approximate human-readable subtext, e.g. "~9.46 trillion" (%1$s = number, %2$s = scale word) -->
     <string name="unit_approx_value">~%1$s %2$s</string>
     <string name="unit_scale_thousand">ആയിരം</string>
     <string name="unit_scale_million">മില്യൺ</string>

@@ -25,9 +25,9 @@
     <string name="long_press_drag_reorder">Gedrückt halten &amp; ziehen zum Sortieren</string>
     
     <!-- Settings Screen - App Shortcuts -->
-    <string name="app_shortcuts">APP-SHORTCUTS</string>
-    <string name="active_shortcut">Vorhandener Shortcut</string>
-    <string name="active_shortcuts">Aktive Shortcuts</string>
+    <string name="app_shortcuts">ZAUBERWORTE</string>
+    <string name="active_shortcut">Aktives Zauberwort</string>
+    <string name="active_shortcuts">Aktive Zauberworte</string>
     
     <!-- Settings Screen - Appearance -->
     <string name="appearance">AUSSEHEN</string>
@@ -52,6 +52,13 @@
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">App automatisch öffnen</string>
     <string name="auto_open_desc">App sofort öffnen, wenn nur ein Treffer</string>
+
+    <!-- Settings Screen - App shortcut search -->
+    <string name="shortcut_search_title">App-Shortcuts suchen</string>
+    <string name="shortcut_search_desc">App-Shortcut-Aktionen in den Suchergebnissen anzeigen</string>
+    <string name="shortcut_search_assistant_needed">Die Suche nach App-Shortcuts erfordert, dass Swyp Launcher dein Standard-Assistent ist</string>
+    <string name="hide_shortcut">Verbergen</string>
+    <string name="shortcut_alias_hint">Tippe ein Zauberwort, um \"%1$s\" in der Suche zu finden</string>
 
     <!-- Settings Screen - Load apps on open -->
     <string name="load_apps_on_open_label">BEIM ÖFFNEN DES ASSISTENTEN</string>
@@ -82,7 +89,7 @@
     <string name="access_assistant">Du kannst Swyp Launcher auf verschiedene Weisen öffnen</string>
     <string name="default_digital_assistant">Als Standard-Assistent festlegen</string>
     <string name="add_home_screen_widget">Widget hinzufügen</string>
-    <string name="add_shortcut_home">Verknüpfung hinzufügen</string>
+    <string name="add_shortcut_home">Zauberwort hinzufügen</string>
     <string name="quick_settings_tile">Kachel für Schnelleinstellungen</string>
     <string name="widget_description">Schnappzugriff auf Swyp Launcher</string>
     <string name="swyp_launcher_tile_label">Swyp Launcher</string>
@@ -94,18 +101,20 @@
     
     <!-- Hidden Apps Screen -->
     <string name="hidden_apps">Versteckte Apps</string>
+    <string name="hidden_shortcuts">Versteckte Shortcuts</string>
     <string name="back">Zurück</string>
     <string name="no_hidden_apps">Keine versteckten Apps</string>
+    <string name="unhide_shortcut">Einblenden</string>
     
     <!-- App Shortcuts Screen -->
-    <string name="new_shortcut">Neuer Shortcut</string>
+    <string name="new_shortcut">Neues Zauberwort</string>
     <string name="create">Erstellen</string>
-    <string name="no_shortcuts_yet">Noch keine Shortcuts</string>
-    <string name="shortcuts_empty_desc">Erstelle eigene Befehle, um bestimmte Apps in der Suche anzuzeigen</string>
+    <string name="no_shortcuts_yet">Noch keine Zauberworte</string>
+    <string name="shortcuts_empty_desc">Erstellen Sie benutzerdefinierte Befehle, um bestimmte Apps in den Suchergebnissen anzuzeigen</string>
     <string name="delete">Löschen</string>
     
     <!-- Shortcut Editor Screen -->
-    <string name="edit_shortcut">Shortcut bearbeiten</string>
+    <string name="edit_shortcut">Zauberwort bearbeiten</string>
     <string name="close">Schließen</string>
     <string name="magic_word">ZAUBERWORT</string>
     <string name="magic_word_placeholder">Shortcut eingeben (mind. 2 Zeichen)</string>
@@ -116,21 +125,21 @@
     <string name="search">Suchen</string>
     <string name="search_apps_placeholder">Apps suchen...</string>
     <string name="clear">Leeren</string>
-    <string name="save_shortcut">Shortcut speichern</string>
+    <string name="save_shortcut">Zauberwort speichern</string>
     <string name="remove">Entfernen</string>
     <string name="selected">Ausgewählt</string>
     <string name="please_type_magic_word">Bitte gib ein Zauberwort ein</string>
     <string name="shortcut_min_chars">Shortcut muss mindestens 2 Zeichen haben</string>
     <string name="select_at_least_one_app">Bitte wähle mindestens eine App</string>
-    <string name="shortcut_exists_title">Shortcut existiert bereits</string>
-    <string name="shortcut_exists_message">Ein Shortcut mit dem Namen \"%1$s\" existiert bereits. Überschreiben?</string>
+    <string name="shortcut_exists_title">Zauberwort existiert bereits</string>
+    <string name="shortcut_exists_message">Ein Zauberwort mit dem Namen \"%1$s\" existiert bereits. Möchten Sie es ersetzen?</string>
     
     <!-- Context Menu -->
     <string name="app_info">App-Info</string>
     <string name="hide_app">Verstecken</string>
     <string name="unhide_app">Einblenden</string>
     <string name="uninstall">Deinstallieren</string>
-    <string name="set_a_shortcut">Shortcut setzen</string>
+    <string name="set_a_shortcut">Zauberwort festlegen</string>
     <string name="view_in_app_store">Im App Store ansehen</string>
     <string name="cannot_uninstall">Kann nicht deinstalliert werden</string>
     <string name="cannot_uninstall_message">Diese App kann nicht deinstalliert werden. Stattdessen verstecken?</string>
@@ -156,11 +165,12 @@
     <string name="support_development">Entwicklung unterstützen</string>
     <string name="buy_me_coffee">Spendier mir einen Kaffee</string>
     <string name="donate_message">Wenn diese App dir Zeit spart, überlege mir einen Kaffee zu spendieren. Deine Unterstützung hilft bei meinen kostenlosen Hobby-Projekten.</string>
-    
+    <string name="no_browser_found">Kein Browser gefunden, um den Link zu öffnen</string>
+
     <!-- Additional UI strings -->
     <string name="launch">Starten</string>
-    <string name="active_shortcut_singular">Aktiver Shortcut</string>
-    <string name="active_shortcuts_plural">Aktive Shortcuts</string>
+    <string name="active_shortcut_singular">Aktives Zauberwort</string>
+    <string name="active_shortcuts_plural">Aktive Zauberworte</string>
     <string name="blur_background">Hintergrund weichzeichnen</string>
     <string name="blur_background_desc">Halbtransparenter Milchglas-Look</string>
     <string name="apps_per_row">Apps pro Zeile</string>
@@ -312,5 +322,4 @@
     <string name="handwriting_model_error_download_generic">Handschrifterkennungsmodell konnte nicht heruntergeladen werden. Bitte versuche es erneut.</string>
     <string name="handwriting_model_error_check_status">Modellstatus konnte nicht geprüft werden. Bitte versuche es erneut.</string>
     <string name="handwriting_model_error_init">Handschrifterkennung konnte nicht initialisiert werden. Bitte versuche es erneut.</string>
-    
 </resources>

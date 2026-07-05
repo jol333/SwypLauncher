@@ -114,8 +114,9 @@ import com.joyal.swyplauncher.domain.model.InkPoint
 import com.joyal.swyplauncher.domain.model.InkStroke
 import com.joyal.swyplauncher.domain.model.NormalizedPoint
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
+import com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository
 import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
-import com.joyal.swyplauncher.ui.components.AppSelectionItem
+import com.joyal.swyplauncher.ui.components.SelectableItem
 import com.joyal.swyplauncher.ui.theme.SwypLauncherTheme
 import com.joyal.swyplauncher.util.GestureRecognizer
 import dagger.hilt.android.AndroidEntryPoint
@@ -126,8 +127,14 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class CustomGesturesActivity : AppCompatActivity() {
-    @Inject lateinit var preferencesRepository: PreferencesRepository
-    @Inject lateinit var getInstalledAppsUseCase: GetInstalledAppsUseCase
+    @Inject
+    lateinit var preferencesRepository: PreferencesRepository
+
+    @Inject
+    lateinit var getInstalledAppsUseCase: GetInstalledAppsUseCase
+
+    @Inject
+    lateinit var shortcutSearchRepository: ShortcutSearchRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,7 +144,8 @@ class CustomGesturesActivity : AppCompatActivity() {
                     CustomGesturesOrchestrator(
                         onBack = { finish() },
                         preferencesRepository = preferencesRepository,
-                        getInstalledAppsUseCase = getInstalledAppsUseCase
+                        getInstalledAppsUseCase = getInstalledAppsUseCase,
+                        shortcutSearchRepository = shortcutSearchRepository
                     )
                 }
             }
@@ -149,7 +157,8 @@ class CustomGesturesActivity : AppCompatActivity() {
 private fun CustomGesturesOrchestrator(
     onBack: () -> Unit,
     preferencesRepository: PreferencesRepository,
-    getInstalledAppsUseCase: GetInstalledAppsUseCase
+    getInstalledAppsUseCase: GetInstalledAppsUseCase,
+    shortcutSearchRepository: ShortcutSearchRepository
 ) {
     var gestures by remember { mutableStateOf(preferencesRepository.getCustomGestures()) }
     var isEditing by remember { mutableStateOf(false) }
@@ -183,14 +192,21 @@ private fun CustomGesturesOrchestrator(
             CustomGesturesListScreen(
                 gestures = gestures,
                 onBack = { isFinishing = true },
-                onAddClick = { editingGesture = null; isEditing = true },
-                onEditClick = { editingGesture = it; isEditing = true },
-                onDeleteClick = { id ->
-                    val updated = gestures.filterNot { it.id == id }
-                    gestures = updated
-                    preferencesRepository.setCustomGestures(updated)
+                onAddClick = {
+                    editingGesture = null
+                    isEditing = true
                 },
-                getInstalledAppsUseCase = getInstalledAppsUseCase
+                onEditClick = { gesture ->
+                    editingGesture = gesture
+                    isEditing = true
+                },
+                onDeleteClick = { gesture ->
+                    val newGestures = gestures - gesture
+                    gestures = newGestures
+                    preferencesRepository.setCustomGestures(newGestures)
+                },
+                getInstalledAppsUseCase = getInstalledAppsUseCase,
+                shortcutSearchRepository = shortcutSearchRepository
             )
         }
 
@@ -205,15 +221,11 @@ private fun CustomGesturesOrchestrator(
                 CustomGestureEditorScreen(
                     initial = editingGesture,
                     getInstalledAppsUseCase = getInstalledAppsUseCase,
-                    onSave = { gesture ->
-                        val idx = gestures.indexOfFirst { it.id == gesture.id }
-                        val updated = if (idx >= 0) {
-                            gestures.toMutableList().also { it[idx] = gesture }
-                        } else {
-                            gestures + gesture
-                        }
-                        gestures = updated
-                        preferencesRepository.setCustomGestures(updated)
+                    shortcutSearchRepository = shortcutSearchRepository,
+                    onSave = { updatedGesture ->
+                        val newGestures = gestures.filter { it.id != updatedGesture.id } + updatedGesture
+                        gestures = newGestures
+                        preferencesRepository.setCustomGestures(newGestures)
                         isEditing = false
                         editingGesture = null
                     },
@@ -232,8 +244,9 @@ private fun CustomGesturesListScreen(
     onBack: () -> Unit,
     onAddClick: () -> Unit,
     onEditClick: (CustomGesture) -> Unit,
-    onDeleteClick: (String) -> Unit,
-    getInstalledAppsUseCase: GetInstalledAppsUseCase
+    onDeleteClick: (CustomGesture) -> Unit,
+    getInstalledAppsUseCase: GetInstalledAppsUseCase,
+    shortcutSearchRepository: ShortcutSearchRepository
 ) {
     Scaffold(
         topBar = {
@@ -279,8 +292,9 @@ private fun CustomGesturesListScreen(
                     GestureCard(
                         gesture = gesture,
                         onClick = { onEditClick(gesture) },
-                        onDelete = { onDeleteClick(gesture.id) },
-                        getInstalledAppsUseCase = getInstalledAppsUseCase
+                        onDelete = { onDeleteClick(gesture) },
+                        getInstalledAppsUseCase = getInstalledAppsUseCase,
+                        shortcutSearchRepository = shortcutSearchRepository
                     )
                 }
             }
@@ -321,7 +335,8 @@ private fun GestureCard(
     gesture: CustomGesture,
     onClick: () -> Unit,
     onDelete: () -> Unit,
-    getInstalledAppsUseCase: GetInstalledAppsUseCase
+    getInstalledAppsUseCase: GetInstalledAppsUseCase,
+    shortcutSearchRepository: ShortcutSearchRepository
 ) {
     var allApps by remember { mutableStateOf(listOf<AppInfo>()) }
     LaunchedEffect(Unit) {
@@ -347,7 +362,10 @@ private fun GestureCard(
                     visible = selectedApps.isNotEmpty(),
                     enter = fadeIn() + expandVertically()
                 ) {
-                    OverlappingAppIcons(apps = selectedApps)
+                    OverlappingAppIcons(
+                        items = selectedApps.map { SelectableItem.App(it) },
+                        shortcutSearchRepository = shortcutSearchRepository
+                    )
                 }
             }
             IconButton(onClick = onDelete) {
@@ -391,6 +409,7 @@ private fun GesturePreview(
 private fun CustomGestureEditorScreen(
     initial: CustomGesture?,
     getInstalledAppsUseCase: GetInstalledAppsUseCase,
+    shortcutSearchRepository: ShortcutSearchRepository,
     onSave: (CustomGesture) -> Unit,
     onCancel: () -> Unit,
     scrollState: LazyListState
@@ -678,9 +697,10 @@ private fun CustomGestureEditorScreen(
                             ) {
                                 items(filteredApps, key = { it.getIdentifier() }) { app ->
                                     val isSelected = app.getIdentifier() in selectedApps
-                                    AppSelectionItem(
-                                        app = app,
+                                    com.joyal.swyplauncher.ui.components.AppSelectionItem(
+                                        item = SelectableItem.App(app),
                                         isSelected = isSelected,
+                                        loadIcon = { null },
                                         onClick = {
                                             selectedApps = if (isSelected)
                                                 selectedApps - app.getIdentifier()

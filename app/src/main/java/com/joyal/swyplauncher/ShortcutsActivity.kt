@@ -10,6 +10,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.Orientation
@@ -54,6 +55,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -62,6 +64,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -81,8 +84,11 @@ import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.domain.model.ShortcutIcon
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
+import com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository
 import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
+import com.joyal.swyplauncher.ui.components.SelectableItem
 import com.joyal.swyplauncher.ui.components.ShortcutEditorScreen
 import com.joyal.swyplauncher.ui.theme.SwypLauncherTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -102,6 +108,9 @@ class ShortcutsActivity : AppCompatActivity() {
     @Inject
     lateinit var getInstalledAppsUseCase: GetInstalledAppsUseCase
 
+    @Inject
+    lateinit var shortcutSearchRepository: ShortcutSearchRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -113,7 +122,8 @@ class ShortcutsActivity : AppCompatActivity() {
                     ShortcutsOrchestrator(
                         onBack = { finish() },
                         preferencesRepository = preferencesRepository,
-                        getInstalledAppsUseCase = getInstalledAppsUseCase
+                        getInstalledAppsUseCase = getInstalledAppsUseCase,
+                        shortcutSearchRepository = shortcutSearchRepository
                     )
                 }
             }
@@ -125,11 +135,21 @@ class ShortcutsActivity : AppCompatActivity() {
 fun ShortcutsOrchestrator(
     onBack: () -> Unit,
     preferencesRepository: PreferencesRepository,
-    getInstalledAppsUseCase: GetInstalledAppsUseCase
+    getInstalledAppsUseCase: GetInstalledAppsUseCase,
+    shortcutSearchRepository: ShortcutSearchRepository
 ) {
     var shortcuts by remember { mutableStateOf(preferencesRepository.getAppShortcuts()) }
+    var searchAliases by remember { mutableStateOf(preferencesRepository.getShortcutSearchAliases()) }
     var isEditing by remember { mutableStateOf(false) }
     var editingShortcutData by remember { mutableStateOf<Pair<String, Set<String>>?>(null) }
+    var allAppIds by remember { mutableStateOf(emptySet<String>()) }
+
+    val unifiedShortcuts = remember(shortcuts, searchAliases) {
+        val merged = mutableMapOf<String, MutableSet<String>>()
+        shortcuts.forEach { (name, ids) -> merged.getOrPut(name) { mutableSetOf() }.addAll(ids) }
+        searchAliases.forEach { (name, ids) -> merged.getOrPut(name) { mutableSetOf() }.addAll(ids) }
+        merged.mapValues { it.value.toSet() }
+    }
 
     // Activity Exit Animation State
     var isFinishing by remember { mutableStateOf(false) }
@@ -149,6 +169,8 @@ fun ShortcutsOrchestrator(
         val installedAppIds = withContext(Dispatchers.IO) {
             getInstalledAppsUseCase().map { it.getIdentifier() }.toSet()
         }
+        allAppIds = installedAppIds
+        
         val cleanShortcuts = shortcuts.mapValues { (_, appIds) ->
             appIds.filter { it in installedAppIds }.toSet()
         }.filterValues { it.isNotEmpty() }
@@ -173,21 +195,26 @@ fun ShortcutsOrchestrator(
             manualDismissTrigger = isFinishing
         ) {
             ShortcutsListScreen(
-                shortcuts = shortcuts,
+                unifiedShortcuts = unifiedShortcuts,
                 onBack = { isFinishing = true },
                 onAddClick = {
                     editingShortcutData = null
                     isEditing = true
                 },
-                onEditClick = { name, apps ->
-                    editingShortcutData = name to apps
+                onEditClick = { name, ids ->
+                    editingShortcutData = name to ids
                     isEditing = true
                 },
                 onDeleteClick = { name ->
-                    shortcuts =
-                        (shortcuts - name).also { preferencesRepository.setAppShortcuts(it) }
+                    val newShortcuts = shortcuts - name
+                    val newAliases = searchAliases - name
+                    shortcuts = newShortcuts
+                    searchAliases = newAliases
+                    preferencesRepository.setAppShortcuts(newShortcuts)
+                    preferencesRepository.setShortcutSearchAliases(newAliases)
                 },
-                getInstalledAppsUseCase = getInstalledAppsUseCase
+                getInstalledAppsUseCase = getInstalledAppsUseCase,
+                shortcutSearchRepository = shortcutSearchRepository
             )
         }
 
@@ -205,13 +232,25 @@ fun ShortcutsOrchestrator(
                 ShortcutEditorScreen(
                     initialShortcut = editingShortcutData?.first ?: "",
                     initialSelectedApps = editingShortcutData?.second ?: emptySet(),
-                    existingShortcutNames = shortcuts.keys,
+                    existingShortcutNames = unifiedShortcuts.keys,
                     getInstalledAppsUseCase = getInstalledAppsUseCase,
-                    onSave = { name, apps ->
-                        val newShortcuts = (editingShortcutData?.first?.let { shortcuts - it }
-                            ?: shortcuts) + (name to apps)
+                    shortcutSearchRepository = shortcutSearchRepository,
+                    preferencesRepository = preferencesRepository,
+                    onSave = { name, ids ->
+                        val oldName = editingShortcutData?.first
+                        val newShortcuts = (oldName?.let { shortcuts - it } ?: shortcuts).toMutableMap()
+                        val newAliases = (oldName?.let { searchAliases - it } ?: searchAliases).toMutableMap()
+                        
+                        val appIds = ids.filter { it in allAppIds }.toSet()
+                        val shortcutIds = ids - appIds
+                        
+                        if (appIds.isNotEmpty()) newShortcuts[name] = appIds else newShortcuts.remove(name)
+                        if (shortcutIds.isNotEmpty()) newAliases[name] = shortcutIds else newAliases.remove(name)
+                        
                         shortcuts = newShortcuts
+                        searchAliases = newAliases
                         preferencesRepository.setAppShortcuts(newShortcuts)
+                        preferencesRepository.setShortcutSearchAliases(newAliases)
                         isEditing = false
                         editingShortcutData = null
                     },
@@ -229,12 +268,13 @@ fun ShortcutsOrchestrator(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShortcutsListScreen(
-    shortcuts: Map<String, Set<String>>,
+    unifiedShortcuts: Map<String, Set<String>>,
     onBack: () -> Unit,
     onAddClick: () -> Unit,
     onEditClick: (String, Set<String>) -> Unit,
     onDeleteClick: (String) -> Unit,
-    getInstalledAppsUseCase: GetInstalledAppsUseCase
+    getInstalledAppsUseCase: GetInstalledAppsUseCase,
+    shortcutSearchRepository: ShortcutSearchRepository
 ) {
     Scaffold(
         topBar = {
@@ -260,7 +300,7 @@ fun ShortcutsListScreen(
             )
         }
     ) { padding ->
-        if (shortcuts.isEmpty()) {
+        if (unifiedShortcuts.isEmpty()) {
             EmptyState(padding)
         } else {
             LazyColumn(
@@ -270,13 +310,14 @@ fun ShortcutsListScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(shortcuts.entries.toList()) { (name, appIds) ->
+                items(unifiedShortcuts.entries.toList()) { (name, itemIds) ->
                     ShortcutCard(
                         name = name,
-                        appIds = appIds,
-                        onClick = { onEditClick(name, appIds) },
+                        itemIds = itemIds,
+                        onClick = { onEditClick(name, itemIds) },
                         onDelete = { onDeleteClick(name) },
-                        getInstalledAppsUseCase = getInstalledAppsUseCase
+                        getInstalledAppsUseCase = getInstalledAppsUseCase,
+                        shortcutSearchRepository = shortcutSearchRepository
                     )
                 }
             }
@@ -320,19 +361,22 @@ fun EmptyState(padding: PaddingValues) {
 @Composable
 fun ShortcutCard(
     name: String,
-    appIds: Set<String>,
+    itemIds: Set<String>,
     onClick: () -> Unit,
     onDelete: () -> Unit,
-    getInstalledAppsUseCase: GetInstalledAppsUseCase
+    getInstalledAppsUseCase: GetInstalledAppsUseCase,
+    shortcutSearchRepository: ShortcutSearchRepository
 ) {
-    var allApps by remember { mutableStateOf(listOf<AppInfo>()) }
+    var allItems by remember { mutableStateOf(listOf<SelectableItem>()) }
 
     LaunchedEffect(Unit) {
-        allApps = withContext(Dispatchers.IO) { getInstalledAppsUseCase() }
+        val apps = withContext(Dispatchers.IO) { getInstalledAppsUseCase() }
+        val shortcuts = withContext(Dispatchers.IO) { shortcutSearchRepository.getAllShortcuts() }
+        allItems = apps.map { SelectableItem.App(it) } + shortcuts.map { SelectableItem.Shortcut(it) }
     }
 
-    val selectedApps = remember(allApps, appIds) {
-        allApps.filter { it.getIdentifier() in appIds }
+    val selectedItems = remember(allItems, itemIds) {
+        allItems.filter { it.id in itemIds }
     }
 
     Card(
@@ -357,12 +401,15 @@ fun ShortcutCard(
                 )
 
                 AnimatedVisibility(
-                    visible = selectedApps.isNotEmpty(),
+                    visible = selectedItems.isNotEmpty(),
                     enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandVertically()
                 ) {
                     Column {
                         Spacer(modifier = Modifier.height(8.dp))
-                        OverlappingAppIcons(apps = selectedApps)
+                        OverlappingAppIcons(
+                            items = selectedItems,
+                            shortcutSearchRepository = shortcutSearchRepository
+                        )
                     }
                 }
             }
@@ -378,19 +425,22 @@ fun ShortcutCard(
 }
 
 @Composable
-fun OverlappingAppIcons(apps: List<AppInfo>) {
+fun OverlappingAppIcons(
+    items: List<SelectableItem>,
+    shortcutSearchRepository: ShortcutSearchRepository
+) {
     val context = LocalContext.current
     val iconSize = 32.dp
     val overlap = 12.dp
     val maxIcons = 4
 
     // Show first 3 icons + counter, or all if <= 4
-    val displayApps = apps.take(if (apps.size > maxIcons) maxIcons - 1 else maxIcons)
-    val remainingCount = (apps.size - displayApps.size).takeIf { it > 0 } ?: 0
+    val displayItems = items.take(if (items.size > maxIcons) maxIcons - 1 else maxIcons)
+    val remainingCount = (items.size - displayItems.size).takeIf { it > 0 } ?: 0
 
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box {
-            displayApps.forEachIndexed { index, app ->
+            displayItems.forEachIndexed { index, item ->
                 Box(
                     modifier = Modifier
                         .padding(start = (iconSize - overlap) * index)
@@ -400,17 +450,52 @@ fun OverlappingAppIcons(apps: List<AppInfo>) {
                         .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                         .zIndex(index.toFloat())
                 ) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(context)
-                            .data(app)
-                            .size(96)
-                            .memoryCacheKey("app_icon_${app.getIdentifier()}")
-                            .diskCacheKey("app_icon_${app.getIdentifier()}")
-                            .build(),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
+                    if (item is SelectableItem.App) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(item.appInfo)
+                                .size(96)
+                                .memoryCacheKey("app_icon_${item.id}")
+                                .diskCacheKey("app_icon_${item.id}")
+                                .build(),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        val icon by produceState<ShortcutIcon?>(initialValue = null, key1 = item) {
+                            value = shortcutSearchRepository.getIcon((item as SelectableItem.Shortcut).searchItem)
+                        }
+                        if (icon != null) {
+                            if (icon!!.isDark) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.White),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        bitmap = icon!!.bitmap.asImageBitmap(),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            } else {
+                                Image(
+                                    bitmap = icon!!.bitmap.asImageBitmap(),
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.White.copy(alpha = 0.06f))
+                            )
+                        }
+                    }
                 }
             }
 

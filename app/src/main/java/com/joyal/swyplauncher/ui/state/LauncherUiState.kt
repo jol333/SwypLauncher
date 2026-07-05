@@ -16,6 +16,7 @@ data class LauncherUiState(
     val voiceFilteredApps: List<AppInfo> = emptyList(),
     val voiceSmartApps: List<AppInfo> = emptyList(),
     val hiddenApps: List<AppInfo> = emptyList(),
+    val hiddenShortcuts: List<ShortcutSearchItem> = emptyList(),
     val newlyInstalledAppPackage: String? = null, // Package name of app that should show badge
     val isLoading: Boolean = false,
     val error: String? = null,

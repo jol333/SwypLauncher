@@ -41,6 +41,7 @@ interface PreferencesRepository {
     // Individually hidden app-shortcut search results, keyed by "packageName/shortcutId".
     fun getHiddenShortcuts(): Set<String>
     fun addHiddenShortcut(identifier: String)
+    fun removeHiddenShortcut(identifier: String)
 
     // Search aliases (magic word -> set of "packageName/shortcutId") for app shortcuts,
     // set only from the assistant long-press menu.

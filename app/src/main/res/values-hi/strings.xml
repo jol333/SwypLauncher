@@ -25,9 +25,9 @@
     <string name="long_press_drag_reorder">ऑर्डर बदलने के लिए दबाकर ड्रैग करें</string>
     
     <!-- Settings Screen - App Shortcuts -->
-    <string name="app_shortcuts">App शॉर्टकट्स</string>
-    <string name="active_shortcut">एक्टिव शॉर्टकट</string>
-    <string name="active_shortcuts">एक्टिव शॉर्टकट्स</string>
+    <string name="app_shortcuts">मैजिक वर्ड</string>
+    <string name="active_shortcut">सक्रिय मैजिक वर्ड</string>
+    <string name="active_shortcuts">सक्रिय मैजिक वर्ड</string>
     
     <!-- Settings Screen - Appearance -->
     <string name="appearance">दिखावट</string>
@@ -52,6 +52,13 @@
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">App अपने आप खोलें</string>
     <string name="auto_open_desc">अगर एक ही रिजल्ट हो तो अपने आप खोलें</string>
+
+    <!-- Settings Screen - App shortcut search -->
+    <string name="shortcut_search_title">App शॉर्टकट खोजें</string>
+    <string name="shortcut_search_desc">खोज परिणामों में app शॉर्टकट क्रियाएं दिखाएं</string>
+    <string name="shortcut_search_assistant_needed">App शॉर्टकट खोजने के लिए Swyp Launcher को आपका डिफ़ॉल्ट डिजिटल असिस्टेंट होना चाहिए</string>
+    <string name="hide_shortcut">छिपाएं</string>
+    <string name="shortcut_alias_hint">सर्च में \"%1$s\" खोजने के लिए एक मैजिक वर्ड टाइप करें</string>
 
     <!-- Settings Screen - Load apps on open -->
     <string name="load_apps_on_open_label">असिस्टेंट खुलने पर</string>
@@ -82,7 +89,7 @@
     <string name="access_assistant">Swyp Launcher को कई तरीकों से खोला जा सकता है</string>
     <string name="default_digital_assistant">डिफ़ॉल्ट असिस्टेंट सेट करें</string>
     <string name="add_home_screen_widget">होम स्क्रीन विजेट जोड़ें</string>
-    <string name="add_shortcut_home">शॉर्टकट जोड़ें</string>
+    <string name="add_shortcut_home">मैजिक वर्ड जोड़ें</string>
     <string name="quick_settings_tile">क्विक सेटिंग्स टाइल</string>
     <string name="widget_description">Swyp Launcher मोड्स तक तुरंत पहुँचें</string>
     <string name="swyp_launcher_tile_label">Swyp Launcher</string>
@@ -94,18 +101,20 @@
     
     <!-- Hidden Apps Screen -->
     <string name="hidden_apps">छिपे हुए Apps</string>
+    <string name="hidden_shortcuts">छिपे हुए शॉर्टकट</string>
     <string name="back">वापस</string>
     <string name="no_hidden_apps">कोई छिपा हुआ App नहीं है</string>
+    <string name="unhide_shortcut">दिखाएं</string>
     
     <!-- App Shortcuts Screen -->
-    <string name="new_shortcut">नया शॉर्टकट</string>
+    <string name="new_shortcut">नया मैजिक वर्ड</string>
     <string name="create">बनाएं</string>
-    <string name="no_shortcuts_yet">अभी कोई शॉर्टकट नहीं है</string>
-    <string name="shortcuts_empty_desc">सर्च में कुछ खास Apps दिखाने के लिए अपने कमांड्स बनाएं</string>
+    <string name="no_shortcuts_yet">अभी तक कोई मैजिक वर्ड नहीं</string>
+    <string name="shortcuts_empty_desc">विशिष्ट ऐप्स को खोज परिणामों में दिखाने के लिए कस्टम कमांड बनाएं</string>
     <string name="delete">डिलीटे</string>
     
     <!-- Shortcut Editor Screen -->
-    <string name="edit_shortcut">शॉर्टकट एडिट करें</string>
+    <string name="edit_shortcut">मैजिक वर्ड संपादित करें</string>
     <string name="close">बंद करें</string>
     <string name="magic_word">मैजिक वर्ड (शॉर्टकट)</string>
     <string name="magic_word_placeholder">शॉर्टकट टाइप करें (कम से कम 2 अक्षर)</string>
@@ -116,21 +125,21 @@
     <string name="search">सर्च</string>
     <string name="search_apps_placeholder">Apps सर्च करें...</string>
     <string name="clear">साफ़ करें</string>
-    <string name="save_shortcut">शॉर्टकट सेव करें</string>
+    <string name="save_shortcut">मैजिक वर्ड सहेजें</string>
     <string name="remove">हटाएं</string>
     <string name="selected">सिलेक्टेड</string>
     <string name="please_type_magic_word">कृपया कोई मैजिक वर्ड टाइप करें</string>
     <string name="shortcut_min_chars">शॉर्टकट नाम कम से कम 2 अक्षरों का होना चाहिए</string>
     <string name="select_at_least_one_app">कृपया कम से कम एक App चुनें</string>
-    <string name="shortcut_exists_title">शॉर्टकट पहले से मौजूद है</string>
-    <string name="shortcut_exists_message">"%1$s" नाम का शॉर्टकट पहले से है। क्या आप इसे बदलना चाहते हैं?</string>
+    <string name="shortcut_exists_title">मैजिक वर्ड पहले से मौजूद है</string>
+    <string name="shortcut_exists_message">\"%1$s\" नाम का एक मैजिक वर्ड पहले से मौजूद है। क्या आप इसे बदलना चाहते हैं?</string>
     
     <!-- Context Menu -->
     <string name="app_info">App की जानकारी</string>
     <string name="hide_app">छिपाएं (Hide)</string>
     <string name="unhide_app">दिखाएं (Unhide)</string>
     <string name="uninstall">अनइंस्टॉल</string>
-    <string name="set_a_shortcut">शॉर्टकट सेट करें</string>
+    <string name="set_a_shortcut">मैजिक वर्ड सेट करें</string>
     <string name="view_in_app_store">App Store में देखें</string>
     <string name="cannot_uninstall">अनइंस्टॉल नहीं कर सकते</string>
     <string name="cannot_uninstall_message">यह App अनइंस्टॉल नहीं किया जा सकता। क्या आप इसे छिपाना (Hide) चाहेंगे?</string>
@@ -156,11 +165,12 @@
     <string name="support_development">डेवलपमेंट को सपोर्ट करें</string>
     <string name="buy_me_coffee">कॉफ़ी पिलाएं (Buy me a coffee)</string>
     <string name="donate_message">अगर यह App आपका समय बचाता है, तो मुझे एक कॉफ़ी पिलाने पर विचार करें। आपका सपोर्ट मेरे फ्री प्रोजेक्ट्स को जारी रखने में मदद करता है।</string>
-    
+    <string name="no_browser_found">लिंक खोलने के लिए कोई ब्राउज़र नहीं मिला</string>
+
     <!-- Additional UI strings -->
     <string name="launch">लॉन्च</string>
-    <string name="active_shortcut_singular">एक्टिव शॉर्टकट</string>
-    <string name="active_shortcuts_plural">एक्टिव शॉर्टकट्स</string>
+    <string name="active_shortcut_singular">सक्रिय मैजिक वर्ड</string>
+    <string name="active_shortcuts_plural">सक्रिय मैजिक वर्ड</string>
     <string name="blur_background">बैकग्राउंड ब्लर करें</string>
     <string name="blur_background_desc">अर्ध-पारदर्शी फ्रॉस्टेड ग्लास लुक</string>
     <string name="apps_per_row">Apps प्रति लाइन</string>
@@ -312,5 +322,4 @@
     <string name="handwriting_model_error_download_generic">हस्तलेखन पहचान मॉडल डाउनलोड करने में विफल। कृपया फिर से प्रयास करें।</string>
     <string name="handwriting_model_error_check_status">मॉडल की स्थिति जांचने में विफल। कृपया फिर से प्रयास करें।</string>
     <string name="handwriting_model_error_init">हस्तलेखन पहचान शुरू करने में विफल। कृपया फिर से प्रयास करें।</string>
-    
 </resources>

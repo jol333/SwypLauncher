@@ -1,5 +1,6 @@
 package com.joyal.swyplauncher.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -51,6 +52,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -61,15 +63,21 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.domain.model.ShortcutIcon
+import com.joyal.swyplauncher.domain.repository.PreferencesRepository
+import com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository
 import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
 import com.joyal.swyplauncher.R
 import kotlinx.coroutines.Dispatchers
@@ -84,13 +92,15 @@ fun ShortcutEditorScreen(
     initialSelectedApps: Set<String>,
     existingShortcutNames: Set<String>,
     getInstalledAppsUseCase: GetInstalledAppsUseCase,
+    shortcutSearchRepository: ShortcutSearchRepository,
+    preferencesRepository: PreferencesRepository,
     onSave: (String, Set<String>) -> Unit,
     onCancel: () -> Unit,
     scrollState: LazyListState = rememberLazyListState()
 ) {
     var shortcutName by remember { mutableStateOf(initialShortcut) }
     var selectedApps by remember { mutableStateOf(initialSelectedApps) }
-    var allApps by remember { mutableStateOf(listOf<AppInfo>()) }
+    var allItems by remember { mutableStateOf(listOf<SelectableItem>()) }
     var isLoading by remember { mutableStateOf(true) }
     var searchQuery by remember { mutableStateOf("") }
     var isSearchVisible by remember { mutableStateOf(false) }
@@ -109,8 +119,14 @@ fun ShortcutEditorScreen(
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(500)
         val apps = withContext(Dispatchers.IO) { getInstalledAppsUseCase() }
-        allApps = apps
-        selectedApps = selectedApps.filter { it in apps.map { app -> app.getIdentifier() } }.toSet()
+        val shortcuts = if (preferencesRepository.isShortcutSearchEnabled()) {
+            withContext(Dispatchers.IO) { shortcutSearchRepository.getAllShortcuts() }
+        } else emptyList()
+        
+        val items = apps.map { SelectableItem.App(it) } + shortcuts.map { SelectableItem.Shortcut(it) }
+        allItems = items
+        
+        selectedApps = selectedApps.filter { id -> items.any { it.id == id } }.toSet()
         isLoading = false
     }
 
@@ -128,9 +144,12 @@ fun ShortcutEditorScreen(
         }
     }
 
-    val filteredApps = remember(allApps, searchQuery) {
-        if (searchQuery.isBlank()) allApps
-        else allApps.filter { it.label.contains(searchQuery, ignoreCase = true) }
+    val filteredItems = remember(allItems, searchQuery) {
+        if (searchQuery.isBlank()) allItems
+        else allItems.filter { item ->
+            item.label.contains(searchQuery, ignoreCase = true) ||
+                (item is SelectableItem.Shortcut && item.searchItem.appLabel.contains(searchQuery, ignoreCase = true))
+        }
     }
 
     Scaffold(
@@ -236,11 +255,13 @@ fun ShortcutEditorScreen(
                                 contentPadding = PaddingValues(horizontal = 16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                items(selectedApps.toList()) { appId ->
-                                    allApps.find { it.getIdentifier() == appId }?.let { app ->
-                                        SelectedAppChip(app = app) {
-                                            selectedApps = selectedApps - appId
-                                        }
+                                items(selectedApps.toList()) { itemId ->
+                                    allItems.find { it.id == itemId }?.let { item ->
+                                        SelectedAppChip(
+                                            item = item,
+                                            loadIcon = { if (it is SelectableItem.Shortcut) shortcutSearchRepository.getIcon(it.searchItem) else null },
+                                            onRemove = { selectedApps = selectedApps - itemId }
+                                        )
                                     }
                                 }
                             }
@@ -361,16 +382,17 @@ fun ShortcutEditorScreen(
                                 state = listState,
                                 contentPadding = PaddingValues(bottom = 16.dp)
                             ) {
-                                items(filteredApps, key = { it.getIdentifier() }) { app ->
-                                    val isSelected = app.getIdentifier() in selectedApps
+                                items(filteredItems, key = { it.id }) { item ->
+                                    val isSelected = item.id in selectedApps
                                     AppSelectionItem(
-                                        app = app,
+                                        item = item,
                                         isSelected = isSelected,
+                                        loadIcon = { if (item is SelectableItem.Shortcut) shortcutSearchRepository.getIcon(item.searchItem) else null },
                                         onClick = {
                                             selectedApps = if (isSelected) {
-                                                selectedApps - app.getIdentifier()
+                                                selectedApps - item.id
                                             } else {
-                                                selectedApps + app.getIdentifier()
+                                                selectedApps + item.id
                                             }
                                         }
                                     )
@@ -506,7 +528,11 @@ fun SaveButton(onClick: () -> Unit) {
 }
 
 @Composable
-fun SelectedAppChip(app: AppInfo, onRemove: () -> Unit) {
+fun SelectedAppChip(
+    item: SelectableItem,
+    loadIcon: suspend (SelectableItem) -> ShortcutIcon?,
+    onRemove: () -> Unit
+) {
     val context = LocalContext.current
 
     Column(
@@ -514,19 +540,59 @@ fun SelectedAppChip(app: AppInfo, onRemove: () -> Unit) {
         modifier = Modifier.width(64.dp)
     ) {
         Box {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(app)
-                    .size(144)
-                    .memoryCacheKey("app_icon_${app.getIdentifier()}")
-                    .diskCacheKey("app_icon_${app.getIdentifier()}")
-                    .build(),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
-            )
+            if (item is SelectableItem.App) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(item.appInfo)
+                        .size(144)
+                        .memoryCacheKey("app_icon_${item.id}")
+                        .diskCacheKey("app_icon_${item.id}")
+                        .build(),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                val icon by produceState<ShortcutIcon?>(initialValue = null, key1 = item) {
+                    value = loadIcon(item)
+                }
+                
+                if (icon != null) {
+                    if (icon!!.isDark) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                bitmap = icon!!.bitmap.asImageBitmap(),
+                                contentDescription = null,
+                                modifier = Modifier.size(36.dp)
+                            )
+                        }
+                    } else {
+                        Image(
+                            bitmap = icon!!.bitmap.asImageBitmap(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White.copy(alpha = 0.06f))
+                    )
+                }
+            }
 
             Box(
                 modifier = Modifier
@@ -548,19 +614,32 @@ fun SelectedAppChip(app: AppInfo, onRemove: () -> Unit) {
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            app.label,
+            item.label,
             style = MaterialTheme.typography.labelSmall,
             maxLines = 1,
-            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-            color = MaterialTheme.colorScheme.onSurface
+            overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
+        if (item is SelectableItem.Shortcut) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                item.searchItem.appLabel,
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, lineHeight = 11.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
     }
 }
 
 @Composable
 fun AppSelectionItem(
-    app: AppInfo,
+    item: SelectableItem,
     isSelected: Boolean,
+    loadIcon: suspend (SelectableItem) -> ShortcutIcon?,
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -576,28 +655,78 @@ fun AppSelectionItem(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(app)
-                .size(120)
-                .memoryCacheKey("app_icon_${app.getIdentifier()}")
-                .diskCacheKey("app_icon_${app.getIdentifier()}")
-                .build(),
-            contentDescription = null,
-            modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(8.dp)),
-            contentScale = ContentScale.Crop
-        )
+        if (item is SelectableItem.App) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(item.appInfo)
+                    .size(120)
+                    .memoryCacheKey("app_icon_${item.id}")
+                    .diskCacheKey("app_icon_${item.id}")
+                    .build(),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            val icon by produceState<ShortcutIcon?>(initialValue = null, key1 = item) {
+                value = loadIcon(item)
+            }
+            if (icon != null) {
+                if (icon!!.isDark) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color.White),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            bitmap = icon!!.bitmap.asImageBitmap(),
+                            contentDescription = null,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+                } else {
+                    Image(
+                        bitmap = icon!!.bitmap.asImageBitmap(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.White.copy(alpha = 0.06f))
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.width(16.dp))
-
-        Text(
-            text = app.label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
+        
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = item.label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            if (item is SelectableItem.Shortcut) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = item.searchItem.appLabel,
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, lineHeight = 11.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
 
         if (isSelected) {
             Icon(

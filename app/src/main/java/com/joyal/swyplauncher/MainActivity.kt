@@ -136,7 +136,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         checkAssistantStatus()
         // Refresh shortcuts count when returning from ShortcutsActivity
-        shortcutsCount.value = preferencesRepository.getAppShortcuts().size
+        shortcutsCount.value = (preferencesRepository.getAppShortcuts().keys + preferencesRepository.getShortcutSearchAliases().keys).size
         gesturesCount.value = preferencesRepository.getCustomGestures().size
     }
 

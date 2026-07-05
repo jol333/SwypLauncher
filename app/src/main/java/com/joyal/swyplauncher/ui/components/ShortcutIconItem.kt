@@ -46,7 +46,9 @@ fun ShortcutIconItem(
     showContextMenu: Boolean = false,
     onDismissMenu: () -> Unit = {},
     onHide: () -> Unit = {},
-    onSaveAlias: (String) -> Unit = {}
+    onSaveAlias: (String) -> Unit = {},
+    onUnhide: () -> Unit = {},
+    showHideOption: Boolean = true
 ) {
     // Same radius math as AppIconItem: 0% = square, 100% = circle for a 56dp icon
     val cornerRadius = 28.dp * cornerRadiusPercent
@@ -127,7 +129,9 @@ fun ShortcutIconItem(
                 shortcut = shortcut,
                 onDismiss = onDismissMenu,
                 onHide = onHide,
-                onSaveAlias = onSaveAlias
+                onSaveAlias = onSaveAlias,
+                onUnhide = onUnhide,
+                showHideOption = showHideOption
             )
         }
     }
