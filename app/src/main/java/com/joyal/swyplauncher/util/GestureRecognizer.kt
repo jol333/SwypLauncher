@@ -171,6 +171,9 @@ object GestureRecognizer {
             val ids = JSONArray()
             g.appIds.forEach { ids.put(it) }
             obj.put("apps", ids)
+            val shortcutIds = JSONArray()
+            g.shortcutIds.forEach { shortcutIds.put(it) }
+            obj.put("shortcuts", shortcutIds)
             arr.put(obj)
         }
         return arr.toString()
@@ -187,11 +190,16 @@ object GestureRecognizer {
                         (0 until p.length()).map { jsonToPoints(p.getJSONArray(it)) }
                     } ?: emptyList()
                     val appsArr = obj.getJSONArray("apps")
+                    // Older gestures (pre app-shortcut support) have no "shortcuts" key.
+                    val shortcutsArr = obj.optJSONArray("shortcuts")
                     CustomGesture(
                         id = obj.getString("id"),
                         template = jsonToPoints(obj.getJSONArray("template")),
                         previewStrokes = preview,
-                        appIds = (0 until appsArr.length()).map { appsArr.getString(it) }.toSet()
+                        appIds = (0 until appsArr.length()).map { appsArr.getString(it) }.toSet(),
+                        shortcutIds = shortcutsArr?.let { s ->
+                            (0 until s.length()).map { s.getString(it) }.toSet()
+                        } ?: emptySet()
                     )
                 } catch (e: Exception) { null }
             }

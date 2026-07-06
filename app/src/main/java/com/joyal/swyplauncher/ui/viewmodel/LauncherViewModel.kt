@@ -106,6 +106,7 @@ class LauncherViewModel @Inject constructor(
     private var activeVoiceQuery: String = ""
     private var activeHandwritingPrefix: String = ""
     private var activeHandwritingGestureAppIds: Set<String>? = null
+    private var activeHandwritingGestureShortcutIds: Set<String>? = null
     private var activeIndexLetter: Char? = null
 
     private data class AppLoadResult(
@@ -206,6 +207,7 @@ class LauncherViewModel @Inject constructor(
         val voiceQuery = activeVoiceQuery
         val handwritingPrefix = activeHandwritingPrefix
         val handwritingGestureIds = activeHandwritingGestureAppIds
+        val handwritingGestureShortcutIds = activeHandwritingGestureShortcutIds
         val indexLetter = activeIndexLetter
 
         val (keyboard, voice, handwriting, index) = withContext(Dispatchers.Default) {
@@ -251,7 +253,7 @@ class LauncherViewModel @Inject constructor(
                 Triple(
                     shortcutsFor(keyboardQuery, prefixMatch = false),
                     shortcutsFor(voiceQuery, prefixMatch = false),
-                    if (handwritingGestureIds != null) emptyList()
+                    if (handwritingGestureIds != null) resolveGestureShortcuts(handwritingGestureShortcutIds)
                     else shortcutsFor(handwritingPrefix, prefixMatch = true)
                 )
             }
@@ -322,6 +324,7 @@ class LauncherViewModel @Inject constructor(
     fun filterAppsByPrefixHandwriting(prefix: String) {
         activeHandwritingPrefix = prefix
         activeHandwritingGestureAppIds = null
+        activeHandwritingGestureShortcutIds = null
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
         handwritingFilterJob = launchModeFilter(prefix, CurrencyMode.HANDWRITING, prefixMatch = true)
@@ -759,21 +762,23 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
-    // Handwriting mode filter by matched custom gesture's assigned apps
-    fun filterAppsByCustomGestureHandwriting(appIds: Set<String>) {
+    // Handwriting mode filter by matched custom gesture's assigned apps and app shortcuts
+    fun filterAppsByCustomGestureHandwriting(appIds: Set<String>, shortcutIds: Set<String>) {
         activeHandwritingGestureAppIds = appIds
+        activeHandwritingGestureShortcutIds = shortcutIds
         activeHandwritingPrefix = ""
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
         handwritingFilterJob = viewModelScope.launch(Dispatchers.Default) {
             val currentApps = _uiState.value.apps
             val filtered = currentApps.filter { it.getIdentifier() in appIds }
+            val shortcuts = resolveGestureShortcuts(shortcutIds)
             val (smart, newlyInstalled) = computeSmartApps(filtered)
             _uiState.update {
                 it.copy(
                     handwritingFilteredApps = filtered,
                     handwritingSmartApps = smart,
-                    handwritingShortcutResults = emptyList(),
+                    handwritingShortcutResults = shortcuts,
                     newlyInstalledAppPackage = newlyInstalled,
                     handwritingCalculatorResult = null,
                     handwritingCurrencyResult = null,
@@ -782,6 +787,18 @@ class LauncherViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    /**
+     * Resolves a gesture's assigned app-shortcut identifiers to live [ShortcutSearchItem]s.
+     * Returns empty when the feature is disabled or the assistant role is missing (so a gesture
+     * created while shortcuts were enabled degrades gracefully to just its apps).
+     */
+    private suspend fun resolveGestureShortcuts(shortcutIds: Set<String>?): List<ShortcutSearchItem> {
+        if (shortcutIds.isNullOrEmpty()) return emptyList()
+        return runCatching { shortcutSearchRepository.getAllShortcuts() }
+            .getOrDefault(emptyList())
+            .filter { it.identifier() in shortcutIds }
     }
 
     private fun matchesQueryOrShortcut(
@@ -828,6 +845,7 @@ class LauncherViewModel @Inject constructor(
     fun resetFilterHandwriting() {
         activeHandwritingPrefix = ""
         activeHandwritingGestureAppIds = null
+        activeHandwritingGestureShortcutIds = null
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
         resetFilter { copy(handwritingFilteredApps = apps, handwritingSmartApps = it.first, handwritingShortcutResults = emptyList(), newlyInstalledAppPackage = it.second, handwritingCalculatorResult = null, handwritingCurrencyResult = null, handwritingUnitResult = null, handwritingTimeZoneResult = null) }

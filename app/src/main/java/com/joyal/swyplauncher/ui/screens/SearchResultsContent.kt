@@ -517,6 +517,9 @@ fun SearchModeResults(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     shortcutResults: List<ShortcutSearchItem> = emptyList(),
+    // Shortcut results are normally hidden when there's no text query (the plain full-app view).
+    // A matched gesture has no query yet still carries assigned shortcuts, so it opts in here.
+    forceShowShortcuts: Boolean = false,
     loadAllAppsOnOpen: Boolean = true,
     allAppsRevealed: Boolean = true,
     onRevealAllApps: () -> Unit = {},
@@ -550,7 +553,7 @@ fun SearchModeResults(
 
         smartApps.isNotEmpty() || appsToShow.isNotEmpty() || shortcutResults.isNotEmpty() -> {
             val combinedAppList = remember(
-                smartApps, appsToShow, shortcutResults, sortOrder, query, gridSize
+                smartApps, appsToShow, shortcutResults, sortOrder, query, gridSize, forceShowShortcuts
             ) {
                 val apps = combineAppListsWithHeaders(
                     smartApps,
@@ -559,9 +562,10 @@ fun SearchModeResults(
                     isSearching = query.isNotEmpty(),
                     gridSize = gridSize
                 )
-                // Shortcut matches follow the app matches, visually separated when both exist
+                // Shortcut matches follow the app matches, visually separated when both exist.
+                // A gesture match (forceShowShortcuts) surfaces them even with no text query.
                 when {
-                    shortcutResults.isEmpty() || query.isEmpty() -> apps
+                    shortcutResults.isEmpty() || (query.isEmpty() && !forceShowShortcuts) -> apps
                     apps.isEmpty() -> shortcutResults.map { AppListItem.Shortcut(it) }
                     else -> apps + AppListItem.Divider +
                         shortcutResults.map { AppListItem.Shortcut(it) }

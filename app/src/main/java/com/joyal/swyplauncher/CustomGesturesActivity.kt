@@ -108,7 +108,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.model.CustomGesture
 import com.joyal.swyplauncher.domain.model.InkPoint
 import com.joyal.swyplauncher.domain.model.InkStroke
@@ -174,7 +173,10 @@ private fun CustomGesturesOrchestrator(
         }
         val cleaned = gestures.mapNotNull { g ->
             val keep = g.appIds.filter { it in installedIds }.toSet()
-            if (keep.isEmpty()) null else g.copy(appIds = keep)
+            // Shortcut assignments are left untouched (mirrors magic-word cleanup, which never
+            // prunes shortcut aliases): they can't be validated while the feature/role is off,
+            // and a gesture survives as long as it still has at least one app or shortcut.
+            if (keep.isEmpty() && g.shortcutIds.isEmpty()) null else g.copy(appIds = keep)
         }
         if (cleaned != gestures) {
             gestures = cleaned
@@ -222,6 +224,7 @@ private fun CustomGesturesOrchestrator(
                     initial = editingGesture,
                     getInstalledAppsUseCase = getInstalledAppsUseCase,
                     shortcutSearchRepository = shortcutSearchRepository,
+                    preferencesRepository = preferencesRepository,
                     onSave = { updatedGesture ->
                         val newGestures = gestures.filter { it.id != updatedGesture.id } + updatedGesture
                         gestures = newGestures
@@ -338,12 +341,16 @@ private fun GestureCard(
     getInstalledAppsUseCase: GetInstalledAppsUseCase,
     shortcutSearchRepository: ShortcutSearchRepository
 ) {
-    var allApps by remember { mutableStateOf(listOf<AppInfo>()) }
+    var allItems by remember { mutableStateOf(listOf<SelectableItem>()) }
     LaunchedEffect(Unit) {
-        allApps = withContext(Dispatchers.IO) { getInstalledAppsUseCase() }
+        val apps = withContext(Dispatchers.IO) { getInstalledAppsUseCase() }
+        // Returns empty when app-shortcut search is off, so cards stay app-only in that case.
+        val shortcuts = withContext(Dispatchers.IO) { shortcutSearchRepository.getAllShortcuts() }
+        allItems = apps.map { SelectableItem.App(it) } + shortcuts.map { SelectableItem.Shortcut(it) }
     }
-    val selectedApps = remember(allApps, gesture.appIds) {
-        allApps.filter { it.getIdentifier() in gesture.appIds }
+    val selectedItems = remember(allItems, gesture.appIds, gesture.shortcutIds) {
+        val ids = gesture.appIds + gesture.shortcutIds
+        allItems.filter { it.id in ids }
     }
 
     Card(
@@ -359,11 +366,11 @@ private fun GestureCard(
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f).animateContentSize()) {
                 AnimatedVisibility(
-                    visible = selectedApps.isNotEmpty(),
+                    visible = selectedItems.isNotEmpty(),
                     enter = fadeIn() + expandVertically()
                 ) {
                     OverlappingAppIcons(
-                        items = selectedApps.map { SelectableItem.App(it) },
+                        items = selectedItems,
                         shortcutSearchRepository = shortcutSearchRepository
                     )
                 }
@@ -410,15 +417,18 @@ private fun CustomGestureEditorScreen(
     initial: CustomGesture?,
     getInstalledAppsUseCase: GetInstalledAppsUseCase,
     shortcutSearchRepository: ShortcutSearchRepository,
+    preferencesRepository: PreferencesRepository,
     onSave: (CustomGesture) -> Unit,
     onCancel: () -> Unit,
     scrollState: LazyListState
 ) {
-    var selectedApps by remember { mutableStateOf(initial?.appIds ?: emptySet()) }
+    // A gesture stores apps and shortcuts separately; the editor works with one combined
+    // selection set (of SelectableItem ids), splitting it back apart on save.
+    var selectedApps by remember { mutableStateOf(initial?.let { it.appIds + it.shortcutIds } ?: emptySet()) }
     val newStrokes = remember { mutableStateListOf<InkStroke>() }
     var useExistingTemplate by remember { mutableStateOf(initial != null) }
 
-    var allApps by remember { mutableStateOf(listOf<AppInfo>()) }
+    var allItems by remember { mutableStateOf(listOf<SelectableItem>()) }
     var isLoading by remember { mutableStateOf(true) }
     var searchQuery by remember { mutableStateOf("") }
     var isSearchVisible by remember { mutableStateOf(false) }
@@ -441,11 +451,17 @@ private fun CustomGestureEditorScreen(
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(500)
         val apps = withContext(Dispatchers.IO) { getInstalledAppsUseCase() }
-        allApps = apps
-        selectedApps = selectedApps.filter { it in apps.map { a -> a.getIdentifier() } }.toSet()
+        val shortcuts = if (preferencesRepository.isShortcutSearchEnabled()) {
+            withContext(Dispatchers.IO) { shortcutSearchRepository.getAllShortcuts() }
+        } else emptyList()
+        val items = apps.map { SelectableItem.App(it) } + shortcuts.map { SelectableItem.Shortcut(it) }
+        allItems = items
+        // Drop any previously-selected id that no longer resolves (uninstalled app, or a
+        // shortcut that vanished / the feature being turned off).
+        selectedApps = selectedApps.filter { id -> items.any { it.id == id } }.toSet()
         isLoading = false
         if (initial != null && selectedApps.isNotEmpty()) {
-            val firstSelectedIndex = apps.indexOfFirst { it.getIdentifier() in selectedApps }
+            val firstSelectedIndex = items.indexOfFirst { it.id in selectedApps }
             if (firstSelectedIndex > 0) scrollState.scrollToItem(firstSelectedIndex)
         }
     }
@@ -463,9 +479,12 @@ private fun CustomGestureEditorScreen(
         }
     }
 
-    val filteredApps = remember(allApps, searchQuery) {
-        if (searchQuery.isBlank()) allApps
-        else allApps.filter { it.label.contains(searchQuery, ignoreCase = true) }
+    val filteredItems = remember(allItems, searchQuery) {
+        if (searchQuery.isBlank()) allItems
+        else allItems.filter { item ->
+            item.label.contains(searchQuery, ignoreCase = true) ||
+                (item is SelectableItem.Shortcut && item.searchItem.appLabel.contains(searchQuery, ignoreCase = true))
+        }
     }
     val hasShape = newStrokes.isNotEmpty() || (useExistingTemplate && initial != null)
     val showExpandedHeader = isCanvasExpanded || !hasShape
@@ -503,12 +522,18 @@ private fun CustomGestureEditorScreen(
                     template = computed
                     preview = GestureRecognizer.normalizeStrokesForPreview(newStrokes)
                 }
+                // Split the combined selection back into apps vs shortcuts by matching against
+                // the loaded app ids; anything else is an app-shortcut identifier.
+                val appIdSet = allItems.filterIsInstance<SelectableItem.App>().mapTo(HashSet()) { it.id }
+                val appIds = selectedApps.filter { it in appIdSet }.toSet()
+                val shortcutIds = selectedApps - appIds
                 onSave(
                     CustomGesture(
                         id = initial?.id ?: System.currentTimeMillis().toString(),
                         template = template,
                         previewStrokes = preview,
-                        appIds = selectedApps
+                        appIds = appIds,
+                        shortcutIds = shortcutIds
                     )
                 )
             }
@@ -695,16 +720,20 @@ private fun CustomGestureEditorScreen(
                                 state = scrollState,
                                 contentPadding = PaddingValues(bottom = 16.dp)
                             ) {
-                                items(filteredApps, key = { it.getIdentifier() }) { app ->
-                                    val isSelected = app.getIdentifier() in selectedApps
+                                items(filteredItems, key = { it.id }) { item ->
+                                    val isSelected = item.id in selectedApps
                                     com.joyal.swyplauncher.ui.components.AppSelectionItem(
-                                        item = SelectableItem.App(app),
+                                        item = item,
                                         isSelected = isSelected,
-                                        loadIcon = { null },
+                                        loadIcon = {
+                                            if (item is SelectableItem.Shortcut)
+                                                shortcutSearchRepository.getIcon(item.searchItem)
+                                            else null
+                                        },
                                         onClick = {
                                             selectedApps = if (isSelected)
-                                                selectedApps - app.getIdentifier()
-                                            else selectedApps + app.getIdentifier()
+                                                selectedApps - item.id
+                                            else selectedApps + item.id
                                         }
                                     )
                                 }
