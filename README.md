@@ -37,6 +37,9 @@ Swyp Launcher is a modern Android assistant application that serves as a launche
 - **Hidden Apps**: Hide certain apps from appearing in the main app list
 - **Customizable UI**: Adjust grid size, icon shapes, background blur and sort order
 - **System Integration**: Works as Android's default assistant (swipe from corner or long-press power button)
+- **Currency Conversion**: Convert from any currency to any at live rate. Popular crypto currencies are also supported
+- **Time Zone Conversion**: See the time of any country instantly (Search 'Chile time now', '14:58 in Japan' etc.)
+- **Unit Conversion**: Supports 18 types of unit conversion (length, area, speed...)
 
 ### Privacy First
 
