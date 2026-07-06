@@ -12,13 +12,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -40,7 +38,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
@@ -236,55 +233,42 @@ private fun UnitDropdown(
     selectedId: String,
     onSelected: (String) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
     val units = remember(category) { UnitData.unitsIn(category) }
-    val scrollState = rememberScrollState()
-    val density = LocalDensity.current
-    val itemHeightPx = with(density) { 48.dp.toPx() }
-
-    LaunchedEffect(expanded) {
-        if (expanded) {
-            val index = units.indexOfFirst { it.id == selectedId }
-            if (index >= 0) scrollState.scrollTo((index * itemHeightPx).toInt())
-        }
-    }
-
+    val selectedIndex = remember(selectedId, units) { units.indexOfFirst { it.id == selectedId } }
     val selected = remember(selectedId) { UnitData.byId(selectedId) }
-    Box {
-        Surface(
-            shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            modifier = Modifier.clickable { expanded = true }
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 12.dp, top = 8.dp, end = 8.dp, bottom = 8.dp)
+
+    ScrollToSelectedDropdown(
+        selectedIndex = selectedIndex,
+        menuModifier = Modifier.heightIn(max = 320.dp),  // wrap small lists, cap+scroll large ones
+        trigger = { onClick ->
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.clickable(onClick = onClick)
             ) {
-                Text(
-                    text = selected?.symbol ?: selectedId,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(R.string.select_unit), tint = MaterialTheme.colorScheme.onSurface)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 12.dp, top = 8.dp, end = 8.dp, bottom = 8.dp)
+                ) {
+                    Text(
+                        text = selected?.symbol ?: selectedId,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(R.string.select_unit), tint = MaterialTheme.colorScheme.onSurface)
+                }
             }
         }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.heightIn(max = 320.dp),  // wrap small lists, cap+scroll large ones
-            scrollState = scrollState
-        ) {
-            units.forEach { spec ->
-                DropdownMenuItem(
-                    text = { Text("${spec.symbol} — ${UnitData.label(spec.id)}", style = MaterialTheme.typography.bodyLarge) },
-                    onClick = {
-                        onSelected(spec.id)
-                        expanded = false
-                    }
-                )
-            }
+    ) { dismiss ->
+        units.forEach { spec ->
+            DropdownMenuItem(
+                text = { Text("${spec.symbol} — ${UnitData.label(spec.id)}", style = MaterialTheme.typography.bodyLarge) },
+                onClick = {
+                    onSelected(spec.id)
+                    dismiss()
+                }
+            )
         }
     }
 }

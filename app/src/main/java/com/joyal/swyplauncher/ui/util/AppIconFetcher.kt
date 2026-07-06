@@ -58,8 +58,8 @@ class AppIconFetcher(
             }
 
             rawIcon
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
+            // Icon unavailable (e.g. app uninstalled or restricted profile); caller handles null.
             null
         }
     }

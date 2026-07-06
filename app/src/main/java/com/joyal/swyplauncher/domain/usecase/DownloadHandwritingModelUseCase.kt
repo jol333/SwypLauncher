@@ -9,17 +9,11 @@ class DownloadHandwritingModelUseCase @Inject constructor(
     private val preferencesRepository: PreferencesRepository
 ) {
     suspend operator fun invoke() {
-        // Only download if not already downloaded
+        // Download the handwriting model on first launch only; later launches skip it.
+        // Initializing the recognizer warms it as a side effect; failures are non-fatal
+        // (the user is prompted to download when they first use handwriting mode).
         if (!preferencesRepository.hasDownloadedHandwritingModel()) {
-            android.util.Log.d("DownloadHandwritingModel", "Starting background model download...")
-            val result = mlKitRepository.initializeDigitalInkRecognizer()
-            if (result.isSuccess) {
-                android.util.Log.d("DownloadHandwritingModel", "Model download completed successfully")
-            } else {
-                android.util.Log.e("DownloadHandwritingModel", "Model download failed: ${result.exceptionOrNull()?.message}")
-            }
-        } else {
-            android.util.Log.d("DownloadHandwritingModel", "Model already downloaded, skipping")
+            mlKitRepository.initializeDigitalInkRecognizer()
         }
     }
 }

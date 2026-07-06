@@ -12,6 +12,8 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.drawable.IconCompat
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.LauncherMode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 object AppShortcutManager {
     
@@ -19,12 +21,14 @@ object AppShortcutManager {
      * Updates the dynamic shortcuts based on the enabled modes.
      * This should be called whenever the user changes their mode preferences.
      */
-    fun updateShortcuts(context: Context, enabledModes: List<LauncherMode>) {
-        val shortcuts = enabledModes.map { mode ->
-            createShortcutForMode(context, mode)
+    suspend fun updateShortcuts(context: Context, enabledModes: List<LauncherMode>) {
+        // Icon rasterization + the ShortcutManager binder call are done off the main thread.
+        withContext(Dispatchers.IO) {
+            val shortcuts = enabledModes.map { mode ->
+                createShortcutForMode(context, mode)
+            }
+            ShortcutManagerCompat.setDynamicShortcuts(context, shortcuts)
         }
-        
-        ShortcutManagerCompat.setDynamicShortcuts(context, shortcuts)
     }
     
     private fun createShortcutForMode(context: Context, mode: LauncherMode): ShortcutInfoCompat {

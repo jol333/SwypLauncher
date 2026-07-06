@@ -52,8 +52,10 @@ import com.joyal.swyplauncher.ui.settings.BentoSettingsScreen
 import com.joyal.swyplauncher.ui.theme.BentoColors
 import com.joyal.swyplauncher.ui.theme.SwypLauncherTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import javax.inject.Inject
@@ -87,8 +89,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize dynamic shortcuts based on enabled modes
-        lifecycleScope.launch {
+        // Initialize dynamic shortcuts based on enabled modes (off the main thread: reads
+        // prefs, rasterizes icons and performs a ShortcutManager binder call).
+        lifecycleScope.launch(Dispatchers.IO) {
             val enabledModes = preferencesRepository.getEnabledModes()
             com.joyal.swyplauncher.util.AppShortcutManager.updateShortcuts(
                 this@MainActivity,
@@ -96,9 +99,11 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        // Load installed apps for preview
+        // Load installed apps for preview off the main thread (PackageManager scan),
+        // then publish to Compose state.
         lifecycleScope.launch {
-            installedApps.value = getInstalledAppsUseCase()
+            val apps = withContext(Dispatchers.IO) { getInstalledAppsUseCase() }
+            installedApps.value = apps
         }
 
         // Update timestamp to trigger bottom sheet state reset on fresh activity creation
@@ -135,9 +140,19 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         checkAssistantStatus()
-        // Refresh shortcuts count when returning from ShortcutsActivity
-        shortcutsCount.value = (preferencesRepository.getAppShortcuts().keys + preferencesRepository.getShortcutSearchAliases().keys).size
-        gesturesCount.value = preferencesRepository.getCustomGestures().size
+        // Refresh shortcut/gesture counts when returning from ShortcutsActivity. The reads
+        // parse JSON and deserialize gestures, so do that off the main thread and publish
+        // the counts back to Compose state.
+        lifecycleScope.launch {
+            val (shortcuts, gestures) = withContext(Dispatchers.Default) {
+                val shortcutCount = (preferencesRepository.getAppShortcuts().keys +
+                    preferencesRepository.getShortcutSearchAliases().keys).size
+                val gestureCount = preferencesRepository.getCustomGestures().size
+                shortcutCount to gestureCount
+            }
+            shortcutsCount.value = shortcuts
+            gesturesCount.value = gestures
+        }
     }
 
     private fun checkAssistantStatus() {
@@ -448,11 +463,18 @@ fun ModeOrderDialogContent(
             Spacer(Modifier.width(8.dp))
             androidx.compose.material3.TextButton(
                 onClick = {
-                    preferencesRepository?.setEnabledModes(enabledModes)
-                    com.joyal.swyplauncher.util.AppShortcutManager.updateShortcuts(
-                        context,
-                        enabledModes
-                    )
+                    val modesToSave = enabledModes
+                    preferencesRepository?.setEnabledModes(modesToSave)
+                    // Rebuild dynamic shortcuts off the main thread (icon raster + a
+                    // ShortcutManager binder call). Uses the Activity lifecycle scope so it
+                    // survives the dialog dismissal below; if unavailable, shortcuts
+                    // self-correct on the next launch via MainActivity.onCreate.
+                    (context as? androidx.lifecycle.LifecycleOwner)?.lifecycleScope?.launch(Dispatchers.IO) {
+                        com.joyal.swyplauncher.util.AppShortcutManager.updateShortcuts(
+                            context,
+                            modesToSave
+                        )
+                    }
                     onSave(enabledModes.size)
                     onDismiss()
                 }

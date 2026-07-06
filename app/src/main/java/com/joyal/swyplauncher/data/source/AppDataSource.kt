@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import com.joyal.swyplauncher.domain.model.AppChangeEvent
 import com.joyal.swyplauncher.domain.model.AppInfo
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -58,9 +59,6 @@ class AppDataSource @Inject constructor(
                     val activityName = resolveInfo.activityInfo.name
                     val label = resolveInfo.loadLabel(packageManager).toString()
 
-                    // Load activity-specific icon (important for apps with multiple launcher activities)
-                    // val icon = resolveInfo.loadIcon(packageManager) // Removed: Loading asynchronously with Coil
-
                     // Get install time
                     val installTime = try {
                         val packageInfo = packageManager.getPackageInfo(packageName, 0)
@@ -92,7 +90,6 @@ class AppDataSource @Inject constructor(
                     AppInfo(
                         packageName = packageName,
                         label = label,
-                        // icon = icon, // Removed
                         firstLetter = firstLetter,
                         iconDensity = iconDensity,
                         installTime = installTime,
@@ -152,7 +149,15 @@ class AppDataSource @Inject constructor(
             addDataScheme("package")
         }
 
-        context.registerReceiver(receiver, filter)
+        // Registered for the whole process lifetime (this is an app-scoped @Singleton) so the
+        // installed-apps cache stays fresh across package changes. NOT_EXPORTED: these are
+        // protected system broadcasts, so no other app can (or needs to) reach this receiver.
+        ContextCompat.registerReceiver(
+            context,
+            receiver,
+            filter,
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
     }
 
     override fun observeAppChanges(): Flow<AppChangeEvent> = appChangesFlow

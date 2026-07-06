@@ -1,8 +1,5 @@
 package com.joyal.swyplauncher.ui.components
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.ui.state.CurrencyResultState
+import com.joyal.swyplauncher.util.copyToClipboard
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -50,7 +48,7 @@ fun ResultDisplay(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .clickable(enabled = clipboardValue != null) {
-                    clipboardValue?.let { copyToClipboard(context, it) }
+                    clipboardValue?.let { context.copyToClipboard(it, "Copied Result") }
                 }
                 .padding(16.dp)
         ) {
@@ -107,11 +105,6 @@ private fun SubtleLoader() {
             color = MaterialTheme.colorScheme.primary
         )
     }
-}
-
-private fun copyToClipboard(context: Context, text: String) {
-    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    cm.setPrimaryClip(ClipData.newPlainText("Copied Result", text))
 }
 
 private val dateFormat = SimpleDateFormat("d MMM yyyy, h:mm a", Locale.getDefault())

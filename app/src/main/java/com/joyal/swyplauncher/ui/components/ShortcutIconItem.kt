@@ -20,9 +20,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.joyal.swyplauncher.domain.model.ShortcutIcon
@@ -69,37 +73,14 @@ fun ShortcutIconItem(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             val currentIcon = icon
-            when {
-                currentIcon == null -> Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(iconShape)
-                        .background(Color.White.copy(alpha = 0.06f))
-                )
-
-                currentIcon.isDark -> Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(iconShape)
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center
-                ) {
-                    // Inset so the white backing stays visible even for full-bleed icons
-                    Image(
-                        bitmap = currentIcon.bitmap.asImageBitmap(),
-                        contentDescription = shortcut.label,
-                        modifier = Modifier.size(44.dp)
-                    )
-                }
-
-                else -> Image(
-                    bitmap = currentIcon.bitmap.asImageBitmap(),
-                    contentDescription = shortcut.label,
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(iconShape)
-                )
-            }
+            ShortcutIconGlyph(
+                bitmap = currentIcon?.bitmap?.asImageBitmap(),
+                isDark = currentIcon?.isDark == true,
+                contentDescription = shortcut.label,
+                shape = iconShape,
+                size = 56.dp,
+                darkInsetSize = 44.dp
+            )
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -134,5 +115,58 @@ fun ShortcutIconItem(
                 showHideOption = showHideOption
             )
         }
+    }
+}
+
+/**
+ * Renders a shortcut icon on a dark surface: dark icons get a white rounded backing (with the
+ * icon inset) so they stay visible; light icons render directly; a null [bitmap] shows a faint
+ * placeholder. Shared by the shortcut result grid ([ShortcutIconItem]), the app context menu,
+ * and the shortcut editor. [darkBackingSize] defaults to [size] (used only where the dark
+ * backing differs from the normal icon size, e.g. the compact context-menu row).
+ */
+@Composable
+internal fun ShortcutIconGlyph(
+    bitmap: ImageBitmap?,
+    isDark: Boolean,
+    contentDescription: String?,
+    shape: Shape,
+    size: Dp,
+    darkInsetSize: Dp,
+    modifier: Modifier = Modifier,
+    darkBackingSize: Dp = size,
+    contentScale: ContentScale = ContentScale.Fit,
+) {
+    when {
+        bitmap == null -> Box(
+            modifier = modifier
+                .size(size)
+                .clip(shape)
+                .background(Color.White.copy(alpha = 0.06f))
+        )
+
+        isDark -> Box(
+            modifier = modifier
+                .size(darkBackingSize)
+                .clip(shape)
+                .background(Color.White),
+            contentAlignment = Alignment.Center
+        ) {
+            // Inset so the white backing stays visible even for full-bleed icons
+            Image(
+                bitmap = bitmap,
+                contentDescription = contentDescription,
+                modifier = Modifier.size(darkInsetSize)
+            )
+        }
+
+        else -> Image(
+            bitmap = bitmap,
+            contentDescription = contentDescription,
+            modifier = modifier
+                .size(size)
+                .clip(shape),
+            contentScale = contentScale
+        )
     }
 }

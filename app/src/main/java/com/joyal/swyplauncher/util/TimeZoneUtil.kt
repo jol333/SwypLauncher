@@ -22,7 +22,9 @@ import kotlin.math.abs
  * Format rules (per spec):
  *   - input value ≥ 13:00 (e.g. 15:24)  → force 24h everywhere
  *   - input has am/pm                    → force 12h everywhere
- *   - otherwise                          → each zone uses its country's popular format
+ *   - no explicit time (or ambiguous)    → every row uses the user's *home* country's
+ *                                          popular format (so a single conversion never
+ *                                          mixes 12h and 24h across its rows)
  */
 object TimeZoneUtil {
 
@@ -145,7 +147,12 @@ object TimeZoneUtil {
                 .toInstant().toEpochMilli()
         }
 
-        val formatPref = time?.pref ?: FormatPref.COUNTRY_DEFAULT
+        // No explicit time (or an ambiguous one like "midnight") → render everything in the
+        // home country's popular format, rather than letting each row follow its own country.
+        val formatPref = when (val p = time?.pref) {
+            null, FormatPref.COUNTRY_DEFAULT -> homeFormatPref(home)
+            else -> p
+        }
         return Parsed(primary, secondary, epochMillis, formatPref)
     }
 
@@ -156,6 +163,11 @@ object TimeZoneUtil {
             .filter { it.cityOverride == null && it.token.all { c -> c.isLetter() } && it.token !in intentDenylist }
             .mapNotNull { compileToken(it.token) }
     }
+
+    /** The home country's popular clock format, as a concrete force-preference. */
+    private fun homeFormatPref(home: Ref.ZoneRef): FormatPref =
+        if (clockFormatFor(home.zoneId, home.countryIso) == TimeZoneData.ClockFormat.H24)
+            FormatPref.FORCE_24 else FormatPref.FORCE_12
 
     /** Resolve which ref is the source (primary, on top) and which is the target. */
     private fun resolveSides(

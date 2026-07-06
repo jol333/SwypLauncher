@@ -219,6 +219,7 @@ lint-baseline.xml
 .codex/
 .adb/
 .wifi-adb/
+Claude.md
 
 # ========================================
 # Package Files

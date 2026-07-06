@@ -7,12 +7,10 @@ import android.os.Handler
 import android.os.Looper
 import android.service.voice.VoiceInteractionSession
 import android.service.voice.VoiceInteractionSessionService
-import android.util.Log
 
 class AssistantVoiceInteractionSessionService : VoiceInteractionSessionService() {
 
     override fun onNewSession(args: Bundle?): VoiceInteractionSession {
-        Log.d("AssistantSession", "Creating new session")
         return AssistantVoiceInteractionSession(this)
     }
 
@@ -28,7 +26,6 @@ class AssistantVoiceInteractionSessionService : VoiceInteractionSessionService()
 
         override fun onShow(args: Bundle?, showFlags: Int) {
             super.onShow(args, showFlags)
-            Log.d("AssistantSession", "onShow called with flags: $showFlags")
 
             val intent = Intent(context, com.joyal.swyplauncher.ui.AssistActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
@@ -43,15 +40,15 @@ class AssistantVoiceInteractionSessionService : VoiceInteractionSessionService()
             val assistantStarted = try {
                 startAssistantActivity(intent)
                 true
-            } catch (e: Exception) {
-                Log.w("AssistantSession", "startAssistantActivity failed, falling back", e)
+            } catch (_: Exception) {
+                // startAssistantActivity failed; fall back to context.startActivity below.
                 false
             }
             if (!assistantStarted) {
                 try {
                     context.startActivity(intent)
-                } catch (e: Exception) {
-                    Log.e("AssistantSession", "Fallback startActivity failed", e)
+                } catch (_: Exception) {
+                    // Both the assistant launch and the fallback failed; nothing more we can do.
                 }
             }
 
@@ -65,8 +62,8 @@ class AssistantVoiceInteractionSessionService : VoiceInteractionSessionService()
             mainHandler.post {
                 try {
                     finish()
-                } catch (e: Exception) {
-                    Log.w("AssistantSession", "finish() failed, falling back to hide()", e)
+                } catch (_: Exception) {
+                    // finish() failed; fall back to hide().
                     try { hide() } catch (_: Exception) {}
                 }
             }
@@ -74,13 +71,11 @@ class AssistantVoiceInteractionSessionService : VoiceInteractionSessionService()
 
         override fun onHide() {
             super.onHide()
-            Log.d("AssistantSession", "onHide called")
         }
 
         override fun onDestroy() {
             super.onDestroy()
             mainHandler.removeCallbacksAndMessages(null)
-            Log.d("AssistantSession", "onDestroy called")
         }
     }
 }

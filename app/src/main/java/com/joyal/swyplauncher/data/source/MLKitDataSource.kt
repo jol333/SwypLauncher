@@ -277,7 +277,7 @@ class MLKitDataSource @Inject constructor(
         }
     }
 
-    fun cleanup() {
+    override fun cleanup() {
         try {
             digitalInkRecognizer?.close()
         } catch (e: Exception) {

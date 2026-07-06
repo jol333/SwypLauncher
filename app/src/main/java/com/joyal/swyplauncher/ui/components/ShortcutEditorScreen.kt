@@ -559,39 +559,15 @@ fun SelectedAppChip(
                     value = loadIcon(item)
                 }
                 
-                if (icon != null) {
-                    if (icon!!.isDark) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Image(
-                                bitmap = icon!!.bitmap.asImageBitmap(),
-                                contentDescription = null,
-                                modifier = Modifier.size(36.dp)
-                            )
-                        }
-                    } else {
-                        Image(
-                            bitmap = icon!!.bitmap.asImageBitmap(),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(RoundedCornerShape(12.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color.White.copy(alpha = 0.06f))
-                    )
-                }
+                ShortcutIconGlyph(
+                    bitmap = icon?.bitmap?.asImageBitmap(),
+                    isDark = icon?.isDark == true,
+                    contentDescription = null,
+                    shape = RoundedCornerShape(12.dp),
+                    size = 48.dp,
+                    darkInsetSize = 36.dp,
+                    contentScale = ContentScale.Crop
+                )
             }
 
             Box(
@@ -673,39 +649,15 @@ fun AppSelectionItem(
             val icon by produceState<ShortcutIcon?>(initialValue = null, key1 = item) {
                 value = loadIcon(item)
             }
-            if (icon != null) {
-                if (icon!!.isDark) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color.White),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            bitmap = icon!!.bitmap.asImageBitmap(),
-                            contentDescription = null,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
-                } else {
-                    Image(
-                        bitmap = icon!!.bitmap.asImageBitmap(),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(RoundedCornerShape(8.dp)),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White.copy(alpha = 0.06f))
-                )
-            }
+            ShortcutIconGlyph(
+                bitmap = icon?.bitmap?.asImageBitmap(),
+                isDark = icon?.isDark == true,
+                contentDescription = null,
+                shape = RoundedCornerShape(8.dp),
+                size = 40.dp,
+                darkInsetSize = 30.dp,
+                contentScale = ContentScale.Crop
+            )
         }
 
         Spacer(modifier = Modifier.width(16.dp))

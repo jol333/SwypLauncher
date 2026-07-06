@@ -17,13 +17,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -269,67 +267,54 @@ private fun CurrencyDropdown(
     selectedCode: String,
     onCodeSelected: (String) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
     val sortedCurrencies = remember { CurrencyData.all.sortedBy { it.code } }
-    val scrollState = rememberScrollState()
-    val density = LocalDensity.current
-    val itemHeightPx = with(density) { 48.dp.toPx() }
-
-    LaunchedEffect(expanded) {
-        if (expanded) {
-            val index = sortedCurrencies.indexOfFirst { it.code == selectedCode }
-            if (index >= 0) {
-                scrollState.scrollTo((index * itemHeightPx).toInt())
-            }
-        }
+    val selectedIndex = remember(selectedCode, sortedCurrencies) {
+        sortedCurrencies.indexOfFirst { it.code == selectedCode }
     }
 
-    Box {
-        Surface(
-            shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            modifier = Modifier.clickable { expanded = true }
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 12.dp, top = 8.dp, end = 8.dp, bottom = 8.dp)
+    ScrollToSelectedDropdown(
+        selectedIndex = selectedIndex,
+        menuModifier = Modifier.height(300.dp),
+        trigger = { onClick ->
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.clickable(onClick = onClick)
             ) {
-                Text(
-                    text = selectedCode,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = stringResource(R.string.select_currency),
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 12.dp, top = 8.dp, end = 8.dp, bottom = 8.dp)
+                ) {
+                    Text(
+                        text = selectedCode,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = stringResource(R.string.select_currency),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.height(300.dp),
-            scrollState = scrollState
-        ) {
-            sortedCurrencies.forEach { spec ->
-                DropdownMenuItem(
-                    text = {
-                        val displayText = if (spec.code.equals(spec.symbol, ignoreCase = true)) {
-                            spec.code
-                        } else {
-                            "${spec.code} - ${spec.symbol}"
-                        }
-                        Text(displayText, style = MaterialTheme.typography.bodyLarge)
-                    },
-                    onClick = {
-                        onCodeSelected(spec.code)
-                        expanded = false
+    ) { dismiss ->
+        sortedCurrencies.forEach { spec ->
+            DropdownMenuItem(
+                text = {
+                    val displayText = if (spec.code.equals(spec.symbol, ignoreCase = true)) {
+                        spec.code
+                    } else {
+                        "${spec.code} - ${spec.symbol}"
                     }
-                )
-            }
+                    Text(displayText, style = MaterialTheme.typography.bodyLarge)
+                },
+                onClick = {
+                    onCodeSelected(spec.code)
+                    dismiss()
+                }
+            )
         }
     }
 }

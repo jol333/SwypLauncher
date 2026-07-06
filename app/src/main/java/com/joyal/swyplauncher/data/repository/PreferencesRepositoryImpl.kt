@@ -32,9 +32,6 @@ class PreferencesRepositoryImpl @Inject constructor(
         prefs.edit().putBoolean(KEY_HANDWRITING_MODEL_DOWNLOADED, true).apply()
     }
 
-    override suspend fun isDefaultAssistantSet(): Boolean = 
-        prefs.getBoolean(KEY_DEFAULT_ASSISTANT_SET, false)
-
     override suspend fun setDefaultAssistantConfigured(isConfigured: Boolean) {
         prefs.edit().putBoolean(KEY_DEFAULT_ASSISTANT_SET, isConfigured).apply()
     }

@@ -930,7 +930,7 @@ class LauncherViewModel @Inject constructor(
 
     /** Launches an app-shortcut search result and counts it as usage of the parent app. */
     fun launchShortcut(shortcut: ShortcutSearchItem) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             recordAppUsageUseCase(shortcut.packageName, null)
             val launched = shortcutSearchRepository.launchShortcut(shortcut)
             if (!launched) {
@@ -967,14 +967,6 @@ class LauncherViewModel @Inject constructor(
         ids.add(shortcut.identifier())
         current[trimmed] = ids
         preferencesRepository.setShortcutSearchAliases(current)
-    }
-
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
-    }
-
-    fun getAvailableLetters(): List<Char> {
-        return _uiState.value.availableLetters
     }
 
     enum class LauncherMode {
@@ -1135,12 +1127,19 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
-    /** Un-hides a single app shortcut and refreshes the hidden-shortcuts list. */
+    /**
+     * Un-hides a single app shortcut, drops it from the hidden-shortcuts list, and re-runs the
+     * active per-mode searches so it reappears in an already-open results page.
+     */
     fun unhideShortcut(identifier: String) {
         preferencesRepository.removeHiddenShortcut(identifier)
         _uiState.update {
             it.copy(hiddenShortcuts = it.hiddenShortcuts.filterNot { s -> s.identifier() == identifier })
         }
+        // loadApps() -> applyAppLoadResult re-runs the shortcut search against the now-updated
+        // hidden set, so the just-unhidden shortcut is restored to the current results (mirrors
+        // unhideApp, which already refreshes via loadApps()).
+        loadApps()
     }
     
     fun shouldPromptForUsageStatsPermission(): Boolean {

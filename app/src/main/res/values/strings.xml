@@ -163,7 +163,7 @@
     <!-- Donate Section -->
     <string name="support_development">Support Development</string>
     <string name="buy_me_coffee">Buy me a coffee</string>
-    <string name="donate_message">If this app saves you time, consider buying me a coffee. Your support helps fuel my free side projects.</string>
+    <string name="donate_message">If this app saves you time, consider buying me a coffee. Your support helps fuel my free side projects</string>
     <string name="no_browser_found">No browser found to open the link</string>
 
     <!-- Additional UI strings -->

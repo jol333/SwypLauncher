@@ -8,11 +8,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.view.ContextThemeWrapper
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -20,40 +15,30 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Label
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -62,10 +47,8 @@ import androidx.core.graphics.drawable.toBitmap
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.model.AppShortcut
-import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppContextMenu(
     app: AppInfo,
@@ -78,51 +61,16 @@ fun AppContextMenu(
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
-    val scope = rememberCoroutineScope()
     var dynamicShortcuts by remember { mutableStateOf<List<AppShortcut>>(emptyList()) }
     var manifestShortcuts by remember { mutableStateOf<List<AppShortcut>>(emptyList()) }
     var pinnedShortcuts by remember { mutableStateOf<List<AppShortcut>>(emptyList()) }
-    
-    // Animation states for genie effect
-    val slideOffset = remember { Animatable(60f) }
-    val alpha = remember { Animatable(0f) }
-    val scaleY = remember { Animatable(0.1f) }
-    val scaleX = remember { Animatable(0.3f) }
-    var isDismissing by remember { mutableStateOf(false) }
-    
-    val bouncySpring = spring<Float>(Spring.DampingRatioMediumBouncy, Spring.StiffnessLow)
-    val smoothSpring = spring<Float>(Spring.DampingRatioNoBouncy, Spring.StiffnessMedium)
-    
-    // Genie entrance animation - emerging from icon
-    LaunchedEffect(Unit) {
-        launch { slideOffset.animateTo(0f, bouncySpring) }
-        launch { alpha.animateTo(1f, smoothSpring) }
-        launch { scaleY.animateTo(1f, bouncySpring) }
-        launch { scaleX.animateTo(1f, bouncySpring) }
-    }
-    
-    // Handle dismissal with exit animation
-    fun dismissWithAnimation() {
-        if (isDismissing) return // Prevent multiple dismissals
-        isDismissing = true
-        
-        val exitSpring = spring<Float>(Spring.DampingRatioNoBouncy, Spring.StiffnessMediumLow)
-        
-        // Start exit animation and dismiss shortly after it begins
-        scope.launch {
-            launch { slideOffset.animateTo(50f, exitSpring) }
-            launch { alpha.animateTo(0f, smoothSpring) }
-            launch { scaleY.animateTo(0.1f, exitSpring) }
-            launch { scaleX.animateTo(0.3f, exitSpring) }
-            kotlinx.coroutines.delay(150)
-            onDismiss()
-        }
-    }
+
+    val genie = rememberGenieMenuAnimation(onDismiss)
 
     // Fetch shortcuts
     LaunchedEffect(app.packageName) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return@LaunchedEffect
-        
+
         try {
             val launcherApps = context.getSystemService(LauncherApps::class.java)
 
@@ -164,39 +112,17 @@ fun AppContextMenu(
     val totalHeight = (menuItemCount + totalShortcuts) * 56 + (if (totalShortcuts > 0) 24 else 0) + 16
     val offsetY = with(density) { (-totalHeight).dp.roundToPx() }
 
-    // Helper function to launch shortcuts
-    fun launchShortcut(shortcut: AppShortcut, flag: Int) {
-        runCatching {
-            val launcherApps = context.getSystemService(LauncherApps::class.java)
-            val query = LauncherApps.ShortcutQuery().apply {
-                setQueryFlags(flag)
-                setPackage(app.packageName)
-                setShortcutIds(listOf(shortcut.id))
-            }
-            launcherApps.getShortcuts(query, android.os.Process.myUserHandle())
-                ?.firstOrNull()?.let { launcherApps.startShortcut(it, null, null) }
-        }
-        dismissWithAnimation()
-    }
-
     Popup(
-        onDismissRequest = { dismissWithAnimation() },
+        onDismissRequest = { genie.dismiss() },
         offset = IntOffset(0, offsetY),
         properties = PopupProperties(
-            focusable = !isDismissing, // Release focus when dismissing
-            dismissOnBackPress = !isDismissing,
-            dismissOnClickOutside = !isDismissing
+            focusable = !genie.isDismissing, // Release focus when dismissing
+            dismissOnBackPress = !genie.isDismissing,
+            dismissOnClickOutside = !genie.isDismissing
         )
     ) {
         Column(
-            modifier = Modifier
-                .graphicsLayer {
-                    translationY = slideOffset.value
-                    this.alpha = alpha.value
-                    this.scaleX = scaleX.value
-                    this.scaleY = scaleY.value
-                    transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 1f)
-                }
+            modifier = genie.graphicsLayerModifier
                 .width(IntrinsicSize.Min)
                 .background(Color(0xFF1E1E1E), RoundedCornerShape(12.dp))
                 .padding(8.dp)
@@ -208,7 +134,19 @@ fun AppContextMenu(
                 pinnedShortcuts to LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED
             ).forEach { (shortcuts, flag) ->
                 shortcuts.forEach { shortcut ->
-                    ShortcutOption(shortcut, cornerRadiusPercent) { launchShortcut(shortcut, flag) }
+                    ShortcutOption(shortcut, cornerRadiusPercent) {
+                        runCatching {
+                            val launcherApps = context.getSystemService(LauncherApps::class.java)
+                            val query = LauncherApps.ShortcutQuery().apply {
+                                setQueryFlags(flag)
+                                setPackage(app.packageName)
+                                setShortcutIds(listOf(shortcut.id))
+                            }
+                            launcherApps.getShortcuts(query, android.os.Process.myUserHandle())
+                                ?.firstOrNull()?.let { launcherApps.startShortcut(it, null, null) }
+                        }
+                        genie.dismiss()
+                    }
                 }
             }
 
@@ -224,7 +162,7 @@ fun AppContextMenu(
             if (onAddShortcut != null) {
                 MenuOption(Icons.AutoMirrored.Outlined.Label, stringResource(R.string.set_a_shortcut)) {
                     onAddShortcut()
-                    dismissWithAnimation()
+                    genie.dismiss()
                 }
             }
 
@@ -236,10 +174,10 @@ fun AppContextMenu(
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     })
                 }
-                dismissWithAnimation()
+                genie.dismiss()
             }
 
-            // 5. View in Play Store
+            // View in Play Store
             MenuOption(Icons.Outlined.ShoppingCart, stringResource(R.string.view_in_app_store)) {
                 runCatching {
                     val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -252,19 +190,19 @@ fun AppContextMenu(
                         context.startActivity(intent)
                     }
                 }
-                dismissWithAnimation()
+                genie.dismiss()
             }
 
-            // 6. Hide/Unhide app
+            // Hide/Unhide app
             MenuOption(
                 if (showHideOption) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                 if (showHideOption) stringResource(R.string.hide_app) else stringResource(R.string.unhide_app)
             ) {
                 if (showHideOption) onHide() else onUnhide()
-                dismissWithAnimation()
+                genie.dismiss()
             }
 
-            // 7. Uninstall option
+            // Uninstall option
             // Store string resources for use in AlertDialog (which can't use stringResource)
             val cannotUninstallTitle = stringResource(R.string.cannot_uninstall)
             val cannotUninstallMessage = stringResource(R.string.cannot_uninstall_message)
@@ -274,14 +212,14 @@ fun AppContextMenu(
                 runCatching {
                     val appInfo = context.packageManager.getApplicationInfo(app.packageName, 0)
                     val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                    
+
                     when {
                         isSystemApp && !showHideOption -> {
                             context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                                 data = Uri.fromParts("package", app.packageName, null)
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             })
-                            dismissWithAnimation()
+                            genie.dismiss()
                         }
                         isSystemApp -> {
                             AlertDialog.Builder(ContextThemeWrapper(context, android.R.style.Theme_DeviceDefault_Dialog_Alert))
@@ -290,11 +228,11 @@ fun AppContextMenu(
                                 .setPositiveButton(hideLabel) { dialog, _ ->
                                     onHide()
                                     dialog.dismiss()
-                                    dismissWithAnimation()
+                                    genie.dismiss()
                                 }
                                 .setNegativeButton(cancelLabel) { dialog, _ ->
                                     dialog.dismiss()
-                                    dismissWithAnimation()
+                                    genie.dismiss()
                                 }
                                 .show()
                         }
@@ -303,10 +241,10 @@ fun AppContextMenu(
                                 data = Uri.fromParts("package", app.packageName, null)
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             })
-                            dismissWithAnimation()
+                            genie.dismiss()
                         }
                     }
-                }.onFailure { dismissWithAnimation() }
+                }.onFailure { genie.dismiss() }
             }
         }
     }
@@ -331,32 +269,16 @@ private fun ShortcutOption(
             val isDark = remember(bitmap) {
                 com.joyal.swyplauncher.util.isBitmapDark(bitmap)
             }
-            // A 24dp icon's max corner radius is 12dp (half); honor the user's setting
-            val iconShape = RoundedCornerShape(12.dp * cornerRadiusPercent)
-            if (isDark) {
-                // Dark icons vanish on the near-black menu, so give them a white backing
-                androidx.compose.foundation.layout.Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(iconShape)
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        bitmap = bitmap.asImageBitmap(),
-                        contentDescription = shortcut.shortLabel.toString(),
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-            } else {
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = shortcut.shortLabel.toString(),
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(iconShape)
-                )
-            }
+            // 24dp icon (max corner radius 12dp = half); dark icons get a larger white backing.
+            ShortcutIconGlyph(
+                bitmap = bitmap.asImageBitmap(),
+                isDark = isDark,
+                contentDescription = shortcut.shortLabel.toString(),
+                shape = RoundedCornerShape(12.dp * cornerRadiusPercent),
+                size = 24.dp,
+                darkBackingSize = 28.dp,
+                darkInsetSize = 22.dp
+            )
         }
         Spacer(modifier = Modifier.width(16.dp))
         Text(
@@ -364,30 +286,6 @@ private fun ShortcutOption(
             style = MaterialTheme.typography.bodyLarge,
             color = Color.White,
             maxLines = 1
-        )
-    }
-}
-
-@Composable
-private fun MenuOption(icon: ImageVector, text: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .width(220.dp)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = text,
-            tint = Color.White,
-            modifier = Modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            color = Color.White
         )
     }
 }

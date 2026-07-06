@@ -6,7 +6,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import com.joyal.swyplauncher.R
 
@@ -16,7 +15,7 @@ import com.joyal.swyplauncher.R
  * or no app to handle a share).
  *
  * Without this guard, [Context.startActivity] throws [ActivityNotFoundException]
- * which crashes the app. Instead, a short toast is shown and the failure is logged.
+ * which crashes the app. Instead, a short toast is shown.
  *
  * @return true if the activity was started, false if it could not be handled.
  */
@@ -27,12 +26,10 @@ fun Context.safeStartActivity(
     return try {
         startActivity(intent)
         true
-    } catch (e: ActivityNotFoundException) {
-        Log.w("IntentUtil", "No activity found to handle intent: $intent", e)
+    } catch (_: ActivityNotFoundException) {
         Toast.makeText(this, errorMessageRes, Toast.LENGTH_SHORT).show()
         false
-    } catch (e: Exception) {
-        Log.e("IntentUtil", "Failed to start activity for intent: $intent", e)
+    } catch (_: Exception) {
         Toast.makeText(this, errorMessageRes, Toast.LENGTH_SHORT).show()
         false
     }

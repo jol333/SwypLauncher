@@ -9,7 +9,6 @@ interface PreferencesRepository {
     fun hasDownloadedHandwritingModel(): Boolean
     fun setHandwritingModelDownloaded()
     
-    suspend fun isDefaultAssistantSet(): Boolean
     suspend fun setDefaultAssistantConfigured(isConfigured: Boolean)
     
     fun getSelectedMode(): LauncherMode

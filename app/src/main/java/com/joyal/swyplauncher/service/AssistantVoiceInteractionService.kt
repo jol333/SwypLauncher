@@ -1,7 +1,6 @@
 package com.joyal.swyplauncher.service
 
 import android.service.voice.VoiceInteractionService
-import android.util.Log
 
 import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
 import dagger.hilt.EntryPoint
@@ -47,8 +46,8 @@ class AssistantVoiceInteractionService : VoiceInteractionService() {
                     PrewarmEntryPoint::class.java
                 )
                 entryPoint.getInstalledAppsUseCase().invoke()
-            } catch (e: Exception) {
-                Log.w("AssistantService", "Prewarm failed", e)
+            } catch (_: Exception) {
+                // Best-effort prewarm; ignore failures.
             }
         }
     }

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -21,7 +20,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.SwapVert
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -157,66 +154,54 @@ private fun ZoneSection(
 
 @Composable
 private fun CountryHeader(title: String, selectedIso: String?, onChangeCountry: (String) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
     val countries = remember { TimeZoneData.countries.sortedBy { it.name } }
-    val scrollState = rememberScrollState()
-    val itemHeightPx = with(LocalDensity.current) { 48.dp.toPx() }
+    val selectedIndex = remember(selectedIso, countries) { countries.indexOfFirst { it.iso == selectedIso } }
 
-    // Open the menu scrolled to the current selection, matching the currency/unit pickers.
-    LaunchedEffect(expanded) {
-        if (expanded) {
-            val index = countries.indexOfFirst { it.iso == selectedIso }
-            if (index >= 0) scrollState.scrollTo((index * itemHeightPx).toInt())
-        }
-    }
-
-    Box {
-        Surface(
-            shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            modifier = Modifier.clickable { expanded = true }
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 6.dp, bottom = 6.dp)
+    ScrollToSelectedDropdown(
+        selectedIndex = selectedIndex,
+        menuModifier = Modifier.heightIn(max = 320.dp),
+        trigger = { onClick ->
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.clickable(onClick = onClick)
             ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = stringResource(R.string.timezone_select_country),
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 6.dp, bottom = 6.dp)
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = stringResource(R.string.timezone_select_country),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.heightIn(max = 320.dp),
-            scrollState = scrollState
-        ) {
-            countries.forEach { c ->
-                val isSelected = c.iso == selectedIso
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            c.name,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurface
-                        )
-                    },
-                    onClick = {
-                        onChangeCountry(c.iso)
-                        expanded = false
-                    }
-                )
-            }
+    ) { dismiss ->
+        countries.forEach { c ->
+            val isSelected = c.iso == selectedIso
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        c.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                onClick = {
+                    onChangeCountry(c.iso)
+                    dismiss()
+                }
+            )
         }
     }
 }

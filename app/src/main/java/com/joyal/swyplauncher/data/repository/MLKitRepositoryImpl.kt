@@ -16,4 +16,5 @@ class MLKitRepositoryImpl @Inject constructor(
     override suspend fun recognizeHandwriting(strokes: List<InkStroke>): Result<String> = mlKitDataSource.recognizeHandwriting(strokes)
     override fun startSpeechRecognition(): Flow<SpeechRecognitionResult> = mlKitDataSource.startSpeechRecognition()
     override fun stopSpeechRecognition() = mlKitDataSource.stopSpeechRecognition()
+    override fun cleanup() = mlKitDataSource.cleanup()
 }

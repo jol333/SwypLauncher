@@ -4,18 +4,12 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.provider.Settings
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,23 +22,17 @@ import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -55,13 +43,13 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.ShortcutSearchItem
-import kotlinx.coroutines.launch
 
 /**
  * Long-press menu for an app-shortcut search result. Mirrors [AppContextMenu]'s genie
- * animation and styling, but its actions are shortcut-specific: hide this shortcut, set a
- * search magic word, and — for the parent app — app info / store / uninstall. None of these
- * touch the shortcut binder, so the menu works even without the assistant role.
+ * animation and styling (via [rememberGenieMenuAnimation]/[MenuOption]), but its actions are
+ * shortcut-specific: hide this shortcut, set a search magic word, and — for the parent app —
+ * app info / store / uninstall. None of these touch the shortcut binder, so the menu works even
+ * without the assistant role.
  */
 @Composable
 fun ShortcutContextMenu(
@@ -74,68 +62,32 @@ fun ShortcutContextMenu(
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
-    val scope = rememberCoroutineScope()
 
     var showAliasDialog by remember { mutableStateOf(false) }
 
-    val slideOffset = remember { Animatable(60f) }
-    val alpha = remember { Animatable(0f) }
-    val scaleY = remember { Animatable(0.1f) }
-    val scaleX = remember { Animatable(0.3f) }
-    var isDismissing by remember { mutableStateOf(false) }
-
-    val bouncySpring = spring<Float>(Spring.DampingRatioMediumBouncy, Spring.StiffnessLow)
-    val smoothSpring = spring<Float>(Spring.DampingRatioNoBouncy, Spring.StiffnessMedium)
-
-    LaunchedEffect(Unit) {
-        launch { slideOffset.animateTo(0f, bouncySpring) }
-        launch { alpha.animateTo(1f, smoothSpring) }
-        launch { scaleY.animateTo(1f, bouncySpring) }
-        launch { scaleX.animateTo(1f, bouncySpring) }
-    }
-
-    fun dismissWithAnimation() {
-        if (isDismissing) return
-        isDismissing = true
-        val exitSpring = spring<Float>(Spring.DampingRatioNoBouncy, Spring.StiffnessMediumLow)
-        scope.launch {
-            launch { slideOffset.animateTo(50f, exitSpring) }
-            launch { alpha.animateTo(0f, smoothSpring) }
-            launch { scaleY.animateTo(0.1f, exitSpring) }
-            launch { scaleX.animateTo(0.3f, exitSpring) }
-            kotlinx.coroutines.delay(150)
-            onDismiss()
-        }
-    }
+    val genie = rememberGenieMenuAnimation(onDismiss)
 
     // 4 options, ~56dp each + 24dp padding: mirrors AppContextMenu's height math
     val totalHeight = 4 * 56 + 16
     val offsetY = with(density) { (-totalHeight).dp.roundToPx() }
 
     Popup(
-        onDismissRequest = { dismissWithAnimation() },
+        onDismissRequest = { genie.dismiss() },
         offset = IntOffset(0, offsetY),
         properties = PopupProperties(
-            focusable = !isDismissing,
-            dismissOnBackPress = !isDismissing,
-            dismissOnClickOutside = !isDismissing
+            focusable = !genie.isDismissing,
+            dismissOnBackPress = !genie.isDismissing,
+            dismissOnClickOutside = !genie.isDismissing
         )
     ) {
         Column(
-            modifier = Modifier
-                .graphicsLayer {
-                    translationY = slideOffset.value
-                    this.alpha = alpha.value
-                    this.scaleX = scaleX.value
-                    this.scaleY = scaleY.value
-                    transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 1f)
-                }
+            modifier = genie.graphicsLayerModifier
                 .width(IntrinsicSize.Min)
                 .background(Color(0xFF1E1E1E), RoundedCornerShape(12.dp))
                 .padding(8.dp)
         ) {
             // Set a search shortcut (magic word) for this app shortcut
-            ShortcutMenuOption(
+            MenuOption(
                 Icons.AutoMirrored.Outlined.Label,
                 stringResource(R.string.set_a_shortcut)
             ) {
@@ -143,13 +95,13 @@ fun ShortcutContextMenu(
             }
 
             // Hide / un-hide this shortcut
-            ShortcutMenuOption(
+            MenuOption(
                 if (showHideOption) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                 if (showHideOption) stringResource(R.string.hide_shortcut)
                 else stringResource(R.string.unhide_shortcut)
             ) {
                 if (showHideOption) onHide() else onUnhide()
-                dismissWithAnimation()
+                genie.dismiss()
             }
 
             HorizontalDivider(
@@ -158,18 +110,18 @@ fun ShortcutContextMenu(
             )
 
             // Parent app: app info
-            ShortcutMenuOption(Icons.Outlined.Info, stringResource(R.string.app_info)) {
+            MenuOption(Icons.Outlined.Info, stringResource(R.string.app_info)) {
                 runCatching {
                     context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                         data = Uri.fromParts("package", shortcut.packageName, null)
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     })
                 }
-                dismissWithAnimation()
+                genie.dismiss()
             }
 
             // Parent app: view in Play Store
-            ShortcutMenuOption(
+            MenuOption(
                 Icons.Outlined.ShoppingCart,
                 stringResource(R.string.view_in_app_store)
             ) {
@@ -184,11 +136,11 @@ fun ShortcutContextMenu(
                         context.startActivity(intent)
                     }
                 }
-                dismissWithAnimation()
+                genie.dismiss()
             }
 
             // Parent app: uninstall (system apps fall back to app details)
-            ShortcutMenuOption(Icons.Outlined.Delete, stringResource(R.string.uninstall)) {
+            MenuOption(Icons.Outlined.Delete, stringResource(R.string.uninstall)) {
                 runCatching {
                     val appInfo = context.packageManager.getApplicationInfo(shortcut.packageName, 0)
                     val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
@@ -204,7 +156,7 @@ fun ShortcutContextMenu(
                         })
                     }
                 }
-                dismissWithAnimation()
+                genie.dismiss()
             }
         }
     }
@@ -236,7 +188,7 @@ fun ShortcutContextMenu(
                     onClick = {
                         onSaveAlias(word.trim())
                         showAliasDialog = false
-                        dismissWithAnimation()
+                        genie.dismiss()
                     }
                 ) { Text(stringResource(R.string.save)) }
             },
@@ -245,30 +197,6 @@ fun ShortcutContextMenu(
                     Text(stringResource(R.string.cancel))
                 }
             }
-        )
-    }
-}
-
-@Composable
-private fun ShortcutMenuOption(icon: ImageVector, text: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .width(220.dp)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = text,
-            tint = Color.White,
-            modifier = Modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            color = Color.White
         )
     }
 }

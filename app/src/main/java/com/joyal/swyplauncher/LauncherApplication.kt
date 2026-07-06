@@ -1,6 +1,7 @@
 package com.joyal.swyplauncher
 
 import android.app.Application
+import android.content.ComponentCallbacks2
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -9,6 +10,7 @@ import coil3.memory.MemoryCache
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import okio.Path.Companion.toOkioPath
 
@@ -18,6 +20,12 @@ class LauncherApplication : Application(), SingletonImageLoader.Factory {
     @javax.inject.Inject
     lateinit var downloadHandwritingModelUseCase: com.joyal.swyplauncher.domain.usecase.DownloadHandwritingModelUseCase
 
+    @javax.inject.Inject
+    lateinit var mlKitRepository: com.joyal.swyplauncher.domain.repository.MLKitRepository
+
+    // Process-lifetime scope for fire-and-forget startup work (lives as long as the process).
+    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     override fun onCreate() {
         super.onCreate()
         downloadHandwritingModelInBackground()
@@ -25,12 +33,22 @@ class LauncherApplication : Application(), SingletonImageLoader.Factory {
 
     // Download handwriting model in background on first launch
     private fun downloadHandwritingModelInBackground() {
-        CoroutineScope(Dispatchers.IO).launch {
+        appScope.launch {
             try {
                 downloadHandwritingModelUseCase()
             } catch (e: Exception) {
                 // Silently fail - user will be prompted to download when they use handwriting mode
             }
+        }
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        // Once our UI is hidden (or the process is a background LRU candidate), release the
+        // ML Kit recognizers' native model buffers. The model stays on disk, so the next
+        // handwriting/voice use re-creates the client locally — no re-download.
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
+            mlKitRepository.cleanup()
         }
     }
 

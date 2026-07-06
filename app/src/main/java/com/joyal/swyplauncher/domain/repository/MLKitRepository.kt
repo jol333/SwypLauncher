@@ -9,4 +9,7 @@ interface MLKitRepository {
     suspend fun recognizeHandwriting(strokes: List<InkStroke>): Result<String>
     fun startSpeechRecognition(): Flow<SpeechRecognitionResult>
     fun stopSpeechRecognition()
+
+    /** Releases native recognizer resources (digital-ink + speech). Safe to call repeatedly. */
+    fun cleanup()
 }

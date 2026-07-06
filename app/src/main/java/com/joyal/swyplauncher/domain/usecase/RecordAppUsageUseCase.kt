@@ -15,12 +15,7 @@ class RecordAppUsageUseCase @Inject constructor(
         val identifier = if (activityName != null) "$packageName/$activityName" else packageName
         return appUsageRepository.hasBeenOpened(identifier)
     }
-    
-    // Convenience method that takes AppInfo
-    suspend operator fun invoke(app: com.joyal.swyplauncher.domain.model.AppInfo) {
-        appUsageRepository.recordAppUsage(app.getIdentifier())
-    }
-    
+
     suspend fun getUsageMap(): Map<String, Int> {
         return appUsageRepository.getUsageMap()
     }
