@@ -40,6 +40,8 @@ Swyp Launcher is a modern Android assistant application that serves as a launche
 - **Currency Conversion**: Convert from any currency to any at live rate. Popular crypto currencies are also supported
 - **Time Zone Conversion**: See the time of any country instantly (Search 'Chile time now', '14:58 in Japan' etc.)
 - **Unit Conversion**: Supports 18 types of unit conversion (length, area, speed...)
+- **Custom Gestures**: Set custom shapes or patterns and draw them to display required apps
+- **App Shortcut Search**: Search within app shortcuts and run actions directly
 
 ### Privacy First
 
@@ -51,7 +53,7 @@ Swyp Launcher is a modern Android assistant application that serves as a launche
 ## Requirements
 
 - Android 14 (API 34) or higher
-- Approximately 20MB storage space
+- Approximately 120MB storage space
 - Optional: Microphone permission for voice mode
 
 ## Installation
@@ -87,7 +89,7 @@ cd swyplauncher
 
 - **Gesture**: Swipe diagonally from the bottom corners of your screen
 - **Power Button**: Long-press the power button
-- **App Icon**: Long press app icon and select an interaction mode directly
+- **App Icon**: Long-press the app icon and select an interaction mode directly
 - **Mode Shortcut**: Add a shortcut to your homescreen & launch from there
 - **Quick Settings Tile**: Add a quick setting tile to your control center & launch from there
 
