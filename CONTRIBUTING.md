@@ -20,8 +20,8 @@ Before creating a bug report:
 When creating a bug report, include:
 - Clear, descriptive title
 - Detailed steps to reproduce
-- Expected vs actual behavior
-- Screenshots or videos if applicable
+- Expected vs actual behaviour
+- Screenshots or videos, if applicable
 - Device information and Android version
 - Relevant logs or error messages
 
@@ -40,7 +40,7 @@ Feature requests are welcome! Please:
    git checkout -b feature/your-feature-name
    ```
 
-2. **Follow the architecture guidelines** (see `.kiro/steering/structure.md`)
+2. **Follow the architecture guidelines**
    - Maintain Clean Architecture layers
    - Use MVVM pattern
    - Follow existing naming conventions
@@ -107,7 +107,6 @@ app/src/main/java/com/joyal/swyplauncher/
 └── util/          # Utilities
 ```
 
-See `.kiro/steering/structure.md` for detailed architecture guidelines.
 
 ## Coding Standards
 
@@ -166,7 +165,6 @@ When adding features:
 ## Questions?
 
 - Open an issue for questions
-- Check existing documentation in `.kiro/steering/`
 - Review the codebase for examples
 
 ## License
