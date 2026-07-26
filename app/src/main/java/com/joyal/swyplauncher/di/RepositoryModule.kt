@@ -1,11 +1,13 @@
 package com.joyal.swyplauncher.di
 
 import com.joyal.swyplauncher.data.repository.AppRepositoryImpl
+import com.joyal.swyplauncher.data.repository.ControlCenterRepositoryImpl
 import com.joyal.swyplauncher.data.repository.CurrencyRepositoryImpl
 import com.joyal.swyplauncher.data.repository.MLKitRepositoryImpl
 import com.joyal.swyplauncher.data.repository.PreferencesRepositoryImpl
 import com.joyal.swyplauncher.data.repository.ShortcutSearchRepositoryImpl
 import com.joyal.swyplauncher.domain.repository.AppRepository
+import com.joyal.swyplauncher.domain.repository.ControlCenterRepository
 import com.joyal.swyplauncher.domain.repository.CurrencyRepository
 import com.joyal.swyplauncher.domain.repository.MLKitRepository
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
@@ -49,4 +51,10 @@ abstract class RepositoryModule {
     abstract fun bindShortcutSearchRepository(
         shortcutSearchRepositoryImpl: ShortcutSearchRepositoryImpl
     ): ShortcutSearchRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindControlCenterRepository(
+        controlCenterRepositoryImpl: ControlCenterRepositoryImpl
+    ): ControlCenterRepository
 }

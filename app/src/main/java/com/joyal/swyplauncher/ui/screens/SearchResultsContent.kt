@@ -84,6 +84,7 @@ import com.joyal.swyplauncher.util.webSearchIntent
  * The caller owns [selectedAppIndex] so the long-press context-menu state survives
  * grid recomposition. [centerItems] / [horizontalArrangement] / [contentPadding]
  * cover the small layout differences between the search modes and the index mode.
+ * [headerContent] renders as a full-width item above the apps, scrolling with them.
  */
 @Composable
 fun AppResultGrid(
@@ -106,6 +107,7 @@ fun AppResultGrid(
     horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(24.dp),
     centerItems: Boolean = false,
+    headerContent: (@Composable () -> Unit)? = null,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         val showFade =
@@ -119,6 +121,9 @@ fun AppResultGrid(
             verticalArrangement = verticalArrangement,
             modifier = Modifier.fillMaxSize()
         ) {
+            if (headerContent != null) {
+                item(key = "grid_header", span = { GridItemSpan(maxLineSpan) }) { headerContent() }
+            }
             items(
                 count = items.size,
                 key = { index ->

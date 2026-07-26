@@ -321,4 +321,29 @@
     <string name="handwriting_model_error_download_generic">Failed to download handwriting recognition model. Please try again.</string>
     <string name="handwriting_model_error_check_status">Failed to check model status. Please try again.</string>
     <string name="handwriting_model_error_init">Failed to initialize handwriting recognition. Please try again.</string>
+
+    <!-- Control Center mode -->
+    <string name="mode_control_center">Control Center</string>
+    <string name="shortcut_control_center_short">Controls</string>
+    <string name="shortcut_control_center_long">Open Control Center</string>
+    <string name="cc_wifi">Wi-Fi</string>
+    <string name="cc_bluetooth">Bluetooth</string>
+    <string name="cc_sim_data">Sim Data</string>
+    <string name="cc_media_volume">Media volume</string>
+    <string name="cc_brightness">Brightness</string>
+    <string name="cc_location">Location</string>
+    <string name="cc_auto_rotate">Auto-rotate</string>
+    <string name="cc_flashlight">Flashlight</string>
+    <string name="cc_airplane_mode">Airplane mode</string>
+    <string name="cc_ring">Ring</string>
+    <string name="cc_vibrate">Vibrate</string>
+    <string name="cc_silent">Silent</string>
+    <string name="cc_feature_unavailable">Not available on this device</string>
+    <string name="cc_settings_page_unavailable">This settings page isn\'t available on this device</string>
+    <string name="cc_needs_write_settings">Allow “Modify system settings” for SwypLauncher, then try again</string>
+    <string name="cc_needs_dnd_access">Allow Do Not Disturb access for SwypLauncher, then try again</string>
+    <string name="cc_bt_permission_denied">Bluetooth permission is required to toggle Bluetooth</string>
+    <string name="cc_flashlight_busy">Flashlight is busy — the camera may be in use</string>
+    <string name="cc_auto_brightness_on">Auto-brightness on</string>
+    <string name="cc_auto_brightness_off">Auto-brightness off</string>
 </resources>

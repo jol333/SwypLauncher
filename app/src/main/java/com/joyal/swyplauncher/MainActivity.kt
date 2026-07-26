@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.model.LauncherMode
+import com.joyal.swyplauncher.domain.model.displayName
 import com.joyal.swyplauncher.domain.repository.AppRepository
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
@@ -389,7 +390,7 @@ fun ModeOrderDialogContent(
                                 )
                             }
                             Text(
-                                mode.name.lowercase().replaceFirstChar { it.uppercase() },
+                                mode.displayName(),
                                 style = MaterialTheme.typography.bodyLarge,
                                 modifier = Modifier.weight(1f)
                             )
@@ -431,8 +432,7 @@ fun ModeOrderDialogContent(
                                     )
                                 )
                                 Text(
-                                    mode.name.lowercase()
-                                        .replaceFirstChar { it.uppercase() },
+                                    mode.displayName(),
                                     style = MaterialTheme.typography.bodyLarge,
                                     modifier = Modifier.weight(1f),
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)

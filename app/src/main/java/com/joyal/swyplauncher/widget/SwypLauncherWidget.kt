@@ -295,6 +295,7 @@ private fun ModeButton(
 
 private fun getModeIconAndLabel(context: Context, mode: LauncherMode): Pair<Int, String> {
     return when (mode) {
+        LauncherMode.CONTROL_CENTER -> R.drawable.ic_control_center to context.getString(R.string.shortcut_control_center_short)
         LauncherMode.HANDWRITING -> R.drawable.ic_handwriting to context.getString(R.string.shortcut_handwriting_short)
         LauncherMode.INDEX -> R.drawable.ic_index to context.getString(R.string.shortcut_index_short)
         LauncherMode.KEYBOARD -> R.drawable.ic_keyboard to context.getString(R.string.shortcut_keyboard_short)

@@ -33,6 +33,11 @@ object AppShortcutManager {
     
     private fun createShortcutForMode(context: Context, mode: LauncherMode): ShortcutInfoCompat {
         val (shortLabel, longLabel, icon) = when (mode) {
+            LauncherMode.CONTROL_CENTER -> Triple(
+                context.getString(R.string.shortcut_control_center_short),
+                context.getString(R.string.shortcut_control_center_long),
+                R.drawable.ic_control_center
+            )
             LauncherMode.HANDWRITING -> Triple(
                 context.getString(R.string.shortcut_handwriting_short),
                 context.getString(R.string.shortcut_handwriting_long),

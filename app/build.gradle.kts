@@ -146,6 +146,9 @@ dependencies {
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)
 
+    // Location settings dialog for the Control Center GPS tile
+    implementation(libs.play.services.location)
+
     // Baseline Profile & Startup Tracing
     implementation(libs.androidx.profileinstaller)
     "baselineProfile"(project(":baselineprofile"))

@@ -62,6 +62,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -108,6 +109,7 @@ import androidx.graphics.shapes.toPath
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.LauncherMode
+import com.joyal.swyplauncher.ui.screens.ControlCenterModeScreen
 import com.joyal.swyplauncher.ui.screens.HandwritingModeScreen
 import com.joyal.swyplauncher.ui.screens.IndexModeScreen
 import com.joyal.swyplauncher.ui.screens.KeyboardModeScreen
@@ -282,6 +284,11 @@ fun AssistantScreen(
     val dismissThresholdPx = 300f
     val sheetFractionAnim = remember(isLandscape) { Animatable(minSheetFraction) }
     val dragOffsetY = remember { Animatable(0f) }
+
+    // Control Center shows the all-apps list only once the sheet is dragged to full height.
+    val isSheetFullyExpanded by remember(sheetFractionAnim) {
+        derivedStateOf { sheetFractionAnim.value >= maxSheetFraction - 0.005f }
+    }
 
     val pagerState = rememberPagerState(
         initialPage = modes.indexOf(selectedMode).coerceAtLeast(0),
@@ -679,6 +686,17 @@ fun AssistantScreen(
                                         userScrollEnabled = modes.size > 1
                                     ) { page ->
                                         when (val mode = modes[page]) {
+                                            LauncherMode.CONTROL_CENTER -> ControlCenterModeScreen(
+                                                onDismiss = { handleDismiss(true) },
+                                                launcherViewModel = launcherViewModel,
+                                                isSheetExpanded = isSheetFullyExpanded,
+                                                isBlurEnabled = blurEnabled,
+                                                onAddShortcut = { appId ->
+                                                    shortcutAppId = appId
+                                                    showShortcutEditor = true
+                                                }
+                                            )
+
                                             LauncherMode.HANDWRITING -> HandwritingModeScreen(
                                                 onDismiss = { handleDismiss(true) },
                                                 launcherViewModel = launcherViewModel,
@@ -747,6 +765,17 @@ fun AssistantScreen(
                                         userScrollEnabled = modes.size > 1
                                     ) { page ->
                                         when (val mode = modes[page]) {
+                                            LauncherMode.CONTROL_CENTER -> ControlCenterModeScreen(
+                                                onDismiss = { handleDismiss(true) },
+                                                launcherViewModel = launcherViewModel,
+                                                isSheetExpanded = isSheetFullyExpanded,
+                                                isBlurEnabled = blurEnabled,
+                                                onAddShortcut = { appId ->
+                                                    shortcutAppId = appId
+                                                    showShortcutEditor = true
+                                                }
+                                            )
+
                                             LauncherMode.HANDWRITING -> HandwritingModeScreen(
                                                 onDismiss = { handleDismiss(true) },
                                                 launcherViewModel = launcherViewModel,
@@ -991,6 +1020,7 @@ fun ModeSwitcher(
 
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         val allModes = listOf(
+            Triple(R.drawable.ic_control_center, stringResource(R.string.mode_control_center), LauncherMode.CONTROL_CENTER),
             Triple(R.drawable.ic_handwriting, stringResource(R.string.mode_draw), LauncherMode.HANDWRITING),
             Triple(R.drawable.ic_index, stringResource(R.string.mode_index), LauncherMode.INDEX),
             Triple(R.drawable.ic_keyboard, stringResource(R.string.mode_type), LauncherMode.KEYBOARD),
@@ -1162,6 +1192,7 @@ fun VerticalModeSwitcher(
         verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
     ) {
         val allModes = listOf(
+            Triple(R.drawable.ic_control_center, stringResource(R.string.mode_control_center), LauncherMode.CONTROL_CENTER),
             Triple(R.drawable.ic_handwriting, stringResource(R.string.mode_draw), LauncherMode.HANDWRITING),
             Triple(R.drawable.ic_index, stringResource(R.string.mode_index), LauncherMode.INDEX),
             Triple(R.drawable.ic_keyboard, stringResource(R.string.mode_type), LauncherMode.KEYBOARD),
