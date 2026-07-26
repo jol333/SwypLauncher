@@ -27,6 +27,7 @@ import android.net.wifi.WifiManager
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
 import com.joyal.swyplauncher.domain.model.ControlCenterState
@@ -338,9 +339,18 @@ class ControlCenterRepositoryImpl @Inject constructor(
         val tm = telephonyManager
             ?.takeIf { context.packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY) }
             ?: return@runCatching ControlToggle(isAvailable = false)
+        // The bare TelephonyManager is bound to the default (voice) subscription, so on
+        // dual-SIM devices it named SIM 1 even while SIM 2 carried the data — bind to the
+        // default *data* subscription instead.
+        val dataSubId = SubscriptionManager.getDefaultDataSubscriptionId()
+        val dataTm = if (dataSubId != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+            tm.createForSubscriptionId(dataSubId)
+        } else {
+            tm
+        }
         ControlToggle(
-            isOn = runCatching { tm.isDataEnabled }.getOrDefault(false),
-            label = runCatching { tm.simOperatorName?.takeIf { it.isNotBlank() } }.getOrNull()
+            isOn = runCatching { dataTm.isDataEnabled }.getOrDefault(false),
+            label = runCatching { dataTm.simOperatorName?.takeIf { it.isNotBlank() } }.getOrNull()
         )
     }.getOrDefault(ControlToggle(isAvailable = false))
 

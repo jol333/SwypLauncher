@@ -2,6 +2,7 @@ package com.joyal.swyplauncher.ui.screens
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -12,6 +13,12 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -90,7 +97,9 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
 import com.joyal.swyplauncher.R
+import com.joyal.swyplauncher.domain.model.ActiveMediaSession
 import com.joyal.swyplauncher.domain.model.RingerMode
+import com.joyal.swyplauncher.service.MediaNotificationListenerService
 import com.joyal.swyplauncher.ui.theme.BentoColors
 import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
 import com.joyal.swyplauncher.ui.viewmodel.ControlCenterViewModel
@@ -160,12 +169,14 @@ fun ControlCenterModeScreen(
     }
 
     // Panel collects its own state, so slider drags never recompose the grid
+    val currentOnDismiss by rememberUpdatedState(onDismiss)
     val headerContent: @Composable () -> Unit = remember(controlCenterViewModel, isBlurEnabled) {
         {
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
                 ControlCenterPanel(
                     viewModel = controlCenterViewModel,
                     isBlurEnabled = isBlurEnabled,
+                    onDismiss = { currentOnDismiss() },
                     modifier = Modifier.widthIn(max = 480.dp)
                 )
             }
@@ -249,6 +260,20 @@ private fun promptEnableLocation(
     }.onFailure { onFallback() }
 }
 
+/** Deep-links to this app's notification-listener toggle; falls back to the full list. */
+private fun openNotificationAccessSettings(context: Context) {
+    val component = ComponentName(context, MediaNotificationListenerService::class.java)
+    val detail = Intent(Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS)
+        .putExtra(
+            Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME,
+            component.flattenToString()
+        )
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    if (!tryStartActivity(context, detail)) {
+        openSettings(context, Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+    }
+}
+
 /** Opens the "Modify system settings" page for this app (brightness / auto-rotate access). */
 private fun requestWriteSettings(context: Context) {
     context.safeStartActivity(
@@ -262,10 +287,12 @@ private fun requestWriteSettings(context: Context) {
 private fun ControlCenterPanel(
     viewModel: ControlCenterViewModel,
     isBlurEnabled: Boolean,
+    onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
+    val mediaState by viewModel.mediaState.collectAsState()
     val cardBackground =
         if (isBlurEnabled) Color.White.copy(alpha = 0.08f) else BentoColors.CardBackground
 
@@ -291,15 +318,19 @@ private fun ControlCenterPanel(
             val wifi = viewModel.state.value.wifi
             when {
                 !wifi.isAvailable -> toast(R.string.cc_feature_unavailable)
-                // One-time ask so the tile can show the network name; the panel opens
-                // from the launcher callback either way
-                wifi.isOn && wifi.label == null && !viewModel.isWifiNameAccessGranted() ->
+                // Strictly one-shot ask (a deny used to re-trigger it on every tap) so the
+                // tile can show the network name, with a toast saying why location comes up;
+                // the panel opens from the launcher callback either way
+                wifi.isOn && wifi.label == null && !viewModel.isWifiNameAccessGranted() &&
+                    viewModel.consumeWifiNamePermissionPrompt() -> {
+                    toast(R.string.cc_wifi_name_needs_location)
                     wifiNameLauncher.launch(
                         arrayOf(
                             Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.ACCESS_COARSE_LOCATION
                         )
                     )
+                }
                 // Apps can't toggle Wi-Fi directly; the internet panel carries the toggle
                 else -> openSettings(
                     context,
@@ -486,10 +517,56 @@ private fun ControlCenterPanel(
         }
     }
 
+    val onToggleMediaPlay = remember(viewModel) { viewModel::toggleMediaPlayPause }
+    val onMediaPrevious = remember(viewModel) { viewModel::skipMediaToPrevious }
+    val onMediaNext = remember(viewModel) { viewModel::skipMediaToNext }
+    val onMediaSeek: (Long) -> Unit = remember(viewModel) { viewModel::seekMediaTo }
+    val onOpenMediaApp = remember(context, viewModel, onDismiss) {
+        {
+            if (viewModel.openMediaApp()) onDismiss()
+            else toast(R.string.cc_media_open_app_failed)
+        }
+    }
+    val onMediaAccessClick = remember(context) {
+        { openNotificationAccessSettings(context) }
+    }
+
     Column(
         modifier = modifier.padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        val mediaSession = mediaState.session
+        // Latched so the card keeps rendering while it animates out after the session clears;
+        // once the exit transition idles the AnimatedVisibility node itself is dropped so the
+        // column's spacedBy gap doesn't linger.
+        var lastMediaSession by remember { mutableStateOf<ActiveMediaSession?>(null) }
+        if (mediaSession != null) lastMediaSession = mediaSession
+        val mediaCardVisible = remember { MutableTransitionState(false) }
+        mediaCardVisible.targetState = mediaSession != null
+        if (mediaSession != null || !mediaCardVisible.isIdle) {
+            AnimatedVisibility(
+                visibleState = mediaCardVisible,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                lastMediaSession?.let { latchedSession ->
+                    MediaControlsCard(
+                        session = latchedSession,
+                        cardBackground = cardBackground,
+                        onTogglePlay = onToggleMediaPlay,
+                        onSkipPrevious = onMediaPrevious,
+                        onSkipNext = onMediaNext,
+                        onSeekTo = onMediaSeek,
+                        onOpenApp = onOpenMediaApp
+                    )
+                }
+            }
+        } else if (mediaState.needsNotificationAccess) {
+            MediaAccessPromptCard(
+                cardBackground = cardBackground,
+                onClick = onMediaAccessClick
+            )
+        }
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier.weight(1.15f),

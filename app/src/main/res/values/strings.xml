@@ -343,7 +343,15 @@
     <string name="cc_needs_write_settings">Allow “Modify system settings” for SwypLauncher, then try again</string>
     <string name="cc_needs_dnd_access">Allow Do Not Disturb access for SwypLauncher, then try again</string>
     <string name="cc_bt_permission_denied">Bluetooth permission is required to toggle Bluetooth</string>
+    <string name="cc_wifi_name_needs_location">Android needs precise location access to show the Wi-Fi network\'s name</string>
     <string name="cc_flashlight_busy">Flashlight is busy — the camera may be in use</string>
     <string name="cc_auto_brightness_on">Auto-brightness on</string>
     <string name="cc_auto_brightness_off">Auto-brightness off</string>
+    <string name="cc_media_play">Play</string>
+    <string name="cc_media_pause">Pause</string>
+    <string name="cc_media_previous">Previous track</string>
+    <string name="cc_media_next">Next track</string>
+    <string name="cc_media_unknown_title">Unknown media</string>
+    <string name="cc_media_needs_access">Media is playing — tap to allow notification access and control it here</string>
+    <string name="cc_media_open_app_failed">Couldn\'t open the media app</string>
 </resources>

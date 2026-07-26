@@ -4,12 +4,14 @@ import com.joyal.swyplauncher.data.repository.AppRepositoryImpl
 import com.joyal.swyplauncher.data.repository.ControlCenterRepositoryImpl
 import com.joyal.swyplauncher.data.repository.CurrencyRepositoryImpl
 import com.joyal.swyplauncher.data.repository.MLKitRepositoryImpl
+import com.joyal.swyplauncher.data.repository.MediaSessionRepositoryImpl
 import com.joyal.swyplauncher.data.repository.PreferencesRepositoryImpl
 import com.joyal.swyplauncher.data.repository.ShortcutSearchRepositoryImpl
 import com.joyal.swyplauncher.domain.repository.AppRepository
 import com.joyal.swyplauncher.domain.repository.ControlCenterRepository
 import com.joyal.swyplauncher.domain.repository.CurrencyRepository
 import com.joyal.swyplauncher.domain.repository.MLKitRepository
+import com.joyal.swyplauncher.domain.repository.MediaSessionRepository
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository
 import dagger.Binds
@@ -57,4 +59,10 @@ abstract class RepositoryModule {
     abstract fun bindControlCenterRepository(
         controlCenterRepositoryImpl: ControlCenterRepositoryImpl
     ): ControlCenterRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMediaSessionRepository(
+        mediaSessionRepositoryImpl: MediaSessionRepositoryImpl
+    ): MediaSessionRepository
 }

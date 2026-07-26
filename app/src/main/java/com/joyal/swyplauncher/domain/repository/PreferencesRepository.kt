@@ -55,6 +55,11 @@ interface PreferencesRepository {
     
     fun hasPromptedForUsageStatsPermission(): Boolean
     fun setUsageStatsPermissionPrompted()
+
+    // One-shot location ask from the Wi-Fi tile (Android gates the SSID behind it);
+    // once prompted — granted or denied — the tile never asks again.
+    fun hasPromptedForWifiNamePermission(): Boolean
+    fun setWifiNamePermissionPrompted()
     
     fun isBackgroundBlurEnabled(): Boolean
     fun setBackgroundBlurEnabled(enabled: Boolean)

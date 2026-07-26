@@ -176,6 +176,13 @@ class PreferencesRepositoryImpl @Inject constructor(
         prefs.edit().putBoolean(KEY_USAGE_STATS_PERMISSION_PROMPTED, true).apply()
     }
 
+    override fun hasPromptedForWifiNamePermission(): Boolean =
+        prefs.getBoolean(KEY_WIFI_NAME_PERMISSION_PROMPTED, false)
+
+    override fun setWifiNamePermissionPrompted() {
+        prefs.edit().putBoolean(KEY_WIFI_NAME_PERMISSION_PROMPTED, true).apply()
+    }
+
     override fun isBackgroundBlurEnabled(): Boolean = 
         prefs.getBoolean(KEY_BACKGROUND_BLUR_ENABLED, false)
 
@@ -285,6 +292,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         private const val KEY_ENABLED_MODES = "enabled_modes"
         private const val KEY_APP_SORT_ORDER = "app_sort_order"
         private const val KEY_USAGE_STATS_PERMISSION_PROMPTED = "usage_stats_permission_prompted"
+        private const val KEY_WIFI_NAME_PERMISSION_PROMPTED = "wifi_name_permission_prompted"
         private const val KEY_BACKGROUND_BLUR_ENABLED = "background_blur_enabled"
         private const val KEY_BLUR_LEVEL = "blur_level"
         private const val KEY_APP_SHORTCUTS = "app_shortcuts"
