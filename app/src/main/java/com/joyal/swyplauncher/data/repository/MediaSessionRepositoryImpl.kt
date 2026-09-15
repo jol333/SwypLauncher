@@ -4,6 +4,7 @@ import android.app.ActivityOptions
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.media.AudioManager
 import android.media.MediaMetadata
 import android.media.session.MediaController
@@ -288,11 +289,11 @@ class MediaSessionRepositoryImpl @Inject constructor(
 
     override fun openMediaApp(): Boolean {
         val controller = activeController ?: return false
-        // The overlay is foreground, but sending another app's PendingIntent still needs an
+        // The overlay is visible, but sending another app's PendingIntent still needs an
         // explicit background-start opt-in on Android 14+.
         val options = ActivityOptions.makeBasic()
             .setPendingIntentBackgroundActivityStartMode(
-                ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                pendingIntentBackgroundStartMode()
             )
             .toBundle()
         val sessionActivity = runCatching { controller.sessionActivity }.getOrNull()
@@ -308,6 +309,17 @@ class MediaSessionRepositoryImpl @Inject constructor(
             context.startActivity(launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }.isSuccess
     }
+
+    private fun pendingIntentBackgroundStartMode(): Int =
+        if (Build.VERSION.SDK_INT >= 36) {
+            ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE
+        } else {
+            legacyPendingIntentBackgroundStartMode()
+        }
+
+    @Suppress("DEPRECATION")
+    private fun legacyPendingIntentBackgroundStartMode(): Int =
+        ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
 
     override fun isNotificationAccessGranted(): Boolean = runCatching {
         NotificationManagerCompat.getEnabledListenerPackages(context)

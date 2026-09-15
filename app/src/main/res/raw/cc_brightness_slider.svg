@@ -1,0 +1,12 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="79" height="96" viewBox="0 0 79 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Brightness Slider">
+<path id="Wavy top" d="M0 1L9.8869 6.25633C16.0192 9.51654 23.4014 9.37389 29.4031 5.87918C35.6439 2.2453 43.3561 2.2453 49.5969 5.87918C55.5986 9.37389 62.9808 9.51654 69.1131 6.25633L79 1V12H0L0 1Z" fill="#C97892" fill-opacity="0.8"/>
+<rect id="Rectangle bottom" y="12" width="79" height="84" fill="url(#paint0_linear_0_7)"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_7" x1="39.5" y1="12" x2="39.5" y2="96" gradientUnits="userSpaceOnUse">
+<stop stop-color="#C97892" stop-opacity="0.8"/>
+<stop offset="1" stop-color="#633B48"/>
+</linearGradient>
+</defs>
+</svg>

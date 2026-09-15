@@ -89,7 +89,7 @@
     <string name="access_assistant">Puedes abrir Swyp Launcher de varias maneras</string>
     <string name="default_digital_assistant">Establecer asistente predeterminado</string>
     <string name="add_home_screen_widget">Añadir widget</string>
-    <string name="add_shortcut_home">Añadir palabra mágica</string>
+    <string name="add_shortcut_home">Añadir icono de atajo</string>
     <string name="quick_settings_tile">Mosaico de ajustes rápidos</string>
     <string name="widget_description">Acceso rápido a Swyp Launcher</string>
     <string name="swyp_launcher_tile_label">Swyp Launcher</string>

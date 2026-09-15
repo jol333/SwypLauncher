@@ -7,6 +7,7 @@ import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
+import coil3.svg.SvgDecoder
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -67,6 +68,7 @@ class LauncherApplication : Application(), SingletonImageLoader.Factory {
                     .build()
             }
             .components {
+                add(SvgDecoder.Factory())
                 add(com.joyal.swyplauncher.ui.util.AppIconFetcher.Factory(context))
             }
             .build()

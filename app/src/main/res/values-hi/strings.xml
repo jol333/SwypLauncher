@@ -89,7 +89,7 @@
     <string name="access_assistant">Swyp Launcher को कई तरीकों से खोला जा सकता है</string>
     <string name="default_digital_assistant">डिफ़ॉल्ट असिस्टेंट सेट करें</string>
     <string name="add_home_screen_widget">होम स्क्रीन विजेट जोड़ें</string>
-    <string name="add_shortcut_home">मैजिक वर्ड जोड़ें</string>
+    <string name="add_shortcut_home">शॉर्टकट आइकन जोड़ें</string>
     <string name="quick_settings_tile">क्विक सेटिंग्स टाइल</string>
     <string name="widget_description">Swyp Launcher मोड्स तक तुरंत पहुँचें</string>
     <string name="swyp_launcher_tile_label">Swyp Launcher</string>

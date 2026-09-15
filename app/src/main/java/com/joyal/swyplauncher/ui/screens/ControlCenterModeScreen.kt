@@ -29,37 +29,19 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.VolumeOff
-import androidx.compose.material.icons.automirrored.rounded.VolumeUp
-import androidx.compose.material.icons.rounded.Bluetooth
-import androidx.compose.material.icons.rounded.BrightnessAuto
-import androidx.compose.material.icons.rounded.FlashlightOff
-import androidx.compose.material.icons.rounded.FlashlightOn
-import androidx.compose.material.icons.rounded.Flight
-import androidx.compose.material.icons.rounded.LightMode
-import androidx.compose.material.icons.rounded.LocationOn
-import androidx.compose.material.icons.rounded.Notifications
-import androidx.compose.material.icons.rounded.NotificationsOff
-import androidx.compose.material.icons.rounded.ScreenRotation
-import androidx.compose.material.icons.rounded.SwapVert
-import androidx.compose.material.icons.rounded.Vibration
-import androidx.compose.material.icons.rounded.Wifi
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -75,16 +57,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -105,20 +90,29 @@ import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
 import com.joyal.swyplauncher.ui.viewmodel.ControlCenterViewModel
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
 import com.joyal.swyplauncher.util.safeStartActivity
+import coil3.compose.AsyncImage
 import kotlin.math.abs
 
-// Per-control accents (design screenshot); fills for the two vertical sliders.
-private val AccentWifi = BentoColors.AccentGreen
-private val AccentBt = Color(0xFF22D3EE)
-private val AccentSim = Color(0xFFE879F9)
-private val AccentLocation = Color(0xFF3B82F6)
-private val AccentRotate = Color(0xFFF59E0B)
-private val AccentFlash = Color(0xFF00BBA7)
-private val AccentAirplane = Color(0xFFFF5A5F)
-private val AccentRinger = Color(0xFF22D3EE)
-private val FillVolume = Color(0xFF8B7FD6)
-private val FillBrightness = Color(0xFFC97B8E)
-private val RingerIconOnAccent = Color(0xFF0B1020)
+private val ControlCenterCard = Color(0xFF171718)
+private val ControlCenterOffBorder = Color(0xFF27272A)
+private val WifiGlow = Color(0xFF5EE9B5)
+private val BluetoothGlow = Color(0xFF66E1FF)
+private val SimDataGlow = Color(0xFFD867FA)
+
+@Composable
+private fun FigmaVector(
+    rawRes: Int,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Fit
+) {
+    AsyncImage(
+        model = rawRes,
+        contentDescription = contentDescription,
+        contentScale = contentScale,
+        modifier = modifier
+    )
+}
 
 @Composable
 fun ControlCenterModeScreen(
@@ -177,7 +171,7 @@ fun ControlCenterModeScreen(
                     viewModel = controlCenterViewModel,
                     isBlurEnabled = isBlurEnabled,
                     onDismiss = { currentOnDismiss() },
-                    modifier = Modifier.widthIn(max = 480.dp)
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -202,7 +196,8 @@ fun ControlCenterModeScreen(
             launcherViewModel.hideApp(app.getIdentifier(), LauncherViewModel.LauncherMode.KEYBOARD)
         },
         onAddShortcut = onAddShortcut,
-        headerContent = headerContent
+        headerContent = headerContent,
+        contentPadding = PaddingValues(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 100.dp)
     )
 }
 
@@ -294,7 +289,7 @@ private fun ControlCenterPanel(
     val state by viewModel.state.collectAsState()
     val mediaState by viewModel.mediaState.collectAsState()
     val cardBackground =
-        if (isBlurEnabled) Color.White.copy(alpha = 0.08f) else BentoColors.CardBackground
+        if (isBlurEnabled) Color.White.copy(alpha = 0.08f) else ControlCenterCard
 
     val toast: (Int) -> Unit = remember(context) {
         { res -> Toast.makeText(context, context.getString(res), Toast.LENGTH_SHORT).show() }
@@ -532,8 +527,8 @@ private fun ControlCenterPanel(
     }
 
     Column(
-        modifier = modifier.padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         val mediaSession = mediaState.session
         // Latched so the card keeps rendering while it animates out after the session clears;
@@ -569,69 +564,72 @@ private fun ControlCenterPanel(
         }
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(
-                modifier = Modifier.weight(1.15f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 ControlPill(
                     label = state.wifi.label ?: stringResource(R.string.cc_wifi),
-                    icon = Icons.Rounded.Wifi,
+                    onIconRes = R.raw.cc_wifi_on,
+                    offIconRes = R.raw.cc_wifi_off,
                     isOn = state.wifi.isOn,
                     isAvailable = state.wifi.isAvailable,
-                    accent = AccentWifi,
+                    glow = WifiGlow,
                     cardBackground = cardBackground,
                     onClick = onWifiClick,
                     onLongClick = onWifiLongClick
                 )
                 ControlPill(
                     label = state.bluetooth.label ?: stringResource(R.string.cc_bluetooth),
-                    icon = Icons.Rounded.Bluetooth,
+                    onIconRes = R.raw.cc_bluetooth_on,
+                    offIconRes = R.raw.cc_bluetooth_off,
                     isOn = state.bluetooth.isOn,
                     isAvailable = state.bluetooth.isAvailable,
-                    accent = AccentBt,
+                    glow = BluetoothGlow,
                     cardBackground = cardBackground,
                     onClick = onBluetoothClick,
                     onLongClick = onBluetoothLongClick
                 )
                 ControlPill(
                     label = state.mobileData.label ?: stringResource(R.string.cc_sim_data),
-                    icon = Icons.Rounded.SwapVert,
+                    onIconRes = R.raw.cc_sim_data_on,
+                    offIconRes = R.raw.cc_sim_data_off,
                     isOn = state.mobileData.isOn,
                     isAvailable = state.mobileData.isAvailable,
-                    accent = AccentSim,
+                    glow = SimDataGlow,
                     cardBackground = cardBackground,
                     onClick = onSimClick,
                     onLongClick = onSimLongClick
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             Column(
-                modifier = Modifier.weight(0.85f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(164.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        .height(176.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     VerticalSlider(
                         fraction = state.mediaVolume,
-                        fillColor = FillVolume,
                         cardBackground = cardBackground,
-                        icon = Icons.AutoMirrored.Rounded.VolumeUp,
+                        fillGradientColors = listOf(Color(0xFF6750A4), Color(0xFF6750A4).copy(alpha = 0.64f)),
+                        onIconRes = R.raw.cc_media_volume_on,
+                        offIconRes = R.raw.cc_media_volume_off,
                         contentDescription = stringResource(R.string.cc_media_volume),
                         onSetFraction = setVolume,
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight(),
-                        zeroIcon = Icons.AutoMirrored.Rounded.VolumeOff
                     )
                     VerticalSlider(
                         fraction = state.brightness,
-                        fillColor = FillBrightness,
                         cardBackground = cardBackground,
-                        icon = if (state.isAutoBrightness) Icons.Rounded.BrightnessAuto
-                        else Icons.Rounded.LightMode,
+                        fillGradientColors = listOf(Color(0xFFC97892).copy(alpha = 0.8f), Color(0xFF633B48)),
+                        onIconRes = R.raw.cc_brightness_on,
+                        offIconRes = R.raw.cc_brightness_off,
                         contentDescription = stringResource(R.string.cc_brightness),
                         onSetFraction = setBrightness,
                         modifier = Modifier
@@ -650,48 +648,47 @@ private fun ControlCenterPanel(
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             RoundControlSlot(
-                icon = Icons.Rounded.LocationOn,
+                onIconRes = R.raw.cc_location_on,
+                offIconRes = R.raw.cc_location_off,
                 contentDescription = stringResource(R.string.cc_location),
                 isOn = state.location.isOn,
                 isAvailable = state.location.isAvailable,
-                accent = AccentLocation,
                 cardBackground = cardBackground,
                 onClick = onLocationClick,
                 onLongClick = onLocationLongClick,
                 modifier = Modifier.weight(1f)
             )
             RoundControlSlot(
-                icon = Icons.Rounded.ScreenRotation,
+                onIconRes = R.raw.cc_rotation_on,
+                offIconRes = R.raw.cc_rotation_off,
                 contentDescription = stringResource(R.string.cc_auto_rotate),
                 isOn = state.autoRotate.isOn,
                 isAvailable = state.autoRotate.isAvailable,
-                accent = AccentRotate,
                 cardBackground = cardBackground,
                 onClick = onAutoRotateClick,
                 onLongClick = onAutoRotateLongClick,
                 modifier = Modifier.weight(1f)
             )
             RoundControlSlot(
-                icon = if (state.flashlight.isOn) Icons.Rounded.FlashlightOn
-                else Icons.Rounded.FlashlightOff,
+                onIconRes = R.raw.cc_flashlight_on,
+                offIconRes = R.raw.cc_flashlight_off,
                 contentDescription = stringResource(R.string.cc_flashlight),
                 isOn = state.flashlight.isOn,
                 isAvailable = state.flashlight.isAvailable,
-                accent = AccentFlash,
                 cardBackground = cardBackground,
                 onClick = onFlashlightClick,
                 onLongClick = null,
                 modifier = Modifier.weight(1f)
             )
             RoundControlSlot(
-                icon = Icons.Rounded.Flight,
+                onIconRes = R.raw.cc_airplane_on,
+                offIconRes = R.raw.cc_airplane_off,
                 contentDescription = stringResource(R.string.cc_airplane_mode),
                 isOn = state.airplaneMode.isOn,
                 isAvailable = state.airplaneMode.isAvailable,
-                accent = AccentAirplane,
                 cardBackground = cardBackground,
                 onClick = onAirplaneClick,
                 onLongClick = onAirplaneClick,
@@ -701,42 +698,49 @@ private fun ControlCenterPanel(
     }
 }
 
-/** Soft radial accent wash anchored near the bottom edge; brush built once per size. */
+/** Figma's low, wide radial glow for the connected-control tiles. */
 private fun Modifier.accentGlow(accent: Color): Modifier = drawWithCache {
+    val center = Offset(size.width / 2f, size.height)
     val brush = Brush.radialGradient(
-        colors = listOf(accent.copy(alpha = 0.25f), Color.Transparent),
-        center = Offset(size.width / 2f, size.height * 0.85f),
-        radius = (size.width * 0.7f).coerceAtLeast(1f)
+        colors = listOf(accent.copy(alpha = 0.18f), Color.Transparent),
+        center = center,
+        radius = (size.width * 0.45f).coerceAtLeast(1f)
     )
-    onDrawBehind { drawRect(brush) }
+    onDrawBehind {
+        withTransform({
+            scale(scaleX = 1f, scaleY = 0.35f, pivot = center)
+        }) { drawRect(brush) }
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ControlPill(
     label: String,
-    icon: ImageVector,
+    onIconRes: Int,
+    offIconRes: Int,
     isOn: Boolean,
     isAvailable: Boolean,
-    accent: Color,
+    glow: Color,
     cardBackground: Color,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
-    val shape = RoundedCornerShape(38.dp)
+    val shape = RoundedCornerShape(40.dp)
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(76.dp)
+            .height(80.dp)
             .clip(shape)
             .then(
                 if (isOn) {
                     Modifier
                         .background(cardBackground)
-                        .accentGlow(accent)
+                        .border(1.dp, Color(0x1A000000), shape)
+                        .accentGlow(glow)
                 } else {
-                    Modifier.border(1.dp, BentoColors.BorderLight, shape)
+                    Modifier.border(1.dp, ControlCenterOffBorder, shape)
                 }
             )
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
@@ -744,11 +748,10 @@ private fun ControlPill(
             .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
+        FigmaVector(
+            rawRes = if (isOn) onIconRes else offIconRes,
             contentDescription = null,
-            tint = if (isOn) accent else BentoColors.TextSecondary,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(32.dp)
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
@@ -764,13 +767,13 @@ private fun ControlPill(
 @Composable
 private fun VerticalSlider(
     fraction: Float,
-    fillColor: Color,
     cardBackground: Color,
-    icon: ImageVector,
+    fillGradientColors: List<Color>,
+    onIconRes: Int,
+    offIconRes: Int,
     contentDescription: String,
     onSetFraction: (Float) -> Unit,
     modifier: Modifier = Modifier,
-    zeroIcon: ImageVector? = null,
     gate: (() -> Boolean)? = null,
     onLongPress: (() -> Unit)? = null
 ) {
@@ -782,7 +785,7 @@ private fun VerticalSlider(
     val currentLongPress by rememberUpdatedState(onLongPress)
 
     val displayed = (dragFraction ?: fraction).coerceIn(0f, 1f)
-    val shape = RoundedCornerShape(28.dp)
+    val shape = RoundedCornerShape(40.dp)
 
     // One handler arbitrates tap / long-press / drag itself: separate detectors raced each
     // other and the grid+sheet gesture stack (a slow drag tripped long-press, which then
@@ -791,7 +794,6 @@ private fun VerticalSlider(
         modifier = modifier
             .clip(shape)
             .background(cardBackground)
-            .border(1.dp, BentoColors.BorderLight, shape)
             .pointerInput(Unit) {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
@@ -868,21 +870,61 @@ private fun VerticalSlider(
                 }
             }
     ) {
-        Box(
+        Spacer(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .fillMaxHeight(displayed)
-                .background(fillColor)
+                .fillMaxSize()
+                .drawWithCache {
+                    val w = size.width
+                    val h = size.height
+                    val waveHeight = 12.dp.toPx()
+                    val baseY = (h + waveHeight) * (1f - displayed)
+                    val sx = w / 79f
+                    val sy = waveHeight / 11f
+
+                    val path = Path().apply {
+                        moveTo(0f, baseY - (11f * sy))
+                        lineTo(9.8869f * sx, baseY - (12f - 6.25633f) * sy)
+                        cubicTo(
+                            16.0192f * sx, baseY - (12f - 9.51654f) * sy,
+                            23.4014f * sx, baseY - (12f - 9.37389f) * sy,
+                            29.4031f * sx, baseY - (12f - 5.87918f) * sy
+                        )
+                        cubicTo(
+                            35.6439f * sx, baseY - (12f - 2.2453f) * sy,
+                            43.3561f * sx, baseY - (12f - 2.2453f) * sy,
+                            49.5969f * sx, baseY - (12f - 5.87918f) * sy
+                        )
+                        cubicTo(
+                            55.5986f * sx, baseY - (12f - 9.37389f) * sy,
+                            62.9808f * sx, baseY - (12f - 9.51654f) * sy,
+                            69.1131f * sx, baseY - (12f - 6.25633f) * sy
+                        )
+                        lineTo(w, baseY - (11f * sy))
+                        lineTo(w, h)
+                        lineTo(0f, h)
+                        close()
+                    }
+
+                    val gradientStart = (baseY - waveHeight).coerceIn(0f, h)
+                    val gradientEnd = h.coerceAtLeast(gradientStart + 1f)
+                    val brush = Brush.verticalGradient(
+                        colors = fillGradientColors,
+                        startY = gradientStart,
+                        endY = gradientEnd
+                    )
+
+                    onDrawBehind {
+                        drawPath(path = path, brush = brush)
+                    }
+                }
         )
-        Icon(
-            imageVector = if (zeroIcon != null && displayed == 0f) zeroIcon else icon,
+        FigmaVector(
+            rawRes = if (displayed == 0f) offIconRes else onIconRes,
             contentDescription = contentDescription,
-            tint = Color.White,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 14.dp)
-                .size(24.dp)
+                .padding(bottom = 20.dp)
+                .size(32.dp)
         )
     }
 }
@@ -897,14 +939,16 @@ private fun RingerModeRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(76.dp)
-            .clip(RoundedCornerShape(38.dp))
-            .background(cardBackground),
+            .height(80.dp)
+            .clip(RoundedCornerShape(40.dp))
+            .background(cardBackground)
+            .ringerModeGlow(selected),
         verticalAlignment = Alignment.CenterVertically
     ) {
         RingerSegment(
             mode = RingerMode.SILENT,
-            icon = Icons.Rounded.NotificationsOff,
+            onIconRes = R.raw.cc_ringer_silent_on,
+            offIconRes = R.raw.cc_ringer_silent_off,
             contentDescription = stringResource(R.string.cc_silent),
             selected = selected,
             onSelect = onSelect,
@@ -912,7 +956,8 @@ private fun RingerModeRow(
         )
         RingerSegment(
             mode = RingerMode.VIBRATE,
-            icon = Icons.Rounded.Vibration,
+            onIconRes = R.raw.cc_ringer_vibrate_on,
+            offIconRes = R.raw.cc_ringer_vibrate_off,
             contentDescription = stringResource(R.string.cc_vibrate),
             selected = selected,
             onSelect = onSelect,
@@ -920,7 +965,8 @@ private fun RingerModeRow(
         )
         RingerSegment(
             mode = RingerMode.RING,
-            icon = Icons.Rounded.Notifications,
+            onIconRes = R.raw.cc_ringer_ring_on,
+            offIconRes = R.raw.cc_ringer_ring_off,
             contentDescription = stringResource(R.string.cc_ring),
             selected = selected,
             onSelect = onSelect,
@@ -932,7 +978,8 @@ private fun RingerModeRow(
 @Composable
 private fun RingerSegment(
     mode: RingerMode,
-    icon: ImageVector,
+    onIconRes: Int,
+    offIconRes: Int,
     contentDescription: String,
     selected: RingerMode,
     onSelect: (RingerMode) -> Unit,
@@ -944,69 +991,76 @@ private fun RingerSegment(
             .clickable { onSelect(mode) },
         contentAlignment = Alignment.Center
     ) {
-        if (mode == selected) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(AccentRinger, RoundedCornerShape(14.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = contentDescription,
-                    tint = RingerIconOnAccent,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-        } else {
-            Icon(
-                imageVector = icon,
-                contentDescription = contentDescription,
-                tint = BentoColors.TextSecondary,
-                modifier = Modifier.size(22.dp)
-            )
-        }
+        FigmaVector(
+            rawRes = if (mode == selected) onIconRes else offIconRes,
+            contentDescription = contentDescription,
+            modifier = Modifier.size(24.dp)
+        )
     }
 }
 
-/** Centers a [RoundControl] inside its weighted slot so it stays circular at any width. */
+/** Figma's selected ringer state is expressed by the pill background, not a selected icon chip. */
+private fun Modifier.ringerModeGlow(selected: RingerMode): Modifier = drawWithCache {
+    val (center, radius, stops) = when (selected) {
+        RingerMode.SILENT -> Triple(
+            Offset(size.width * 0.029f, size.height * 0.525f),
+            size.height * 2.56f,
+            arrayOf(0f to Color(0x30FF7474), 1f to Color.Transparent)
+        )
+        RingerMode.VIBRATE -> Triple(
+            Offset(size.width * 0.5f, size.height * 0.5f),
+            size.width * 0.37f,
+            arrayOf(0f to Color(0x2E66E1FF), 1f to Color.Transparent)
+        )
+        RingerMode.RING -> Triple(
+            Offset(size.width * 0.874f, size.height * 0.525f),
+            size.height * 2.54f,
+            arrayOf(
+                0f to Color(0x2015FF00),
+                0.25f to Color(0x183AFF00),
+                0.5f to Color(0x1060FF00),
+                1f to Color.Transparent
+            )
+        )
+    }
+    val brush = Brush.radialGradient(colorStops = stops, center = center, radius = radius)
+    onDrawBehind { drawRect(brush) }
+}
+
+/** Centers a Figma-sized lower control inside its weighted grid slot. */
 @Composable
 private fun RoundControlSlot(
-    icon: ImageVector,
+    onIconRes: Int,
+    offIconRes: Int,
     contentDescription: String,
     isOn: Boolean,
     isAvailable: Boolean,
-    accent: Color,
     cardBackground: Color,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        RoundControl(
-            icon = icon,
-            contentDescription = contentDescription,
-            isOn = isOn,
-            isAvailable = isAvailable,
-            accent = accent,
-            cardBackground = cardBackground,
-            onClick = onClick,
-            onLongClick = onLongClick,
-            modifier = Modifier
-                .heightIn(max = 72.dp)
-                .aspectRatio(1f)
-        )
-    }
+    RoundControl(
+        onIconRes = onIconRes,
+        offIconRes = offIconRes,
+        contentDescription = contentDescription,
+        isOn = isOn,
+        isAvailable = isAvailable,
+        cardBackground = cardBackground,
+        onClick = onClick,
+        onLongClick = onLongClick,
+        modifier = modifier.aspectRatio(1f)
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun RoundControl(
-    icon: ImageVector,
+    onIconRes: Int,
+    offIconRes: Int,
     contentDescription: String,
     isOn: Boolean,
     isAvailable: Boolean,
-    accent: Color,
     cardBackground: Color,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)?,
@@ -1014,25 +1068,22 @@ private fun RoundControl(
 ) {
     Box(
         modifier = modifier
-            .clip(CircleShape)
+            .clip(RoundedCornerShape(40.dp))
             .then(
                 if (isOn) {
-                    Modifier
-                        .background(cardBackground)
-                        .accentGlow(accent)
+                    Modifier.background(cardBackground)
                 } else {
-                    Modifier.border(1.dp, BentoColors.BorderLight, CircleShape)
+                    Modifier.border(1.dp, ControlCenterOffBorder, RoundedCornerShape(40.dp))
                 }
             )
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .alpha(if (isAvailable) 1f else 0.4f),
         contentAlignment = Alignment.Center
     ) {
-        Icon(
-            imageVector = icon,
+        FigmaVector(
+            rawRes = if (isOn) onIconRes else offIconRes,
             contentDescription = contentDescription,
-            tint = if (isOn) accent else BentoColors.TextSecondary,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(32.dp)
         )
     }
 }
