@@ -29,11 +29,17 @@ class HandwritingViewModel @Inject constructor(
     @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
+    private val modelAlreadyDownloaded = preferencesRepository.hasDownloadedHandwritingModel()
+
     private val _uiState = MutableStateFlow(
         HandwritingUiState(
             hasShownInitToast = preferencesRepository.hasShownHandwritingInitToast(),
-            // If model was previously downloaded, start as initialized to avoid showing download UI
-            isInitialized = preferencesRepository.hasDownloadedHandwritingModel()
+            // If model was previously downloaded, start as initialized to avoid showing download UI.
+            // The recognizer client itself is created in the background (see initializeRecognizer),
+            // so the state must not begin as "Initializing" either, or the download UI would flash.
+            isInitialized = modelAlreadyDownloaded,
+            recognitionResult = if (modelAlreadyDownloaded) RecognitionResult.Loading
+            else RecognitionResult.Initializing
         )
     )
     val uiState: StateFlow<HandwritingUiState> = _uiState.asStateFlow()

@@ -220,6 +220,7 @@ lint-baseline.xml
 .adb/
 .wifi-adb/
 Claude.md
+AGENTS.md
 
 # ========================================
 # Package Files
@@ -350,6 +351,8 @@ macrobenchmark-output/
 *.trace
 baselineprofiles/
 baseline-prof.txt
+# ...except the hand-written wildcard profile that ships with the app
+!app/src/main/baseline-prof.txt
 generated-baseline-profiles/
 *.prof
 *.nps

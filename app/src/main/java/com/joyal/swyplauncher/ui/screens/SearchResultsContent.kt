@@ -34,6 +34,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -108,8 +110,13 @@ fun AppResultGrid(
     centerItems: Boolean = false,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
-        val showFade =
-            gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0
+        // derivedStateOf: the scroll offset changes on every scrolled pixel, but this only needs
+        // to recompose when the answer flips.
+        val showFade by remember(gridState) {
+            derivedStateOf {
+                gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0
+            }
+        }
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(gridSize),
@@ -137,6 +144,15 @@ fun AppResultGrid(
                         is AppListItem.Divider -> GridItemSpan(gridSize)
                         is AppListItem.App -> GridItemSpan(1)
                         is AppListItem.Shortcut -> GridItemSpan(1)
+                    }
+                },
+                // Lets the grid recycle a scrolled-off cell only for an item of the same kind
+                contentType = { index ->
+                    when (items[index]) {
+                        is AppListItem.App -> 0
+                        is AppListItem.Shortcut -> 1
+                        is AppListItem.CategoryHeader -> 2
+                        is AppListItem.Divider -> 3
                     }
                 }
             ) { index ->

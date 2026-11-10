@@ -14,14 +14,14 @@ fun sortApps(
     usageMap: Map<String, Int> = emptyMap()
 ): List<AppInfo> {
     return when (sortOrder) {
-        AppSortOrder.NAME -> apps.sortedBy { it.label.lowercase() }
+        AppSortOrder.NAME -> apps.sortedBy { it.sortKey }
         AppSortOrder.USAGE -> apps.sortedByDescending {
             // Try full identifier first, then fall back to package name only
             usageMap[it.getIdentifier()] ?: usageMap[it.packageName] ?: 0
         }
         AppSortOrder.CATEGORY -> apps.sortedWith(
             compareBy<AppInfo> { if (it.category == "Other") "zzz" else it.category }
-                .thenBy { it.label.lowercase() }
+                .thenBy { it.sortKey }
         )
     }
 }
@@ -54,7 +54,7 @@ fun combineAppListsWithHeaders(
         val slotsToFill = gridSize - smartApps.size
         // Get fillers sorted alphabetically
         val fillers = remainingApps
-            .sortedBy { it.label.lowercase() }
+            .sortedBy { it.sortKey }
             .take(slotsToFill)
 
         fillers.forEach { result.add(AppListItem.App(it)) }
@@ -72,7 +72,7 @@ fun combineAppListsWithHeaders(
     // Add remaining apps with category headers if CATEGORY sort AND not searching
     if (sortOrder == AppSortOrder.CATEGORY && remainingApps.isNotEmpty() && !isSearching) {
         val groupedByCategory = remainingApps
-            .sortedWith(compareBy<AppInfo> { it.category }.thenBy { it.label.lowercase() })
+            .sortedWith(compareBy<AppInfo> { it.category }.thenBy { it.sortKey })
             .groupBy { it.category }
 
         // Sort categories alphabetically, but put "Other" at the end
@@ -89,7 +89,7 @@ fun combineAppListsWithHeaders(
         // Non-CATEGORY sort (or searching): no category headers. remainingApps preserves the
         // caller's ordering (allApps is pre-sorted); re-sort by name only for NAME sort or search.
         val sortedRemaining = if (sortOrder == AppSortOrder.NAME || isSearching) {
-             remainingApps.sortedBy { it.label.lowercase() }
+             remainingApps.sortedBy { it.sortKey }
         } else {
              remainingApps
         }

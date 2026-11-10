@@ -28,6 +28,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -101,13 +103,19 @@ class LauncherViewModel @Inject constructor(
 
     // Active per-mode filters, re-applied whenever a background app refresh lands so a refresh
     // that completes mid-search never replaces the user's results with the full app list.
-    // Read/written on the main thread only (all filter entry points and loadApps run there).
-    private var activeKeyboardQuery: String = ""
-    private var activeVoiceQuery: String = ""
-    private var activeHandwritingPrefix: String = ""
-    private var activeHandwritingGestureAppIds: Set<String>? = null
-    private var activeHandwritingGestureShortcutIds: Set<String>? = null
-    private var activeIndexLetter: Char? = null
+    // Written on the main thread only (all filter entry points run there). Held as one immutable
+    // value so a refresh can read a consistent snapshot from whichever thread it applies on.
+    private data class ActiveFilters(
+        val keyboardQuery: String = "",
+        val voiceQuery: String = "",
+        val handwritingPrefix: String = "",
+        val handwritingGestureAppIds: Set<String>? = null,
+        val handwritingGestureShortcutIds: Set<String>? = null,
+        val indexLetter: Char? = null
+    )
+
+    @Volatile
+    private var activeFilters = ActiveFilters()
 
     private data class AppLoadResult(
         val apps: List<AppInfo>,
@@ -139,17 +147,28 @@ class LauncherViewModel @Inject constructor(
     private fun loadApps() {
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            val cachedApps = getCachedInstalledAppsUseCase()
+            // In a fresh process the in-memory cache is empty; fall back to the list persisted
+            // by the previous scan so apps show immediately while the real scan runs below.
+            val cachedApps = getCachedInstalledAppsUseCase().ifEmpty {
+                getCachedInstalledAppsUseCase.restore()
+            }
             val hasCached = cachedApps.isNotEmpty()
+            // Rank the cached list with the last known usage map (this ViewModel's, else the
+            // repository's from an earlier session) instead of waiting for a fresh query.
             val cachedUsage = cachedUsageMap.takeIf { it.isNotEmpty() }
+                ?: recordAppUsageUseCase.peekUsageMap()
 
             if (hasCached) {
                 val cachedDispatcher = if (cachedUsage != null) Dispatchers.Default else Dispatchers.IO
                 val cachedResult = withContext(cachedDispatcher) {
-                    buildAppLoadResult(cachedApps, cachedUsage)
+                    val result = buildAppLoadResult(cachedApps, cachedUsage)
+                    // Published from this thread rather than after hopping back to main: when
+                    // the assistant is opening, the main thread is busy until its first frame is
+                    // drawn, and the apps should be in that frame instead of popping in after it.
+                    applyAppLoadResult(result, isLoading = false)
+                    result
                 }
                 cachedUsageMap = cachedResult.usageMap
-                applyAppLoadResult(cachedResult, isLoading = false)
             } else {
                 _uiState.update { it.copy(isLoading = true, error = null) }
             }
@@ -202,13 +221,14 @@ class LauncherViewModel @Inject constructor(
         // Pre-compute available letters for Index mode performance
         val letters = result.apps.map { it.firstLetter }.distinct().sorted()
 
-        // Snapshot the active filters on the main thread before recomputing on Default.
-        val keyboardQuery = activeKeyboardQuery
-        val voiceQuery = activeVoiceQuery
-        val handwritingPrefix = activeHandwritingPrefix
-        val handwritingGestureIds = activeHandwritingGestureAppIds
-        val handwritingGestureShortcutIds = activeHandwritingGestureShortcutIds
-        val indexLetter = activeIndexLetter
+        // Snapshot the active filters before recomputing on Default.
+        val filters = activeFilters
+        val keyboardQuery = filters.keyboardQuery
+        val voiceQuery = filters.voiceQuery
+        val handwritingPrefix = filters.handwritingPrefix
+        val handwritingGestureIds = filters.handwritingGestureAppIds
+        val handwritingGestureShortcutIds = filters.handwritingGestureShortcutIds
+        val indexLetter = filters.indexLetter
 
         val (keyboard, voice, handwriting, index) = withContext(Dispatchers.Default) {
             val shortcuts =
@@ -258,6 +278,9 @@ class LauncherViewModel @Inject constructor(
                 )
             }
 
+        // May run off the main thread (cached pass), where a superseded load isn't stopped by a
+        // dispatch back to main, so check before publishing.
+        currentCoroutineContext().ensureActive()
         _uiState.update {
             it.copy(
                 apps = result.apps,
@@ -306,7 +329,7 @@ class LauncherViewModel @Inject constructor(
 
     // Keyboard mode filter
     fun filterAppsKeyboard(query: String) {
-        activeKeyboardQuery = query
+        activeFilters = activeFilters.copy(keyboardQuery = query)
         keyboardFilterJob?.cancel()
         keyboardCurrencyJob?.cancel()
         keyboardFilterJob = launchModeFilter(query, CurrencyMode.KEYBOARD, prefixMatch = false)
@@ -314,7 +337,7 @@ class LauncherViewModel @Inject constructor(
 
     // Voice mode filter
     fun filterAppsVoice(query: String) {
-        activeVoiceQuery = query
+        activeFilters = activeFilters.copy(voiceQuery = query)
         voiceFilterJob?.cancel()
         voiceCurrencyJob?.cancel()
         voiceFilterJob = launchModeFilter(query, CurrencyMode.VOICE, prefixMatch = false)
@@ -322,9 +345,11 @@ class LauncherViewModel @Inject constructor(
 
     // Handwriting mode filter by prefix
     fun filterAppsByPrefixHandwriting(prefix: String) {
-        activeHandwritingPrefix = prefix
-        activeHandwritingGestureAppIds = null
-        activeHandwritingGestureShortcutIds = null
+        activeFilters = activeFilters.copy(
+            handwritingPrefix = prefix,
+            handwritingGestureAppIds = null,
+            handwritingGestureShortcutIds = null
+        )
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
         handwritingFilterJob = launchModeFilter(prefix, CurrencyMode.HANDWRITING, prefixMatch = true)
@@ -764,9 +789,11 @@ class LauncherViewModel @Inject constructor(
 
     // Handwriting mode filter by matched custom gesture's assigned apps and app shortcuts
     fun filterAppsByCustomGestureHandwriting(appIds: Set<String>, shortcutIds: Set<String>) {
-        activeHandwritingGestureAppIds = appIds
-        activeHandwritingGestureShortcutIds = shortcutIds
-        activeHandwritingPrefix = ""
+        activeFilters = activeFilters.copy(
+            handwritingPrefix = "",
+            handwritingGestureAppIds = appIds,
+            handwritingGestureShortcutIds = shortcutIds
+        )
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
         handwritingFilterJob = viewModelScope.launch(Dispatchers.Default) {
@@ -819,7 +846,7 @@ class LauncherViewModel @Inject constructor(
 
     // Index mode filter by first letter
     fun filterAppsByFirstLetterIndex(letter: Char) {
-        activeIndexLetter = letter.uppercaseChar()
+        activeFilters = activeFilters.copy(indexLetter = letter.uppercaseChar())
         viewModelScope.launch(Dispatchers.Default) {
             val filtered = _uiState.value.apps.filter { it.firstLetter == letter.uppercaseChar() }
             val (smart, newlyInstalled) = computeSmartApps(filtered)
@@ -843,25 +870,27 @@ class LauncherViewModel @Inject constructor(
 
     // Reset filters for a specific mode
     fun resetFilterHandwriting() {
-        activeHandwritingPrefix = ""
-        activeHandwritingGestureAppIds = null
-        activeHandwritingGestureShortcutIds = null
+        activeFilters = activeFilters.copy(
+            handwritingPrefix = "",
+            handwritingGestureAppIds = null,
+            handwritingGestureShortcutIds = null
+        )
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
         resetFilter { copy(handwritingFilteredApps = apps, handwritingSmartApps = it.first, handwritingShortcutResults = emptyList(), newlyInstalledAppPackage = it.second, handwritingCalculatorResult = null, handwritingCurrencyResult = null, handwritingUnitResult = null, handwritingTimeZoneResult = null) }
     }
     fun resetFilterIndex() {
-        activeIndexLetter = null
+        activeFilters = activeFilters.copy(indexLetter = null)
         resetFilter { copy(indexFilteredApps = apps, indexSmartApps = it.first, newlyInstalledAppPackage = it.second) }
     }
     fun resetFilterKeyboard() {
-        activeKeyboardQuery = ""
+        activeFilters = activeFilters.copy(keyboardQuery = "")
         keyboardFilterJob?.cancel()
         keyboardCurrencyJob?.cancel()
         resetFilter { copy(keyboardFilteredApps = apps, keyboardSmartApps = it.first, keyboardShortcutResults = emptyList(), newlyInstalledAppPackage = it.second, keyboardCalculatorResult = null, keyboardCurrencyResult = null, keyboardUnitResult = null, keyboardTimeZoneResult = null) }
     }
     fun resetFilterVoice() {
-        activeVoiceQuery = ""
+        activeFilters = activeFilters.copy(voiceQuery = "")
         voiceFilterJob?.cancel()
         voiceCurrencyJob?.cancel()
         resetFilter { copy(voiceFilteredApps = apps, voiceSmartApps = it.first, voiceShortcutResults = emptyList(), newlyInstalledAppPackage = it.second, voiceCalculatorResult = null, voiceCurrencyResult = null, voiceUnitResult = null, voiceTimeZoneResult = null) }
@@ -902,10 +931,15 @@ class LauncherViewModel @Inject constructor(
 
     fun launchApp(packageName: String, activityName: String? = null) {
         viewModelScope.launch {
-            // Record usage before launching (with activity name for proper tracking)
-            recordAppUsageUseCase(packageName, activityName)
-            
+            // Start the app first: recording usage is a disk write and must not delay the launch
             val result = launchAppUseCase(packageName, activityName)
+
+            // Record usage (with activity name for proper tracking). NonCancellable because the
+            // sheet dismisses right after a launch, which clears this ViewModel mid-write.
+            withContext(NonCancellable) {
+                recordAppUsageUseCase(packageName, activityName)
+            }
+
             if (result.isFailure) {
                 _uiState.update {
                     it.copy(error = result.exceptionOrNull()?.message ?: appContext.getString(R.string.error_failed_to_launch_app))
@@ -931,8 +965,11 @@ class LauncherViewModel @Inject constructor(
     /** Launches an app-shortcut search result and counts it as usage of the parent app. */
     fun launchShortcut(shortcut: ShortcutSearchItem) {
         viewModelScope.launch(Dispatchers.IO) {
-            recordAppUsageUseCase(shortcut.packageName, null)
+            // Launch first; the usage record is a disk write (see launchApp)
             val launched = shortcutSearchRepository.launchShortcut(shortcut)
+            withContext(NonCancellable) {
+                recordAppUsageUseCase(shortcut.packageName, null)
+            }
             if (!launched) {
                 _uiState.update {
                     it.copy(error = appContext.getString(R.string.error_failed_to_launch_app))

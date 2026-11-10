@@ -20,6 +20,8 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,10 +32,22 @@ class MLKitDataSource @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val preferencesRepository: com.joyal.swyplauncher.domain.repository.PreferencesRepository
 ) : com.joyal.swyplauncher.domain.repository.MLKitRepository {
+    @Volatile
     private var digitalInkRecognizer: DigitalInkRecognizer? = null
     private var speechRecognizer: SpeechRecognizer? = null
 
-    override suspend fun initializeDigitalInkRecognizer(): Result<Unit> =
+    // One initialization at a time; later callers find the client already created
+    private val initMutex = Mutex()
+
+    // Creating the ML Kit client is slow (it sets up the recognizer's component graph), and this
+    // is called while the assistant's first frame is being composed. Keep it off the main thread.
+    override suspend fun initializeDigitalInkRecognizer(): Result<Unit> = initMutex.withLock {
+        withContext(Dispatchers.Default) {
+            initializeDigitalInkRecognizerInternal()
+        }
+    }
+
+    private suspend fun initializeDigitalInkRecognizerInternal(): Result<Unit> =
         suspendCancellableCoroutine { continuation ->
             try {
                 // If already initialized, return success immediately
@@ -132,6 +146,11 @@ class MLKitDataSource @Inject constructor(
     // block the main thread while the user may be drawing the next stroke
     override suspend fun recognizeHandwriting(strokes: List<InkStroke>): Result<String> =
         withContext(Dispatchers.Default) {
+            // The client may still be starting up in the background, or have been released by
+            // cleanup(); wait for it instead of reporting "not ready".
+            if (digitalInkRecognizer == null && preferencesRepository.hasDownloadedHandwritingModel()) {
+                initializeDigitalInkRecognizer()
+            }
             recognizeHandwritingInternal(strokes)
         }
 

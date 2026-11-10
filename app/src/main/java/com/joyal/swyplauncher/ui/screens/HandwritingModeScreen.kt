@@ -2,12 +2,6 @@ package com.joyal.swyplauncher.ui.screens
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -33,12 +27,15 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +61,7 @@ import com.joyal.swyplauncher.domain.model.InkStroke
 import com.joyal.swyplauncher.domain.model.RecognitionResult
 import com.joyal.swyplauncher.ui.viewmodel.HandwritingViewModel
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
+import kotlinx.coroutines.flow.first
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -110,16 +108,17 @@ fun HandwritingModeScreen(
     val particles = remember { mutableListOf<Particle>() }
     var particleUpdateTrigger by remember { mutableIntStateOf(0) }
 
-    // Animation: slowly rotate ink hue for a magical shimmer
-    val hue by rememberInfiniteTransition(label = "inkHue").animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 9000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "hue"
-    )
+    // True while a stroke is being drawn. Derived so the screen recomposes when drawing starts
+    // or stops, not for every point added to the path.
+    val isDrawing by remember { derivedStateOf { currentPath.isNotEmpty() } }
+    // Ink (finished strokes or the one in progress) is on screen. Nothing animates otherwise.
+    val inkVisible by remember {
+        derivedStateOf { currentPath.isNotEmpty() || handwritingState.strokes.isNotEmpty() }
+    }
+
+    // Animation: slowly rotate ink hue for a magical shimmer. Advanced by the frame loop below
+    // only while there is ink to shimmer, so an idle canvas isn't redrawn on every frame.
+    var hue by remember { mutableFloatStateOf(inkHueAt(System.nanoTime())) }
 
     val density = LocalDensity.current
     val baseStrokeWidth = with(density) { 8.dp.toPx() } // base stroke width
@@ -220,34 +219,41 @@ fun HandwritingModeScreen(
         onDismiss()
     }
 
-    // Update particles at 30 FPS instead of screen refresh rate to reduce CPU usage
+    // Frame loop for the ink effects. It sleeps until ink appears, then runs while ink is visible
+    // (and until the last sparkle has faded): the hue advances every frame, particles update at
+    // 30 FPS instead of screen refresh rate to reduce CPU usage.
     LaunchedEffect(Unit) {
-        var lastTime = 0L
         val targetFrameTime = 1_000_000_000L / 30 // 30 FPS = ~33ms per frame
         while (true) {
-            withFrameNanos { now ->
-                val elapsed = now - lastTime
-                // Only update if enough time has passed (throttle to 30 FPS)
-                if (lastTime == 0L || elapsed >= targetFrameTime) {
-                    val dt = if (lastTime == 0L) 0f else elapsed / 1_000_000_000f
-                    lastTime = now
+            snapshotFlow { inkVisible }.first { it }
+            var lastTime = 0L
+            while (inkVisible || particles.isNotEmpty()) {
+                withFrameNanos { now ->
+                    hue = inkHueAt(now)
 
-                    if (dt > 0f && particles.isNotEmpty()) {
-                        // Simple physics + fade - use iterator for safe removal
-                        val iterator = particles.iterator()
-                        while (iterator.hasNext()) {
-                            val p = iterator.next()
-                            p.life += dt
-                            if (p.life >= p.maxLife) {
-                                iterator.remove()
-                            } else {
-                                // Update velocity and position
-                                p.velocity = Offset(p.velocity.x * 0.985f, p.velocity.y + 900f * dt)
-                                p.position += p.velocity * dt
+                    val elapsed = now - lastTime
+                    // Only update if enough time has passed (throttle to 30 FPS)
+                    if (lastTime == 0L || elapsed >= targetFrameTime) {
+                        val dt = if (lastTime == 0L) 0f else elapsed / 1_000_000_000f
+                        lastTime = now
+
+                        if (dt > 0f && particles.isNotEmpty()) {
+                            // Simple physics + fade - use iterator for safe removal
+                            val iterator = particles.iterator()
+                            while (iterator.hasNext()) {
+                                val p = iterator.next()
+                                p.life += dt
+                                if (p.life >= p.maxLife) {
+                                    iterator.remove()
+                                } else {
+                                    // Update velocity and position
+                                    p.velocity = Offset(p.velocity.x * 0.985f, p.velocity.y + 900f * dt)
+                                    p.position += p.velocity * dt
+                                }
                             }
+                            // Trigger recomposition only when particles exist
+                            particleUpdateTrigger++
                         }
-                        // Trigger recomposition only when particles exist
-                        particleUpdateTrigger++
                     }
                 }
             }
@@ -356,7 +362,8 @@ fun HandwritingModeScreen(
                                     particles = particles,
                                     at = offset,
                                     baseStrokeWidth = baseStrokeWidth,
-                                    hue = hue
+                                    // From the clock: the frame loop is still asleep at this point
+                                    hue = inkHueAt(System.nanoTime())
                                 )
                             },
                             onDrag = { change, _ ->
@@ -442,7 +449,7 @@ fun HandwritingModeScreen(
 
                 else -> {
                     // "Scribble here" hint - show only when initialized, no strokes, and not currently drawing
-                    if (handwritingState.isInitialized && handwritingState.strokes.isEmpty() && currentPath.isEmpty()) {
+                    if (handwritingState.isInitialized && handwritingState.strokes.isEmpty() && !isDrawing) {
                         Icon(
                             imageVector = androidx.compose.ui.graphics.vector.ImageVector.vectorResource(
                                 R.drawable.ic_scribble_here
@@ -590,6 +597,9 @@ fun HandwritingModeScreen(
 }
 
 /* ---------- Helpers: Smoothing, Glow, Sparkles ---------- */
+
+// Ink hue for a point in time: one full turn of the color wheel every 9 seconds
+private fun inkHueAt(nanos: Long): Float = ((nanos / 1_000_000L) % 9000L) / 9000f * 360f
 
 // Helper function to create smooth Bézier curves
 private fun createSmoothPath(points: List<Offset>): Path {

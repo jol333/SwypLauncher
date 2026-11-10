@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.ui.util.AppIconFetcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -57,6 +58,15 @@ fun AppIconItem(
     // Calculate corner radius: 0% = 0dp (square), 100% = 28dp (circle, half of icon size)
     val maxRadius = 28.dp
     val cornerRadius = maxRadius * cornerRadiusPercent
+
+    // Built once per app rather than on every recomposition of the grid cell
+    val iconRequest = remember(app, context) {
+        ImageRequest.Builder(context)
+            .data(app) // Pass the AppInfo object directly
+            .size(168) // 3x size for high-DPI screens (56dp * 3)
+            .memoryCacheKey(AppIconFetcher.memoryCacheKey(app)) // Stable cache key
+            .build()
+    }
 
     // Icon scale animation state
     val iconScale = remember { Animatable(1f) }
@@ -141,12 +151,7 @@ fun AppIconItem(
                 }
             ) {
                 AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(app) // Pass the AppInfo object directly
-                        .size(168) // 3x size for high-DPI screens (56dp * 3)
-                        .memoryCacheKey("app_icon_${app.getIdentifier()}") // Stable cache key
-                        .diskCacheKey("app_icon_${app.getIdentifier()}") // Persistent cache key
-                        .build(),
+                    model = iconRequest,
                     contentDescription = app.label,
                     contentScale = ContentScale.Fit,
                     modifier = Modifier

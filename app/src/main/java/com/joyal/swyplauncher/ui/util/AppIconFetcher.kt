@@ -13,23 +13,73 @@ import coil3.decode.DataSource
 import coil3.fetch.FetchResult
 import coil3.fetch.Fetcher
 import coil3.fetch.ImageFetchResult
+import coil3.memory.MemoryCache
 import coil3.request.Options
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.util.AppIconDiskCache
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.util.concurrent.ConcurrentHashMap
 
 class AppIconFetcher(
     private val appInfo: AppInfo,
-    private val context: Context
+    private val context: Context,
+    private val imageLoader: ImageLoader
 ) : Fetcher {
 
     override suspend fun fetch(): FetchResult? {
+        // Fast path: the icon rendered by an earlier fetch (possibly in a previous process).
+        val cached = AppIconDiskCache.read(context, appInfo)
+        if (cached != null) {
+            scheduleRevalidation(cached)
+            return cached.toFetchResult()
+        }
+        val bitmap = renderIcon() ?: return null
+        AppIconDiskCache.write(context, appInfo, bitmap)
+        return bitmap.toFetchResult()
+    }
+
+    private fun Bitmap.toFetchResult() = ImageFetchResult(
+        image = asImage(),
+        isSampled = false,
+        dataSource = DataSource.DISK
+    )
+
+    private fun renderIcon(): Bitmap? {
         val icon = loadIcon(appInfo) ?: return null
         // Convert the drawable to a square bitmap
-        val bitmap = drawableToSquareBitmap(icon, appInfo.iconDensity)
-        return ImageFetchResult(
-            image = bitmap.asImage(),
-            isSampled = false,
-            dataSource = DataSource.DISK
-        )
+        return drawableToSquareBitmap(icon, appInfo.iconDensity)
+    }
+
+    /**
+     * A cached file can outlive what it was rendered from (e.g. the system icon theme changed),
+     * and the file name only tracks app updates. So about once a day per icon, re-render it in
+     * the background and replace the cached copies if the result differs. Delayed and serialized
+     * so it never competes with the icons the user is waiting for.
+     */
+    private fun scheduleRevalidation(cached: Bitmap) {
+        val memoryKey = memoryCacheKey(appInfo)
+        if (!AppIconDiskCache.isDueForRevalidation(context, appInfo)) return
+        if (!revalidating.add(memoryKey)) return
+        revalidationScope.launch {
+            delay(REVALIDATION_DELAY_MS)
+            val fresh = renderIcon()
+            if (fresh != null) {
+                if (AppIconDiskCache.sameIcon(cached, fresh)) {
+                    AppIconDiskCache.markRevalidated(context, appInfo)
+                } else {
+                    AppIconDiskCache.write(context, appInfo, fresh)
+                    imageLoader.memoryCache?.set(
+                        MemoryCache.Key(memoryKey),
+                        MemoryCache.Value(fresh.asImage())
+                    )
+                }
+            }
+            revalidating.remove(memoryKey)
+        }
     }
 
     private fun loadIcon(appInfo: AppInfo): Drawable? {
@@ -113,7 +163,21 @@ class AppIconFetcher(
             options: Options,
             imageLoader: ImageLoader
         ): Fetcher {
-            return AppIconFetcher(data, context)
+            return AppIconFetcher(data, context, imageLoader)
         }
+    }
+
+    companion object {
+        private const val REVALIDATION_DELAY_MS = 4_000L
+
+        // Icons currently queued for a re-check, by memory-cache key.
+        private val revalidating: MutableSet<String> = ConcurrentHashMap.newKeySet()
+
+        // One at a time, so background re-renders stay a trickle.
+        private val revalidationScope =
+            CoroutineScope(SupervisorJob() + Dispatchers.IO.limitedParallelism(1))
+
+        /** Memory-cache key shared by every screen that shows an app icon. */
+        fun memoryCacheKey(app: AppInfo): String = "app_icon_${app.getIdentifier()}"
     }
 }

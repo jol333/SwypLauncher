@@ -71,6 +71,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -89,6 +90,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -119,6 +121,8 @@ import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
 import com.joyal.swyplauncher.ui.viewmodel.ModeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.max
@@ -241,7 +245,11 @@ fun AssistantScreen(
 ) {
     val selectedMode by modeViewModel.selectedMode.collectAsState()
     val modes by modeViewModel.enabledModes.collectAsState()
-    val uiState by launcherViewModel.uiState.collectAsState()
+    // Only the tooltip flag is read here. Collecting the whole state would recompose the sheet
+    // scaffold on every search result / app-list update.
+    val showHideAppTooltip by remember(launcherViewModel) {
+        launcherViewModel.uiState.map { it.showHideAppTooltip }.distinctUntilChanged()
+    }.collectAsState(initial = false)
     val allAppsRevealed by launcherViewModel.allAppsRevealed.collectAsState()
     val view = LocalView.current
     val scope = rememberCoroutineScope()
@@ -487,14 +495,18 @@ fun AssistantScreen(
 
         Box(modifier = Modifier.fillMaxSize()) {
             val backdropRange = (maxSheetFraction - effectiveMinSheetFraction).coerceAtLeast(0.0001f)
-            val backdropOpacity =
-                ((sheetFractionAnim.value - effectiveMinSheetFraction) / backdropRange)
-                    .coerceIn(0f, 1f)
 
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = backdropOpacity))
+                    // The sheet fraction is read in the draw phase (and in the layout phase
+                    // below), so dragging/animating the sheet doesn't recompose this screen.
+                    .drawBehind {
+                        val backdropOpacity =
+                            ((sheetFractionAnim.value - effectiveMinSheetFraction) / backdropRange)
+                                .coerceIn(0f, 1f)
+                        drawRect(Color.Black, alpha = backdropOpacity)
+                    }
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -514,7 +526,23 @@ fun AssistantScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(sheetFractionAnim.value)
+                    // Same as fillMaxHeight(fraction), with the fraction read while measuring
+                    .layout { measurable, constraints ->
+                        val height = if (constraints.hasBoundedHeight) {
+                            (constraints.maxHeight * sheetFractionAnim.value).roundToInt()
+                                .coerceIn(constraints.minHeight, constraints.maxHeight)
+                        } else {
+                            constraints.minHeight
+                        }
+                        val placeable = measurable.measure(
+                            if (constraints.hasBoundedHeight) {
+                                constraints.copy(minHeight = height, maxHeight = height)
+                            } else {
+                                constraints
+                            }
+                        )
+                        layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+                    }
                     .align(Alignment.BottomCenter)
             ) {
                 Column(
@@ -522,7 +550,7 @@ fun AssistantScreen(
                         .fillMaxSize()
                         .offset { IntOffset(0, dragOffsetY.value.roundToInt()) }
                         .nestedScroll(nestedScrollConnection)
-                        .pointerInput(sheetFractionAnim.value, effectiveMinSheetFraction) {
+                        .pointerInput(effectiveMinSheetFraction) {
                             detectVerticalDragGestures(
                                 onDragEnd = {
                                     scope.launch {
@@ -793,7 +821,7 @@ fun AssistantScreen(
                                 }
 
                                 androidx.compose.animation.AnimatedVisibility(
-                                    visible = uiState.showHideAppTooltip,
+                                    visible = showHideAppTooltip,
                                     enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
                                     exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 2 }),
                                     modifier = Modifier
@@ -910,39 +938,42 @@ private fun rememberEffectiveBlurEnabled(
 @Composable
 private fun rememberNoiseBrush(): ShaderBrush {
     return remember {
-        val noiseSize = 128
-        val noiseBitmap = android.graphics.Bitmap.createBitmap(
-            noiseSize,
-            noiseSize,
-            android.graphics.Bitmap.Config.ARGB_8888
-        )
-        val canvas = android.graphics.Canvas(noiseBitmap)
-        val paint = android.graphics.Paint()
-        val random = java.util.Random(42) // Fixed seed for consistent pattern
-
-        for (x in 0 until noiseSize) {
-            for (y in 0 until noiseSize) {
-                val brightness = random.nextInt(128) + 128 // 128-255 range for lighter noise
-                val alpha = random.nextInt(60) + 30 // 30-90 range for visibility
-                paint.color = android.graphics.Color.argb(
-                    alpha,
-                    brightness,
-                    brightness,
-                    brightness
-                )
-                canvas.drawPoint(x.toFloat(), y.toFloat(), paint)
-            }
-        }
-
-        val imageBitmap = noiseBitmap.asImageBitmap()
         ShaderBrush(
             ImageShader(
-                imageBitmap,
+                noiseImageBitmap,
                 TileMode.Repeated,
                 TileMode.Repeated
             )
         )
     }
+}
+
+// The noise tile never changes (fixed seed), so it's generated once per process instead of on
+// every assistant open, and written as one pixel array rather than 16K individual draw calls.
+private val noiseImageBitmap by lazy {
+    val noiseSize = 128
+    val pixels = IntArray(noiseSize * noiseSize)
+    val random = java.util.Random(42) // Fixed seed for consistent pattern
+
+    for (x in 0 until noiseSize) {
+        for (y in 0 until noiseSize) {
+            val brightness = random.nextInt(128) + 128 // 128-255 range for lighter noise
+            val alpha = random.nextInt(60) + 30 // 30-90 range for visibility
+            pixels[y * noiseSize + x] = android.graphics.Color.argb(
+                alpha,
+                brightness,
+                brightness,
+                brightness
+            )
+        }
+    }
+
+    android.graphics.Bitmap.createBitmap(
+        pixels,
+        noiseSize,
+        noiseSize,
+        android.graphics.Bitmap.Config.ARGB_8888
+    ).asImageBitmap()
 }
 
 
@@ -1032,6 +1063,11 @@ fun ModeSwitcher(
     }
 }
 
+// Unselected -> selected shape morph for the mode buttons. Building a Morph matches up the two
+// polygons' features, which is costly, so one instance is shared by every button and every open.
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+private val modeButtonMorph by lazy { Morph(MaterialShapes.Cookie4Sided, MaterialShapes.Cookie7Sided) }
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun RowScope.ModeButton(
@@ -1091,42 +1127,45 @@ fun RowScope.ModeButton(
                     )
                 }
             )
-            .drawBehind {
-                rotate(rotationDegrees.value, center) {
-                    val androidPath = android.graphics.Path()
+            // drawWithCache: the shape path is rebuilt only when the size or the morph progress
+            // changes, not each time something else on the sheet redraws.
+            .drawWithCache {
+                val androidPath = android.graphics.Path()
 
-                    if (isSettingsIcon) {
-                        MaterialShapes.Sunny.toPath(androidPath)
-                    } else {
-                        Morph(MaterialShapes.Cookie4Sided, MaterialShapes.Cookie7Sided)
-                            .toPath(morphProgress.value, androidPath)
-                    }
+                if (isSettingsIcon) {
+                    MaterialShapes.Sunny.toPath(androidPath)
+                } else {
+                    modeButtonMorph.toPath(morphProgress.value, androidPath)
+                }
 
-                    val bounds = android.graphics.RectF()
-                    androidPath.computeBounds(bounds, true)
-                    val scale = size.minDimension / maxOf(bounds.width(), bounds.height())
+                val bounds = android.graphics.RectF()
+                androidPath.computeBounds(bounds, true)
+                val scale = size.minDimension / maxOf(bounds.width(), bounds.height())
 
-                    android.graphics.Matrix().apply {
-                        setScale(scale, scale)
-                        postTranslate(
-                            (size.width - bounds.width() * scale) / 2f - bounds.left * scale,
-                            (size.height - bounds.height() * scale) / 2f - bounds.top * scale
-                        )
-                        androidPath.transform(this)
-                    }
+                android.graphics.Matrix().apply {
+                    setScale(scale, scale)
+                    postTranslate(
+                        (size.width - bounds.width() * scale) / 2f - bounds.left * scale,
+                        (size.height - bounds.height() * scale) / 2f - bounds.top * scale
+                    )
+                    androidPath.transform(this)
+                }
 
-                    val composePath = androidPath.asComposePath()
+                val composePath = androidPath.asComposePath()
 
-                    // Draw filled background
-                    drawPath(composePath, backgroundColor)
+                onDrawBehind {
+                    rotate(rotationDegrees.value, center) {
+                        // Draw filled background
+                        drawPath(composePath, backgroundColor)
 
-                    // Draw semi-transparent white outline when blur is enabled
-                    if (isBlurEnabled) {
-                        drawPath(
-                            composePath,
-                            color = Color.White.copy(alpha = 0.2f),
-                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f)
-                        )
+                        // Draw semi-transparent white outline when blur is enabled
+                        if (isBlurEnabled) {
+                            drawPath(
+                                composePath,
+                                color = Color.White.copy(alpha = 0.2f),
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f)
+                            )
+                        }
                     }
                 }
             },
@@ -1258,40 +1297,42 @@ fun ColumnScope.VerticalModeButton(
                     )
                 }
             )
-            .drawBehind {
-                rotate(rotationDegrees.value, center) {
-                    val androidPath = android.graphics.Path()
+            // Path cached across redraws; see ModeButton
+            .drawWithCache {
+                val androidPath = android.graphics.Path()
 
-                    if (isSettingsIcon) {
-                        MaterialShapes.Sunny.toPath(androidPath)
-                    } else {
-                        Morph(MaterialShapes.Cookie4Sided, MaterialShapes.Cookie7Sided)
-                            .toPath(morphProgress.value, androidPath)
-                    }
+                if (isSettingsIcon) {
+                    MaterialShapes.Sunny.toPath(androidPath)
+                } else {
+                    modeButtonMorph.toPath(morphProgress.value, androidPath)
+                }
 
-                    val bounds = android.graphics.RectF()
-                    androidPath.computeBounds(bounds, true)
-                    val scale = size.minDimension / maxOf(bounds.width(), bounds.height())
+                val bounds = android.graphics.RectF()
+                androidPath.computeBounds(bounds, true)
+                val scale = size.minDimension / maxOf(bounds.width(), bounds.height())
 
-                    android.graphics.Matrix().apply {
-                        setScale(scale, scale)
-                        postTranslate(
-                            (size.width - bounds.width() * scale) / 2f - bounds.left * scale,
-                            (size.height - bounds.height() * scale) / 2f - bounds.top * scale
-                        )
-                        androidPath.transform(this)
-                    }
+                android.graphics.Matrix().apply {
+                    setScale(scale, scale)
+                    postTranslate(
+                        (size.width - bounds.width() * scale) / 2f - bounds.left * scale,
+                        (size.height - bounds.height() * scale) / 2f - bounds.top * scale
+                    )
+                    androidPath.transform(this)
+                }
 
-                    val composePath = androidPath.asComposePath()
+                val composePath = androidPath.asComposePath()
 
-                    drawPath(composePath, backgroundColor)
+                onDrawBehind {
+                    rotate(rotationDegrees.value, center) {
+                        drawPath(composePath, backgroundColor)
 
-                    if (isBlurEnabled) {
-                        drawPath(
-                            composePath,
-                            color = Color.White.copy(alpha = 0.2f),
-                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f)
-                        )
+                        if (isBlurEnabled) {
+                            drawPath(
+                                composePath,
+                                color = Color.White.copy(alpha = 0.2f),
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f)
+                            )
+                        }
                     }
                 }
             },

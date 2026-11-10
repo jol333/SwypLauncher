@@ -54,7 +54,7 @@ Feature requests are welcome! Please:
    - Test on multiple devices if possible
    - Verify all four modes still work
    - Check assistant integration
-   - Test with ProGuard enabled
+   - Test a release (or `benchmark`) build too: R8 full mode and resource shrinking are on there, while `debug` is unminified
 
 5. **Commit with clear messages**
    ```
@@ -140,7 +140,7 @@ app/src/main/java/com/joyal/swyplauncher/
 - Test on minimum SDK (Android 14)
 - Test all four interaction modes
 - Verify assistant integration works
-- Test with ProGuard/R8 enabled
+- Test a minified build (`release`/`benchmark`, R8 full mode); a bug that only shows there is usually a missing keep rule in `app/proguard-rules.pro`
 - Check for memory leaks
 - Verify offline functionality
 

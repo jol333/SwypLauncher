@@ -58,8 +58,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // R8 full mode. If something only breaks in release, look for a class that is
+            // created by name (reflection) and see the notes in proguard-rules.pro.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

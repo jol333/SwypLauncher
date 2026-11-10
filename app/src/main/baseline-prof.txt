@@ -1,0 +1,130 @@
+# Baseline profile: tells ART which code to compile ahead of time at install, instead of
+# interpreting/JIT-ing it during the first launches after every install or update.
+#
+# The rules use source names. At build time AGP expands the wildcards against the real classes and
+# R8 rewrites the result to the minified names, so these rules stay valid as the code changes:
+# there is nothing to regenerate. Rules that match nothing are ignored.
+#   HSPL<class pattern>-><method pattern>   compile the matching methods (hot/startup/post-startup)
+#   L<class pattern>;                        preload the matching classes
+#   ** matches anything, including '/'
+
+# All of the app's own code (assistant overlay, settings, generated Hilt components)
+HSPLcom/joyal/swyplauncher/**->**(**)**
+Lcom/joyal/swyplauncher/**;
+
+# Libraries on the assistant's launch/scroll/search path that ship no profile of their own, or
+# only a partial one (Compose runtime/ui are already well covered by their bundled profiles).
+HSPLdagger/hilt/**->**(**)**
+Ldagger/hilt/**;
+HSPLdagger/internal/**->**(**)**
+Ldagger/internal/**;
+HSPLandroidx/hilt/**->**(**)**
+Landroidx/hilt/**;
+HSPLkotlinx/coroutines/**->**(**)**
+Lkotlinx/coroutines/**;
+HSPLkotlin/collections/**->**(**)**
+Lkotlin/collections/**;
+HSPLkotlin/text/**->**(**)**
+Lkotlin/text/**;
+HSPLkotlin/sequences/**->**(**)**
+Lkotlin/sequences/**;
+HSPLkotlin/coroutines/**->**(**)**
+Lkotlin/coroutines/**;
+HSPLkotlin/jvm/internal/**->**(**)**
+Lkotlin/jvm/internal/**;
+HSPLcoil3/**->**(**)**
+Lcoil3/**;
+HSPLandroidx/datastore/core/**->**(**)**
+Landroidx/datastore/core/**;
+HSPLandroidx/datastore/preferences/core/**->**(**)**
+Landroidx/datastore/preferences/core/**;
+HSPLandroidx/graphics/shapes/**->**(**)**
+Landroidx/graphics/shapes/**;
+HSPLandroidx/compose/animation/**->**(**)**
+Landroidx/compose/animation/**;
+HSPLandroidx/compose/foundation/**->**(**)**
+Landroidx/compose/foundation/**;
+
+# Material 3: only the components the app uses (the library is large and mostly unused here)
+HSPLandroidx/compose/material3/internal/**->**(**)**
+Landroidx/compose/material3/internal/**;
+HSPLandroidx/compose/material3/tokens/**->**(**)**
+Landroidx/compose/material3/tokens/**;
+HSPLandroidx/compose/material3/AlertDialog**->**(**)**
+Landroidx/compose/material3/AlertDialog**;
+HSPLandroidx/compose/material3/AndroidAlertDialog**->**(**)**
+Landroidx/compose/material3/AndroidAlertDialog**;
+HSPLandroidx/compose/material3/AndroidMenu**->**(**)**
+Landroidx/compose/material3/AndroidMenu**;
+HSPLandroidx/compose/material3/AppBar**->**(**)**
+Landroidx/compose/material3/AppBar**;
+HSPLandroidx/compose/material3/Badge**->**(**)**
+Landroidx/compose/material3/Badge**;
+HSPLandroidx/compose/material3/BasicTooltip**->**(**)**
+Landroidx/compose/material3/BasicTooltip**;
+HSPLandroidx/compose/material3/BottomSheet**->**(**)**
+Landroidx/compose/material3/BottomSheet**;
+HSPLandroidx/compose/material3/Button**->**(**)**
+Landroidx/compose/material3/Button**;
+HSPLandroidx/compose/material3/Card**->**(**)**
+Landroidx/compose/material3/Card**;
+HSPLandroidx/compose/material3/Checkbox**->**(**)**
+Landroidx/compose/material3/Checkbox**;
+HSPLandroidx/compose/material3/ColorScheme**->**(**)**
+Landroidx/compose/material3/ColorScheme**;
+HSPLandroidx/compose/material3/ContentColor**->**(**)**
+Landroidx/compose/material3/ContentColor**;
+HSPLandroidx/compose/material3/Divider**->**(**)**
+Landroidx/compose/material3/Divider**;
+HSPLandroidx/compose/material3/DropdownMenu**->**(**)**
+Landroidx/compose/material3/DropdownMenu**;
+HSPLandroidx/compose/material3/Elevation**->**(**)**
+Landroidx/compose/material3/Elevation**;
+HSPLandroidx/compose/material3/FloatingActionButton**->**(**)**
+Landroidx/compose/material3/FloatingActionButton**;
+HSPLandroidx/compose/material3/Icon**->**(**)**
+Landroidx/compose/material3/Icon**;
+HSPLandroidx/compose/material3/InteractiveComponentSize**->**(**)**
+Landroidx/compose/material3/InteractiveComponentSize**;
+HSPLandroidx/compose/material3/Label**->**(**)**
+Landroidx/compose/material3/Label**;
+HSPLandroidx/compose/material3/MaterialShapes**->**(**)**
+Landroidx/compose/material3/MaterialShapes**;
+HSPLandroidx/compose/material3/MaterialTheme**->**(**)**
+Landroidx/compose/material3/MaterialTheme**;
+HSPLandroidx/compose/material3/Menu**->**(**)**
+Landroidx/compose/material3/Menu**;
+HSPLandroidx/compose/material3/MinimumInteractiveComponent**->**(**)**
+Landroidx/compose/material3/MinimumInteractiveComponent**;
+HSPLandroidx/compose/material3/ModalBottomSheet**->**(**)**
+Landroidx/compose/material3/ModalBottomSheet**;
+HSPLandroidx/compose/material3/Motion**->**(**)**
+Landroidx/compose/material3/Motion**;
+HSPLandroidx/compose/material3/OutlinedTextField**->**(**)**
+Landroidx/compose/material3/OutlinedTextField**;
+HSPLandroidx/compose/material3/ProgressIndicator**->**(**)**
+Landroidx/compose/material3/ProgressIndicator**;
+HSPLandroidx/compose/material3/RadioButton**->**(**)**
+Landroidx/compose/material3/RadioButton**;
+HSPLandroidx/compose/material3/Ripple**->**(**)**
+Landroidx/compose/material3/Ripple**;
+HSPLandroidx/compose/material3/Scaffold**->**(**)**
+Landroidx/compose/material3/Scaffold**;
+HSPLandroidx/compose/material3/Shape**->**(**)**
+Landroidx/compose/material3/Shape**;
+HSPLandroidx/compose/material3/Sheet**->**(**)**
+Landroidx/compose/material3/Sheet**;
+HSPLandroidx/compose/material3/Snackbar**->**(**)**
+Landroidx/compose/material3/Snackbar**;
+HSPLandroidx/compose/material3/Surface**->**(**)**
+Landroidx/compose/material3/Surface**;
+HSPLandroidx/compose/material3/Switch**->**(**)**
+Landroidx/compose/material3/Switch**;
+HSPLandroidx/compose/material3/Text**->**(**)**
+Landroidx/compose/material3/Text**;
+HSPLandroidx/compose/material3/Tooltip**->**(**)**
+Landroidx/compose/material3/Tooltip**;
+HSPLandroidx/compose/material3/TopAppBar**->**(**)**
+Landroidx/compose/material3/TopAppBar**;
+HSPLandroidx/compose/material3/Typography**->**(**)**
+Landroidx/compose/material3/Typography**;

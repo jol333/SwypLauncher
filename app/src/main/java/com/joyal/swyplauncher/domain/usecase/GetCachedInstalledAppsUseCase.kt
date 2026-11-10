@@ -8,4 +8,7 @@ class GetCachedInstalledAppsUseCase @Inject constructor(
     private val appRepository: AppRepository
 ) {
     operator fun invoke(): List<AppInfo> = appRepository.getCachedInstalledApps()
+
+    /** In-memory list, falling back to the one persisted by the previous process. */
+    suspend fun restore(): List<AppInfo> = appRepository.restoreCachedApps()
 }

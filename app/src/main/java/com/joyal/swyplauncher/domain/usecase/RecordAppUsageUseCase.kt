@@ -19,6 +19,12 @@ class RecordAppUsageUseCase @Inject constructor(
     suspend fun getUsageMap(): Map<String, Int> {
         return appUsageRepository.getUsageMap()
     }
+
+    /** Warms the usage data so the first app-list build doesn't wait on it. */
+    suspend fun prewarm() = appUsageRepository.prewarm()
+
+    /** Last known usage map without waiting for a refresh; null if none was loaded yet. */
+    fun peekUsageMap(): Map<String, Int>? = appUsageRepository.peekUsageMap()
     
     fun hasUsageStatsPermission(): Boolean {
         return appUsageRepository.hasUsageStatsPermission()

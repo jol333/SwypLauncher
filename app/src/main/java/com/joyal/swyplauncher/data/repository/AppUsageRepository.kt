@@ -10,9 +10,11 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.joyal.swyplauncher.domain.model.AppUsageInfo
 import com.joyal.swyplauncher.util.UsageStatsHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -47,11 +49,23 @@ class AppUsageRepository @Inject constructor(
         }
     }
 
+    // Last computed usage map. Building it is a UsageStatsManager binder query over 30 days of
+    // data (or a full pass over the DataStore), far too slow to repeat for every keystroke of a
+    // search, so it is reused for a short while. usageMapTime = 0 means "recompute on next use".
+    @Volatile
+    private var cachedUsageMap: Map<String, Int>? = null
+    @Volatile
+    private var usageMapTime: Long = 0
+    private val usageMapMutex = Mutex()
+    private val USAGE_MAP_VALIDITY_MS = 30_000L // 30 seconds
+
     private suspend fun invalidateCache() {
         cacheMutex.withLock {
             cachedPreferences = null
             lastCacheTime = 0
         }
+        // Manual counts changed; the previous map stays available via peekUsageMap()
+        usageMapTime = 0
     }
 
     suspend fun recordAppUsage(identifier: String) {
@@ -119,6 +133,31 @@ class AppUsageRepository @Inject constructor(
     }
 
     suspend fun getUsageMap(): Map<String, Int> {
+        freshUsageMap()?.let { return it }
+        return usageMapMutex.withLock {
+            freshUsageMap() ?: withContext(Dispatchers.IO) { computeUsageMap() }.also {
+                cachedUsageMap = it
+                usageMapTime = System.currentTimeMillis()
+            }
+        }
+    }
+
+    /** Loads the manual-tracking store and the usage map into memory ahead of first use. */
+    suspend fun prewarm() {
+        getCachedPreferences()
+        getUsageMap()
+    }
+
+    /**
+     * The most recently computed usage map regardless of its age, or null if none was computed
+     * in this process yet. For rendering something immediately; follow up with [getUsageMap].
+     */
+    fun peekUsageMap(): Map<String, Int>? = cachedUsageMap
+
+    private fun freshUsageMap(): Map<String, Int>? =
+        cachedUsageMap?.takeIf { System.currentTimeMillis() - usageMapTime < USAGE_MAP_VALIDITY_MS }
+
+    private suspend fun computeUsageMap(): Map<String, Int> {
         // Try to get system usage stats first
         if (UsageStatsHelper.hasUsageStatsPermission(context)) {
             val systemUsageStats = UsageStatsHelper.getAppUsageStats(context)

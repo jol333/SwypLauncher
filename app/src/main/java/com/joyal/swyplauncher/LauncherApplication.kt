@@ -23,12 +23,39 @@ class LauncherApplication : Application(), SingletonImageLoader.Factory {
     @javax.inject.Inject
     lateinit var mlKitRepository: com.joyal.swyplauncher.domain.repository.MLKitRepository
 
+    @javax.inject.Inject
+    lateinit var appRepository: com.joyal.swyplauncher.domain.repository.AppRepository
+
+    @javax.inject.Inject
+    lateinit var recordAppUsageUseCase: com.joyal.swyplauncher.domain.usecase.RecordAppUsageUseCase
+
     // Process-lifetime scope for fire-and-forget startup work (lives as long as the process).
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
+        prewarmAppListInBackground()
         downloadHandwritingModelInBackground()
+    }
+
+    // The assistant overlay is usually the first thing shown by a new process. Get the persisted
+    // app list and the usage ranking into memory while the activity is still being created, so
+    // its first frame can already contain the apps. Both are cheap and best-effort.
+    private fun prewarmAppListInBackground() {
+        appScope.launch {
+            try {
+                appRepository.restoreCachedApps()
+            } catch (e: Exception) {
+                // The assistant falls back to its normal loading path.
+            }
+        }
+        appScope.launch {
+            try {
+                recordAppUsageUseCase.prewarm()
+            } catch (e: Exception) {
+                // Computed on demand instead.
+            }
+        }
     }
 
     // Download handwriting model in background on first launch
