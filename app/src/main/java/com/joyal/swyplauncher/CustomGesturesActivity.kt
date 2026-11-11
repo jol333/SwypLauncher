@@ -63,7 +63,6 @@ import androidx.compose.material.icons.outlined.Gesture
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -92,6 +91,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalResources
 import kotlin.math.sqrt as mathSqrt
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -240,7 +240,6 @@ private fun CustomGesturesOrchestrator(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CustomGesturesListScreen(
     gestures: List<CustomGesture>,
@@ -411,7 +410,6 @@ private fun GesturePreview(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CustomGestureEditorScreen(
     initial: CustomGesture?,
@@ -446,7 +444,7 @@ private fun CustomGestureEditorScreen(
     val scope = rememberCoroutineScope()
     val searchFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val resources = LocalResources.current
 
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(500)
@@ -500,10 +498,10 @@ private fun CustomGestureEditorScreen(
         when {
             !hasShape -> {
                 showShapeError = true
-                scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.gesture_shape_required)) }
+                scope.launch { snackbarHostState.showSnackbar(resources.getString(R.string.gesture_shape_required)) }
             }
             selectedApps.isEmpty() -> scope.launch {
-                snackbarHostState.showSnackbar(context.getString(R.string.select_at_least_one_app))
+                snackbarHostState.showSnackbar(resources.getString(R.string.select_at_least_one_app))
             }
             else -> {
                 val template: List<NormalizedPoint>
@@ -515,7 +513,7 @@ private fun CustomGestureEditorScreen(
                     if (computed.size != GestureRecognizer.N) {
                         showShapeError = true
                         scope.launch {
-                            snackbarHostState.showSnackbar(context.getString(R.string.gesture_shape_too_small))
+                            snackbarHostState.showSnackbar(resources.getString(R.string.gesture_shape_too_small))
                         }
                         return
                     }

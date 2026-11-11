@@ -32,8 +32,7 @@ class CurrencyRepositoryImpl @Inject constructor(
     private data class Cached(
         val base: String,
         val rates: Map<String, Double>,
-        val timestamp: Long,
-        val fromCache: Boolean
+        val timestamp: Long
     )
 
     private val mutex = Mutex()
@@ -50,7 +49,7 @@ class CurrencyRepositoryImpl @Inject constructor(
 
             val persisted = loadPersisted()
 
-            // If persisted is fresh enough, use it without API call (still marked fromCache=true for timestamp display)
+            // If persisted is fresh enough, use it without API call
             if (persisted != null && (System.currentTimeMillis() - persisted.timestamp) < FRESH_MS) {
                 memCache = persisted
                 return@withLock persisted.toResult()
@@ -75,7 +74,7 @@ class CurrencyRepositoryImpl @Inject constructor(
     }
 
     private fun Cached.toResult(): RatesResult.Success =
-        RatesResult.Success(base, rates, timestamp, fromCache)
+        RatesResult.Success(base, rates)
 
     private fun loadPersisted(): Cached? {
         val base = prefs.getCurrencyRatesBase() ?: return null
@@ -85,7 +84,7 @@ class CurrencyRepositoryImpl @Inject constructor(
             val obj = JSONObject(json)
             val map = mutableMapOf<String, Double>()
             obj.keys().forEach { k -> map[k] = obj.optDouble(k, Double.NaN).takeIf { !it.isNaN() } ?: return@forEach }
-            Cached(base, map, ts, fromCache = true)
+            Cached(base, map, ts)
         } catch (e: Exception) {
             null
         }
@@ -112,7 +111,7 @@ class CurrencyRepositoryImpl @Inject constructor(
             val ratesObj = obj.optJSONObject("rates") ?: return null
             val rates = ratesObj.toRateMap()
             if (rates.isEmpty()) return null
-            Cached(base, rates, System.currentTimeMillis(), fromCache = false)
+            Cached(base, rates, System.currentTimeMillis())
         } catch (e: Exception) {
             null
         }
@@ -128,7 +127,7 @@ class CurrencyRepositoryImpl @Inject constructor(
             val ratesObj = obj.optJSONObject("rates") ?: return null
             val rates = ratesObj.toRateMap()
             if (rates.isEmpty()) return null
-            Cached(base, rates, System.currentTimeMillis(), fromCache = false)
+            Cached(base, rates, System.currentTimeMillis())
         } catch (e: Exception) {
             null
         }

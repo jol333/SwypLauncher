@@ -58,8 +58,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.domain.model.LauncherMode
 import com.joyal.swyplauncher.ui.util.combineAppListsWithHeaders
 import com.joyal.swyplauncher.ui.viewmodel.IndexViewModel
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
@@ -191,7 +192,7 @@ fun IndexModeScreen(
                         onHideApp = { app, letter ->
                             launcherViewModel.hideApp(
                                 app.getIdentifier(),
-                                LauncherViewModel.LauncherMode.INDEX,
+                                LauncherMode.INDEX,
                                 letter.toString()
                             )
                         },
@@ -328,7 +329,7 @@ fun IndexModeScreen(
                         onHideApp = { app ->
                             launcherViewModel.hideApp(
                                 app.getIdentifier(),
-                                LauncherViewModel.LauncherMode.INDEX,
+                                LauncherMode.INDEX,
                                 selectedLetter?.toString() ?: ""
                             )
                             // Reset to grid view if no apps left after hiding

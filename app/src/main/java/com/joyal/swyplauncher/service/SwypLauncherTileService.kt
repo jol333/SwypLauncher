@@ -3,6 +3,7 @@ package com.joyal.swyplauncher.service
 import android.content.Context
 import android.content.Intent
 import android.service.quicksettings.TileService
+import androidx.core.content.edit
 import com.joyal.swyplauncher.ui.AssistActivity
 
 class SwypLauncherTileService : TileService() {
@@ -10,13 +11,13 @@ class SwypLauncherTileService : TileService() {
     override fun onTileAdded() {
         super.onTileAdded()
         getSharedPreferences("swyplauncher_prefs", Context.MODE_PRIVATE)
-            .edit().putBoolean("qs_tile_added", true).apply()
+            .edit { putBoolean("qs_tile_added", true) }
     }
 
     override fun onTileRemoved() {
         super.onTileRemoved()
         getSharedPreferences("swyplauncher_prefs", Context.MODE_PRIVATE)
-            .edit().putBoolean("qs_tile_added", false).apply()
+            .edit { putBoolean("qs_tile_added", false) }
     }
 
     override fun onClick() {

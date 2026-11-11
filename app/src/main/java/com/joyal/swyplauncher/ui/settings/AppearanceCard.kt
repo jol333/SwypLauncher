@@ -3,10 +3,7 @@ package com.joyal.swyplauncher.ui.settings
 import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.GridView
@@ -20,11 +17,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.joyal.swyplauncher.domain.model.AppInfo
@@ -42,10 +37,10 @@ fun AppearanceCard(
     onCornerRadiusChange: (Float) -> Unit,
     previewApps: List<AppInfo>
 ) {
-    var sliderGridSize by remember(gridSize) { mutableStateOf(gridSize.toFloat()) }
-    var sliderCornerRadius by remember(cornerRadius) { mutableStateOf(cornerRadius) }
-    var lastGridHaptic by remember { mutableStateOf(gridSize.toFloat()) }
-    var lastRadiusHaptic by remember { mutableStateOf(cornerRadius) }
+    var sliderGridSize by remember(gridSize) { mutableFloatStateOf(gridSize.toFloat()) }
+    var sliderCornerRadius by remember(cornerRadius) { mutableFloatStateOf(cornerRadius) }
+    var lastGridHaptic by remember { mutableFloatStateOf(gridSize.toFloat()) }
+    var lastRadiusHaptic by remember { mutableFloatStateOf(cornerRadius) }
     val view = LocalView.current
     val context = LocalContext.current
     
@@ -249,14 +244,14 @@ fun BentoSlider(
     valueRange: ClosedFloatingPointRange<Float>,
     steps: Int = 0
 ) {
-    val fraction = (value - valueRange.start) / (valueRange.endInclusive - valueRange.start)
-    
+    // The caller owns the value; mirror it into the SliderState the current Slider API takes.
+    val state = remember(steps, valueRange) { SliderState(value, steps, valueRange) }
+    state.value = value
+
     Slider(
-        value = value,
+        state = state,
         onValueChange = onValueChange,
         onValueChangeFinished = onValueChangeFinished,
-        valueRange = valueRange,
-        steps = steps,
         colors = SliderDefaults.colors(
             thumbColor = Color.White,
             activeTrackColor = BentoColors.AccentGreen,

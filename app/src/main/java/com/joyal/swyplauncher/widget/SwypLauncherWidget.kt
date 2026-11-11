@@ -92,7 +92,6 @@ private fun WidgetContent(context: Context, enabledModes: List<LauncherMode>) {
     val minGridWidth = 180.dp
     val minGridHeight = 140.dp
     val minWideWidth = 250.dp
-    val minTallHeight = 250.dp
     
     when {
         // 1. GRID / LARGE SQUARE

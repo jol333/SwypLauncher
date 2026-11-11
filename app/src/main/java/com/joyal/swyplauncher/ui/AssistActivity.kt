@@ -2,7 +2,6 @@ package com.joyal.swyplauncher.ui
 
 import android.content.Intent
 
-import android.os.Build
 import android.os.Bundle
 import android.view.RoundedCorner
 import androidx.activity.OnBackPressedCallback
@@ -20,7 +19,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -49,7 +47,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -63,6 +60,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -94,6 +93,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalView
@@ -107,7 +107,7 @@ import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AppCompatActivity
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.toPath
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.LauncherMode
 import com.joyal.swyplauncher.ui.screens.HandwritingModeScreen
@@ -188,10 +188,8 @@ class AssistActivity : AppCompatActivity() {
         }
 
         // Defer window blur setup to after composition to reduce startup blocking time
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            android.os.Handler(mainLooper).post {
-                setupWindowBlur()
-            }
+        android.os.Handler(mainLooper).post {
+            setupWindowBlur()
         }
     }
 
@@ -208,7 +206,6 @@ class AssistActivity : AppCompatActivity() {
         hasResumedOnce = true
     }
 
-    @androidx.annotation.RequiresApi(Build.VERSION_CODES.S)
     private fun setupWindowBlur() {
         if (preferencesRepository.isBackgroundBlurEnabled()) {
             val blurLevel = preferencesRepository.getBlurLevel()
@@ -229,7 +226,6 @@ class AssistActivity : AppCompatActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun AssistantScreen(
     onDismiss: () -> Unit,
@@ -238,8 +234,6 @@ fun AssistantScreen(
     getInstalledAppsUseCase: com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase,
     shortcutSearchRepository: com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository,
     initialMode: LauncherMode? = null,
-    isFromAssistant: Boolean = false,
-    isFromHome: Boolean = false,
     launcherViewModel: LauncherViewModel = hiltViewModel(),
     modeViewModel: ModeViewModel = hiltViewModel()
 ) {
@@ -255,7 +249,7 @@ fun AssistantScreen(
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
     val motionScheme = remember { MotionScheme.expressive() }
-    val context = LocalContext.current
+    val resources = LocalResources.current
 
     var showShortcutEditor by remember { mutableStateOf(false) }
     var shortcutAppId by remember { mutableStateOf<String?>(null) }
@@ -296,7 +290,7 @@ fun AssistantScreen(
         pageCount = { modes.size }
     )
 
-    var programmaticScrolls by remember { mutableStateOf(0) }
+    var programmaticScrolls by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(pagerState.currentPage) {
         if (programmaticScrolls == 0) {
@@ -318,14 +312,12 @@ fun AssistantScreen(
     }
 
     val cornerRadius = remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val topLeft =
-                view.display?.getRoundedCorner(android.view.RoundedCorner.POSITION_TOP_LEFT)?.radius ?: 0
-            val topRight =
-                view.display?.getRoundedCorner(android.view.RoundedCorner.POSITION_TOP_RIGHT)?.radius ?: 0
-            val radiusPx = max(topLeft, topRight)
-            if (radiusPx > 0) (radiusPx / view.resources.displayMetrics.density).dp else 24.dp
-        } else 24.dp
+        val topLeft =
+            view.display?.getRoundedCorner(android.view.RoundedCorner.POSITION_TOP_LEFT)?.radius ?: 0
+        val topRight =
+            view.display?.getRoundedCorner(android.view.RoundedCorner.POSITION_TOP_RIGHT)?.radius ?: 0
+        val radiusPx = max(topLeft, topRight)
+        if (radiusPx > 0) (radiusPx / view.resources.displayMetrics.density).dp else 24.dp
     }
 
     val handleDismiss: (Boolean) -> Unit = { resetOffset ->
@@ -366,12 +358,12 @@ fun AssistantScreen(
 
         val expansionRangePx = fullHeightPx * (maxSheetFraction - effectiveMinSheetFraction)
 
-        val previousEffectiveMin = remember { mutableStateOf(effectiveMinSheetFraction) }
+        val previousEffectiveMin = remember { mutableFloatStateOf(effectiveMinSheetFraction) }
 
         LaunchedEffect(effectiveMinSheetFraction) {
-            val previousMin = previousEffectiveMin.value
+            val previousMin = previousEffectiveMin.floatValue
             val sheetWasAtPreviousMin = sheetFractionAnim.value <= previousMin + 0.001f
-            previousEffectiveMin.value = effectiveMinSheetFraction
+            previousEffectiveMin.floatValue = effectiveMinSheetFraction
 
             when {
                 sheetFractionAnim.value < effectiveMinSheetFraction -> {
@@ -642,8 +634,8 @@ fun AssistantScreen(
 
                         val promptInfo = remember {
                             BiometricPrompt.PromptInfo.Builder()
-                                .setTitle(context.getString(R.string.biometric_authenticate_title))
-                                .setSubtitle(context.getString(R.string.biometric_authenticate_subtitle))
+                                .setTitle(resources.getString(R.string.biometric_authenticate_title))
+                                .setSubtitle(resources.getString(R.string.biometric_authenticate_subtitle))
                                 .setAllowedAuthenticators(
                                     BiometricManager.Authenticators.BIOMETRIC_WEAK or
                                             BiometricManager.Authenticators.DEVICE_CREDENTIAL
@@ -1065,10 +1057,14 @@ fun ModeSwitcher(
 
 // Unselected -> selected shape morph for the mode buttons. Building a Morph matches up the two
 // polygons' features, which is costly, so one instance is shared by every button and every open.
+// MaterialShapes has no stable equivalent yet (still experimental in Material 3 1.5), so the
+// opt-in is confined to these two declarations.
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private val modeButtonMorph by lazy { Morph(MaterialShapes.Cookie4Sided, MaterialShapes.Cookie7Sided) }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+private val settingsButtonShape by lazy { MaterialShapes.Sunny }
+
 @Composable
 fun RowScope.ModeButton(
     iconRes: Int,
@@ -1133,7 +1129,7 @@ fun RowScope.ModeButton(
                 val androidPath = android.graphics.Path()
 
                 if (isSettingsIcon) {
-                    MaterialShapes.Sunny.toPath(androidPath)
+                    settingsButtonShape.toPath(androidPath)
                 } else {
                     modeButtonMorph.toPath(morphProgress.value, androidPath)
                 }
@@ -1240,7 +1236,6 @@ fun VerticalModeSwitcher(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun ColumnScope.VerticalModeButton(
     iconRes: Int,
@@ -1302,7 +1297,7 @@ fun ColumnScope.VerticalModeButton(
                 val androidPath = android.graphics.Path()
 
                 if (isSettingsIcon) {
-                    MaterialShapes.Sunny.toPath(androidPath)
+                    settingsButtonShape.toPath(androidPath)
                 } else {
                     modeButtonMorph.toPath(morphProgress.value, androidPath)
                 }

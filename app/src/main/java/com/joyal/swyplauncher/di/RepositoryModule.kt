@@ -1,10 +1,10 @@
 package com.joyal.swyplauncher.di
 
-import com.joyal.swyplauncher.data.repository.AppRepositoryImpl
 import com.joyal.swyplauncher.data.repository.CurrencyRepositoryImpl
-import com.joyal.swyplauncher.data.repository.MLKitRepositoryImpl
 import com.joyal.swyplauncher.data.repository.PreferencesRepositoryImpl
 import com.joyal.swyplauncher.data.repository.ShortcutSearchRepositoryImpl
+import com.joyal.swyplauncher.data.source.AppDataSource
+import com.joyal.swyplauncher.data.source.MLKitDataSource
 import com.joyal.swyplauncher.domain.repository.AppRepository
 import com.joyal.swyplauncher.domain.repository.CurrencyRepository
 import com.joyal.swyplauncher.domain.repository.MLKitRepository
@@ -23,7 +23,7 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAppRepository(
-        appRepositoryImpl: AppRepositoryImpl
+        appDataSource: AppDataSource
     ): AppRepository
 
     @Binds
@@ -35,7 +35,7 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindMLKitRepository(
-        mlKitRepositoryImpl: MLKitRepositoryImpl
+        mlKitDataSource: MLKitDataSource
     ): MLKitRepository
 
     @Binds

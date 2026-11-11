@@ -2,6 +2,7 @@ package com.joyal.swyplauncher.util
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import androidx.core.graphics.get
 import kotlin.math.max
 
 /**
@@ -19,7 +20,7 @@ fun isBitmapDark(bitmap: Bitmap, threshold: Int = 96): Boolean {
     while (y < bitmap.height) {
         var x = 0
         while (x < bitmap.width) {
-            val pixel = bitmap.getPixel(x, y)
+            val pixel = bitmap[x, y]
             if (Color.alpha(pixel) >= 128) {
                 luminanceSum +=
                     (299 * Color.red(pixel) + 587 * Color.green(pixel) + 114 * Color.blue(pixel)) / 1000

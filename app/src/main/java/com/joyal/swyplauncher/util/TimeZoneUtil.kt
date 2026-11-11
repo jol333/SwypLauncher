@@ -79,7 +79,7 @@ object TimeZoneUtil {
                 for (i in 0 until sys.size()) sys.get(i)?.country?.takeIf { it.isNotBlank() }
                     ?.let { add(it.uppercase()) }
             }
-            Locale.getDefault().country?.takeIf { it.isNotBlank() }?.let { add(it.uppercase()) }
+            Locale.getDefault().country.takeIf { it.isNotBlank() }?.let { add(it.uppercase()) }
         }
         return candidates.firstOrNull { TimeZoneData.country(it) != null } ?: candidates.firstOrNull()
     }

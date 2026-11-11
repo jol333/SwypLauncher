@@ -45,8 +45,6 @@ class VoiceViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 isListening = true,
-                isInitializing = false,
-                isUserStopped = false,
                 transcription = if (clearTranscription) "" else it.transcription,
                 recognitionResult = RecognitionResult.Loading
             )
@@ -59,7 +57,7 @@ class VoiceViewModel @Inject constructor(
                         when (result) {
                             is SpeechRecognitionResult.Ready,
                             is SpeechRecognitionResult.Speaking -> {
-                                _uiState.update { it.copy(isListening = true, isUserStopped = false) }
+                                _uiState.update { it.copy(isListening = true) }
                             }
 
                             is SpeechRecognitionResult.PartialResult -> {
@@ -73,8 +71,7 @@ class VoiceViewModel @Inject constructor(
                                     it.copy(
                                         transcription = displayText,
                                         recognitionResult = RecognitionResult.Loading,
-                                        isListening = true,
-                                        isUserStopped = false
+                                        isListening = true
                                     )
                                 }
                             }
@@ -91,8 +88,7 @@ class VoiceViewModel @Inject constructor(
                                     it.copy(
                                         transcription = baseTranscription,
                                         recognitionResult = RecognitionResult.Success(baseTranscription),
-                                        isListening = true,
-                                        isUserStopped = false
+                                        isListening = true
                                     )
                                 }
                                 
@@ -106,8 +102,7 @@ class VoiceViewModel @Inject constructor(
                                 _uiState.update {
                                     it.copy(
                                         isListening = false,
-                                        recognitionResult = RecognitionResult.Error(userFriendlyMessage),
-                                        isUserStopped = false
+                                        recognitionResult = RecognitionResult.Error(userFriendlyMessage)
                                     )
                                 }
                                 return@collect
@@ -131,8 +126,7 @@ class VoiceViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isListening = false,
-                            recognitionResult = RecognitionResult.Error(userFriendlyMessage),
-                            isUserStopped = false
+                            recognitionResult = RecognitionResult.Error(userFriendlyMessage)
                         )
                     }
                 }
@@ -159,7 +153,7 @@ class VoiceViewModel @Inject constructor(
         recognitionJob?.cancel()
         recognitionJob = null
         recognizeSpeechUseCase.stopRecognition()
-        _uiState.update { it.copy(isListening = false, isUserStopped = true) }
+        _uiState.update { it.copy(isListening = false) }
     }
 
     fun clearTranscription() {
@@ -174,9 +168,6 @@ class VoiceViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        shouldContinueListening = false
-        recognitionJob?.cancel()
-        recognitionJob = null
         stopListening()
     }
 }

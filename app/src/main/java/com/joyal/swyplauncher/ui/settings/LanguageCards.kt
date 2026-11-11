@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Translate
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -27,7 +26,6 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.AppLanguage
 import com.joyal.swyplauncher.ui.theme.BentoColors
@@ -118,7 +116,6 @@ fun LanguageCardContent(currentLanguage: AppLanguage) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanguageDialogContent(
     currentLanguage: AppLanguage,

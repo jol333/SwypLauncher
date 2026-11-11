@@ -69,10 +69,6 @@ class AssistantVoiceInteractionSessionService : VoiceInteractionSessionService()
             }
         }
 
-        override fun onHide() {
-            super.onHide()
-        }
-
         override fun onDestroy() {
             super.onDestroy()
             mainHandler.removeCallbacksAndMessages(null)

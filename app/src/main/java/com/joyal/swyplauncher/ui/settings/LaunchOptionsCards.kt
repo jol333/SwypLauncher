@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
-import android.os.Build
 import android.app.role.RoleManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -51,9 +50,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.ui.theme.BentoColors
 import com.joyal.swyplauncher.widget.SwypLauncherWidgetReceiver
@@ -329,13 +326,11 @@ private fun requestPinShortcut(context: Context) {
 }
 
 private fun requestAddTile(context: Context) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        val statusBarManager = context.getSystemService(StatusBarManager::class.java)
-        statusBarManager?.requestAddTileService(
-            ComponentName(context, com.joyal.swyplauncher.service.SwypLauncherTileService::class.java),
-            context.getString(R.string.swyp_launcher_tile_label),
-            android.graphics.drawable.Icon.createWithResource(context, R.drawable.ic_quick_tile),
-            context.mainExecutor
-        ) { /* result callback - ignored */ }
-    }
+    val statusBarManager = context.getSystemService(StatusBarManager::class.java)
+    statusBarManager?.requestAddTileService(
+        ComponentName(context, com.joyal.swyplauncher.service.SwypLauncherTileService::class.java),
+        context.getString(R.string.swyp_launcher_tile_label),
+        android.graphics.drawable.Icon.createWithResource(context, R.drawable.ic_quick_tile),
+        context.mainExecutor
+    ) { /* result callback - ignored */ }
 }

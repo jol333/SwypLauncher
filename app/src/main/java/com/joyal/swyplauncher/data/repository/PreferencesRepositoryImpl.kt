@@ -2,6 +2,7 @@ package com.joyal.swyplauncher.data.repository
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.joyal.swyplauncher.domain.model.LauncherMode
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,18 +23,14 @@ class PreferencesRepositoryImpl @Inject constructor(
         prefs.getBoolean(KEY_HANDWRITING_INIT_TOAST_SHOWN, false)
 
     override fun setHandwritingInitToastShown() {
-        prefs.edit().putBoolean(KEY_HANDWRITING_INIT_TOAST_SHOWN, true).apply()
+        prefs.edit { putBoolean(KEY_HANDWRITING_INIT_TOAST_SHOWN, true) }
     }
 
     override fun hasDownloadedHandwritingModel(): Boolean = 
         prefs.getBoolean(KEY_HANDWRITING_MODEL_DOWNLOADED, false)
 
     override fun setHandwritingModelDownloaded() {
-        prefs.edit().putBoolean(KEY_HANDWRITING_MODEL_DOWNLOADED, true).apply()
-    }
-
-    override suspend fun setDefaultAssistantConfigured(isConfigured: Boolean) {
-        prefs.edit().putBoolean(KEY_DEFAULT_ASSISTANT_SET, isConfigured).apply()
+        prefs.edit { putBoolean(KEY_HANDWRITING_MODEL_DOWNLOADED, true) }
     }
 
     override fun getSelectedMode(): LauncherMode {
@@ -45,7 +42,7 @@ class PreferencesRepositoryImpl @Inject constructor(
     }
 
     override fun setSelectedMode(mode: LauncherMode) {
-        prefs.edit().putString(KEY_SELECTED_MODE, mode.name).apply()
+        prefs.edit { putString(KEY_SELECTED_MODE, mode.name) }
     }
 
     override fun getHiddenApps(): Set<String> {
@@ -55,46 +52,46 @@ class PreferencesRepositoryImpl @Inject constructor(
     override fun addHiddenApp(identifier: String) {
         val current = getHiddenApps().toMutableSet()
         current.add(identifier)
-        prefs.edit().putStringSet(KEY_HIDDEN_APPS, current).apply()
+        prefs.edit { putStringSet(KEY_HIDDEN_APPS, current) }
     }
 
     override fun removeHiddenApp(identifier: String) {
         val current = getHiddenApps().toMutableSet()
         current.remove(identifier)
-        prefs.edit().putStringSet(KEY_HIDDEN_APPS, current).apply()
+        prefs.edit { putStringSet(KEY_HIDDEN_APPS, current) }
     }
 
     override fun getGridSize(): Int = prefs.getInt(KEY_GRID_SIZE, 4)
 
     override fun setGridSize(size: Int) {
-        prefs.edit().putInt(KEY_GRID_SIZE, size).apply()
+        prefs.edit { putInt(KEY_GRID_SIZE, size) }
     }
 
     override fun getCornerRadius(): Float = prefs.getFloat(KEY_CORNER_RADIUS, 0.85f)
 
     override fun setCornerRadius(radius: Float) {
-        prefs.edit().putFloat(KEY_CORNER_RADIUS, radius).apply()
+        prefs.edit { putFloat(KEY_CORNER_RADIUS, radius) }
     }
 
     override fun isAutoOpenSingleResultEnabled(): Boolean =
         prefs.getBoolean(KEY_AUTO_OPEN_SINGLE_RESULT, false)
 
     override fun setAutoOpenSingleResult(enabled: Boolean) {
-        prefs.edit().putBoolean(KEY_AUTO_OPEN_SINGLE_RESULT, enabled).apply()
+        prefs.edit { putBoolean(KEY_AUTO_OPEN_SINGLE_RESULT, enabled) }
     }
 
     override fun isLoadAllAppsOnOpenEnabled(): Boolean =
         prefs.getBoolean(KEY_LOAD_ALL_APPS_ON_OPEN, true)
 
     override fun setLoadAllAppsOnOpen(enabled: Boolean) {
-        prefs.edit().putBoolean(KEY_LOAD_ALL_APPS_ON_OPEN, enabled).apply()
+        prefs.edit { putBoolean(KEY_LOAD_ALL_APPS_ON_OPEN, enabled) }
     }
 
     override fun isShortcutSearchEnabled(): Boolean =
         prefs.getBoolean(KEY_SHORTCUT_SEARCH_ENABLED, false)
 
     override fun setShortcutSearchEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean(KEY_SHORTCUT_SEARCH_ENABLED, enabled).apply()
+        prefs.edit { putBoolean(KEY_SHORTCUT_SEARCH_ENABLED, enabled) }
     }
 
     override fun getHiddenShortcuts(): Set<String> =
@@ -103,13 +100,13 @@ class PreferencesRepositoryImpl @Inject constructor(
     override fun addHiddenShortcut(identifier: String) {
         val current = getHiddenShortcuts().toMutableSet()
         current.add(identifier)
-        prefs.edit().putStringSet(KEY_HIDDEN_SHORTCUTS, current).apply()
+        prefs.edit { putStringSet(KEY_HIDDEN_SHORTCUTS, current) }
     }
 
     override fun removeHiddenShortcut(identifier: String) {
         val current = getHiddenShortcuts().toMutableSet()
         current.remove(identifier)
-        prefs.edit().putStringSet(KEY_HIDDEN_SHORTCUTS, current).apply()
+        prefs.edit { putStringSet(KEY_HIDDEN_SHORTCUTS, current) }
     }
 
     // Shortcut ids can contain arbitrary characters, so use JSON rather than the delimiter
@@ -137,7 +134,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         aliases.forEach { (word, ids) ->
             json.put(word, org.json.JSONArray(ids.toList()))
         }
-        prefs.edit().putString(KEY_SHORTCUT_SEARCH_ALIASES, json.toString()).apply()
+        prefs.edit { putString(KEY_SHORTCUT_SEARCH_ALIASES, json.toString()) }
     }
 
     override fun getEnabledModes(): List<LauncherMode> {
@@ -152,7 +149,7 @@ class PreferencesRepositoryImpl @Inject constructor(
     }
 
     override fun setEnabledModes(modes: List<LauncherMode>) {
-        prefs.edit().putString(KEY_ENABLED_MODES, modes.joinToString(",") { it.name }).apply()
+        prefs.edit { putString(KEY_ENABLED_MODES, modes.joinToString(",") { it.name }) }
     }
 
     override fun getAppSortOrder(): com.joyal.swyplauncher.domain.repository.AppSortOrder {
@@ -166,27 +163,27 @@ class PreferencesRepositoryImpl @Inject constructor(
     }
 
     override fun setAppSortOrder(order: com.joyal.swyplauncher.domain.repository.AppSortOrder) {
-        prefs.edit().putString(KEY_APP_SORT_ORDER, order.name).apply()
+        prefs.edit { putString(KEY_APP_SORT_ORDER, order.name) }
     }
 
     override fun hasPromptedForUsageStatsPermission(): Boolean = 
         prefs.getBoolean(KEY_USAGE_STATS_PERMISSION_PROMPTED, false)
 
     override fun setUsageStatsPermissionPrompted() {
-        prefs.edit().putBoolean(KEY_USAGE_STATS_PERMISSION_PROMPTED, true).apply()
+        prefs.edit { putBoolean(KEY_USAGE_STATS_PERMISSION_PROMPTED, true) }
     }
 
     override fun isBackgroundBlurEnabled(): Boolean = 
         prefs.getBoolean(KEY_BACKGROUND_BLUR_ENABLED, false)
 
     override fun setBackgroundBlurEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean(KEY_BACKGROUND_BLUR_ENABLED, enabled).apply()
+        prefs.edit { putBoolean(KEY_BACKGROUND_BLUR_ENABLED, enabled) }
     }
 
     override fun getBlurLevel(): Int = prefs.getInt(KEY_BLUR_LEVEL, 80)
 
     override fun setBlurLevel(level: Int) {
-        prefs.edit().putInt(KEY_BLUR_LEVEL, level).apply()
+        prefs.edit { putInt(KEY_BLUR_LEVEL, level) }
     }
 
     override fun getAppShortcuts(): Map<String, Set<String>> {
@@ -209,7 +206,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         val json = shortcuts.entries.joinToString("|") { (shortcut, apps) ->
             "$shortcut:${apps.joinToString(",")}"
         }
-        prefs.edit().putString(KEY_APP_SHORTCUTS, json).apply()
+        prefs.edit { putString(KEY_APP_SHORTCUTS, json) }
     }
 
     override fun getCustomGestures(): List<com.joyal.swyplauncher.domain.model.CustomGesture> {
@@ -221,7 +218,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         gestures: List<com.joyal.swyplauncher.domain.model.CustomGesture>
     ) {
         val json = com.joyal.swyplauncher.util.GestureRecognizer.serialize(gestures)
-        prefs.edit().putString(KEY_CUSTOM_GESTURES, json).apply()
+        prefs.edit { putString(KEY_CUSTOM_GESTURES, json) }
     }
 
     override fun getAppLanguage(): com.joyal.swyplauncher.domain.model.AppLanguage {
@@ -230,7 +227,7 @@ class PreferencesRepositoryImpl @Inject constructor(
     }
 
     override fun setAppLanguage(language: com.joyal.swyplauncher.domain.model.AppLanguage) {
-        prefs.edit().putString(KEY_APP_LANGUAGE, language.code).apply()
+        prefs.edit { putString(KEY_APP_LANGUAGE, language.code) }
     }
 
     override fun getCurrencyRatesJson(): String? = prefs.getString(KEY_CURRENCY_RATES_JSON, null)
@@ -238,11 +235,11 @@ class PreferencesRepositoryImpl @Inject constructor(
     override fun getCurrencyRatesTimestamp(): Long = prefs.getLong(KEY_CURRENCY_RATES_TIMESTAMP, 0L)
 
     override fun setCurrencyRates(base: String, json: String, timestamp: Long) {
-        prefs.edit()
-            .putString(KEY_CURRENCY_RATES_BASE, base)
-            .putString(KEY_CURRENCY_RATES_JSON, json)
-            .putLong(KEY_CURRENCY_RATES_TIMESTAMP, timestamp)
-            .apply()
+        prefs.edit {
+            putString(KEY_CURRENCY_RATES_BASE, base)
+            putString(KEY_CURRENCY_RATES_JSON, json)
+            putLong(KEY_CURRENCY_RATES_TIMESTAMP, timestamp)
+        }
     }
 
     override fun getEnabledConversionCategories(): Set<String>? {
@@ -256,23 +253,22 @@ class PreferencesRepositoryImpl @Inject constructor(
         // category they later choose to disable.
         if (!prefs.contains(KEY_TIMEZONE_CATEGORY_MIGRATED)) {
             val migrated = stored + "TIMEZONE"
-            prefs.edit()
-                .putStringSet(KEY_ENABLED_CONVERSION_CATEGORIES, migrated)
-                .putBoolean(KEY_TIMEZONE_CATEGORY_MIGRATED, true)
-                .apply()
+            prefs.edit {
+                putStringSet(KEY_ENABLED_CONVERSION_CATEGORIES, migrated)
+                putBoolean(KEY_TIMEZONE_CATEGORY_MIGRATED, true)
+            }
             return migrated
         }
         return stored
     }
 
     override fun setEnabledConversionCategories(categories: Set<String>) {
-        prefs.edit().putStringSet(KEY_ENABLED_CONVERSION_CATEGORIES, categories).apply()
+        prefs.edit { putStringSet(KEY_ENABLED_CONVERSION_CATEGORIES, categories) }
     }
 
     companion object {
         private const val KEY_HANDWRITING_INIT_TOAST_SHOWN = "handwriting_init_toast_shown"
         private const val KEY_HANDWRITING_MODEL_DOWNLOADED = "handwriting_model_downloaded"
-        private const val KEY_DEFAULT_ASSISTANT_SET = "default_assistant_set"
         private const val KEY_SELECTED_MODE = "selected_mode"
         private const val KEY_HIDDEN_APPS = "hidden_apps"
         private const val KEY_GRID_SIZE = "grid_size"

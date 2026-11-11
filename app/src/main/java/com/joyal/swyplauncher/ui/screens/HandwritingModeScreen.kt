@@ -54,10 +54,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.InkPoint
 import com.joyal.swyplauncher.domain.model.InkStroke
+import com.joyal.swyplauncher.domain.model.LauncherMode
 import com.joyal.swyplauncher.domain.model.RecognitionResult
 import com.joyal.swyplauncher.ui.viewmodel.HandwritingViewModel
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
@@ -77,7 +78,6 @@ data class Particle(
     var size: Float
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HandwritingModeScreen(
     onDismiss: () -> Unit,
@@ -135,11 +135,7 @@ fun HandwritingModeScreen(
     // Show toast only once when initialization completes for the first time
     LaunchedEffect(handwritingState.isInitialized, handwritingState.hasShownInitToast) {
         if (handwritingState.isInitialized && !handwritingState.hasShownInitToast) {
-            Toast.makeText(
-                context,
-                context.getString(R.string.handwriting_ready),
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(context, R.string.handwriting_ready, Toast.LENGTH_SHORT).show()
             handwritingViewModel.onInitializationToastShown()
         }
     }
@@ -492,17 +488,7 @@ fun HandwritingModeScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Undo button with tooltip
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-                        positioning = TooltipAnchorPosition.Above
-                    ),
-                    tooltip = {
-                        PlainTooltip {
-                            Text(stringResource(R.string.undo))
-                        }
-                    },
-                    state = rememberTooltipState()
-                ) {
+                TooltipAbove(text = stringResource(R.string.undo)) {
                     androidx.compose.material3.IconButton(
                         onClick = {
                             if (handwritingState.strokes.size == 1) {
@@ -580,7 +566,7 @@ fun HandwritingModeScreen(
                 selectedAppIndex = selectedAppIndex,
                 onSetSelectedIndex = { selectedAppIndex = it },
                 launcherViewModel = launcherViewModel,
-                launcherMode = LauncherViewModel.LauncherMode.HANDWRITING,
+                launcherMode = LauncherMode.HANDWRITING,
                 currencyMode = LauncherViewModel.CurrencyMode.HANDWRITING,
                 onAddShortcut = onAddShortcut,
                 onDismiss = onDismiss,
@@ -594,6 +580,21 @@ fun HandwritingModeScreen(
         }
     }
     }
+}
+
+// Material 3's tooltip APIs are still experimental (no stable equivalent as of 1.5), so the
+// opt-in is confined to this wrapper.
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TooltipAbove(text: String, content: @Composable () -> Unit) {
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+            positioning = TooltipAnchorPosition.Above
+        ),
+        tooltip = { PlainTooltip { Text(text) } },
+        state = rememberTooltipState(),
+        content = content
+    )
 }
 
 /* ---------- Helpers: Smoothing, Glow, Sparkles ---------- */

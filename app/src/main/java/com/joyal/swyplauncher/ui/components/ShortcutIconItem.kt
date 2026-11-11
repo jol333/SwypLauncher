@@ -1,6 +1,5 @@
 package com.joyal.swyplauncher.ui.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -38,7 +37,6 @@ import com.joyal.swyplauncher.domain.model.ShortcutSearchItem
  * subtext. Dark icons get a white backing (respecting the user's corner-radius setting) so
  * they stay visible on the assistant's black sheet.
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ShortcutIconItem(
     shortcut: ShortcutSearchItem,

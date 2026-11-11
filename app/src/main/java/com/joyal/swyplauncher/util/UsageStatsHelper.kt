@@ -1,7 +1,6 @@
 package com.joyal.swyplauncher.util
 
 import android.app.AppOpsManager
-import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
@@ -53,10 +52,8 @@ object UsageStatsHelper {
             }
             context.startActivity(intent)
             return
-        } catch (_: android.content.ActivityNotFoundException) {
-            // Enhanced intent not supported, try fallback
         } catch (_: Exception) {
-            // Any other error, try fallback
+            // Enhanced intent not supported (or rejected) on this device, try fallback
         }
         
         // Fallback: Try plain usage access settings without extras
@@ -65,10 +62,8 @@ object UsageStatsHelper {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             context.startActivity(fallbackIntent)
-        } catch (_: android.content.ActivityNotFoundException) {
-            // Not supported - silently fail
         } catch (_: Exception) {
-            // Any other error - silently fail
+            // Not supported - silently fail
         }
     }
     
@@ -100,39 +95,5 @@ object UsageStatsHelper {
             .mapValues { (_, stats) ->
                 stats.sumOf { it.totalTimeInForeground }
             }
-    }
-    
-    /**
-     * Get app launch count for the specified time range
-     * Returns a map of package name to launch count
-     */
-    fun getAppLaunchCounts(
-        context: Context,
-        startTime: Long = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30),
-        endTime: Long = System.currentTimeMillis()
-    ): Map<String, Int> {
-        if (!hasUsageStatsPermission(context)) {
-            return emptyMap()
-        }
-        
-        val usageStatsManager = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
-            ?: return emptyMap()
-        
-        val usageStats = usageStatsManager.queryUsageStats(
-            UsageStatsManager.INTERVAL_BEST,
-            startTime,
-            endTime
-        )
-        
-        return usageStats
-            .groupBy { it.packageName }
-            .mapValues { (_, stats) ->
-                // Sum up all the times the app was moved to foreground
-                stats.sumOf { 
-                    // Use lastTimeUsed as a proxy for launch count
-                    if (it.lastTimeUsed > 0) 1 else 0
-                }.toInt()
-            }
-            .filter { it.value > 0 }
     }
 }

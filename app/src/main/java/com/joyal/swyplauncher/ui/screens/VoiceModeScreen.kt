@@ -47,10 +47,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.joyal.swyplauncher.domain.model.LauncherMode
 import com.joyal.swyplauncher.domain.model.RecognitionResult
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
 import com.joyal.swyplauncher.ui.viewmodel.VoiceViewModel
@@ -412,7 +413,7 @@ fun VoiceModeScreen(
                     selectedAppIndex = selectedAppIndex,
                     onSetSelectedIndex = { selectedAppIndex = it },
                     launcherViewModel = launcherViewModel,
-                    launcherMode = LauncherViewModel.LauncherMode.VOICE,
+                    launcherMode = LauncherMode.VOICE,
                     currencyMode = LauncherViewModel.CurrencyMode.VOICE,
                     onAddShortcut = onAddShortcut,
                     onDismiss = onDismiss,

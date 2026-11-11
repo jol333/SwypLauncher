@@ -14,7 +14,7 @@ kotlin {
 
 android {
     namespace = "com.joyal.swyplauncher.baselineprofile"
-    compileSdk = 36
+    compileSdk = 37
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

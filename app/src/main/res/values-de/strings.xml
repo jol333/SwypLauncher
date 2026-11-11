@@ -26,14 +26,10 @@
     
     <!-- Settings Screen - App Shortcuts -->
     <string name="app_shortcuts">ZAUBERWORTE</string>
-    <string name="active_shortcut">Aktives Zauberwort</string>
-    <string name="active_shortcuts">Aktive Zauberworte</string>
     
     <!-- Settings Screen - Appearance -->
     <string name="appearance">AUSSEHEN</string>
-    <string name="grid_size">Rastergröße</string>
     <string name="corner_radius">Eckenradius</string>
-    <string name="live_preview">Live-Vorschau</string>
     
     <!-- Settings Screen - Sort Apps -->
     <string name="sort_apps_by">APPS SORTIEREN NACH</string>
@@ -67,13 +63,10 @@
     <string name="show_all_apps">Alle Apps anzeigen</string>
     
     <!-- Settings Screen - Visual Effects -->
-    <string name="visual_effects">VISUELLE EFFEKTE</string>
-    <string name="background_blur">Hintergrundunschärfe</string>
     <string name="blur_intensity">Unschärfe-Intensität</string>
     
     <!-- Settings Screen - Language -->
     <string name="language">SPRACHE</string>
-    <string name="app_language">App-Sprache</string>
     <string name="system_default">Systemstandard</string>
     <string name="select_language">Sprache wählen</string>
     
@@ -81,7 +74,6 @@
     <string name="privacy_policy">Datenschutzerklärung</string>
     <string name="source_code">Quellcode</string>
     <string name="license">Lizenz</string>
-    <string name="version_format">Version %1$s</string>
     
     <!-- Settings Screen - Launch Options -->
     <string name="launch_options_card">WEGE ZUM ÖFFNEN</string>
@@ -146,8 +138,6 @@
     <string name="hide">Verstecken</string>
     
     <!-- Mode Names -->
-    <string name="mode_handwriting">Handschrift</string>
-    <string name="mode_keyboard">Tastatur</string>
     <string name="mode_voice">Sprache</string>
     <string name="mode_index">Index</string>
     
@@ -157,12 +147,8 @@
     <string name="grant_permission">Erlaubnis erteilen</string>
     
     <!-- Voice Mode -->
-    <string name="say_app_name">Sag einen App-Namen…</string>
-    <string name="listening">Zuhören…</string>
-    <string name="tap_to_speak">Tippen zum Sprechen</string>
     
     <!-- Donate Section -->
-    <string name="support_development">Entwicklung unterstützen</string>
     <string name="buy_me_coffee">Spendier mir einen Kaffee</string>
     <string name="donate_message">Wenn diese App dir Zeit spart, überlege mir einen Kaffee zu spendieren. Deine Unterstützung hilft bei meinen kostenlosen Hobby-Projekten.</string>
     <string name="no_browser_found">Kein Browser gefunden, um den Link zu öffnen</string>
@@ -218,7 +204,6 @@
     
     <!-- Custom Gestures -->
     <string name="gestures_card_title">GESTEN</string>
-    <string name="gestures_card_hint">Funktioniert im Handschrift-Modus</string>
     <string name="active_gesture_singular">Aktive Geste</string>
     <string name="active_gesture_plural">Aktive Gesten</string>
     <string name="gestures_title">Gesten</string>
@@ -227,7 +212,6 @@
     <string name="gestures_empty_desc">Füge Formen hinzu, um sie im Handschrift-Modus zu nutzen. Zeichne diese Formen, um bestimmte Apps schnell zu starten.</string>
     <string name="new_gesture">Neue Geste</string>
     <string name="edit_gesture">Geste bearbeiten</string>
-    <string name="gesture_handwriting_only_chip">Nur im Handschrift-Modus</string>
     <string name="gesture_canvas_placeholder">Zeichne eine Form: △, ☆, ∞ oder was auch immer</string>
     <string name="gesture_canvas_hint_empty">Später kannst du dies im Handschrift-Modus zeichnen, um die unten ausgewählten Apps anzuzeigen.</string>
     <string name="gesture_canvas_hint_drawn">Sieht gut aus. Versuch es bei der App-Suche genauso zu zeichnen.</string>
@@ -239,7 +223,6 @@
     <string name="gesture_matched_label">Geste erkannt</string>
 
     <!-- Currency Conversion -->
-    <string name="currency_last_updated">Aktualisiert: %1$s</string>
     <string name="currency_no_connection">Keine Internetverbindung. Bitte prüfe dein Netzwerk und versuche es erneut</string>
     <string name="currency_unsupported">Währung nicht unterstützt</string>
     <string name="select_currency">Währung auswählen</string>
@@ -258,7 +241,6 @@
     <string name="categories_enabled_singular">Kategorie aktiviert</string>
     <string name="categories_enabled_plural">Kategorien aktiviert</string>
     <string name="select_conversion_categories">Umrechnungskategorien auswählen</string>
-    <string name="conversion_categories_hint">In Suchergebnissen angezeigt</string>
     <string name="conversion_category_currency">Währung</string>
     <string name="conversion_category_timezone">Zeitzone</string>
     <string name="conversion_category_length">Länge</string>

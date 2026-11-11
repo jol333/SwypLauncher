@@ -6,7 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
-import android.os.Build
+import androidx.core.graphics.createBitmap
 import coil3.ImageLoader
 import coil3.asImage
 import coil3.decode.DataSource
@@ -121,13 +121,13 @@ class AppIconFetcher(
         val scale = density / 160f // 160 is mdpi baseline
         val size = (baseSize * scale).toInt().coerceIn(96, 512)
 
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && drawable is AdaptiveIconDrawable) {
+        return if (drawable is AdaptiveIconDrawable) {
             // For adaptive icons, we render the layers manually without the system mask
             // Adaptive icons have an inset of ~18.75% on each side, so we need a larger canvas
             // The safe zone is 66dp in a 108dp container (ratio of ~0.61)
             val canvasSize = (size * 1.5f).toInt() // Larger to account for the full adaptive icon bounds
             
-            val bitmap = Bitmap.createBitmap(canvasSize, canvasSize, Bitmap.Config.ARGB_8888)
+            val bitmap = createBitmap(canvasSize, canvasSize)
             val canvas = Canvas(bitmap)
             
             // Draw background layer
@@ -149,7 +149,7 @@ class AppIconFetcher(
                 size.coerceAtMost(canvasSize), size.coerceAtMost(canvasSize))
         } else {
             // For non-adaptive icons, just render as-is
-            val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val bitmap = createBitmap(size, size)
             val canvas = Canvas(bitmap)
             drawable.setBounds(0, 0, size, size)
             drawable.draw(canvas)

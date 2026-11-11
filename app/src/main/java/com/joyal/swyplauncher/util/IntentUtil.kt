@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.core.net.toUri
 import com.joyal.swyplauncher.R
 
 /**
@@ -26,9 +27,6 @@ fun Context.safeStartActivity(
     return try {
         startActivity(intent)
         true
-    } catch (_: ActivityNotFoundException) {
-        Toast.makeText(this, errorMessageRes, Toast.LENGTH_SHORT).show()
-        false
     } catch (_: Exception) {
         Toast.makeText(this, errorMessageRes, Toast.LENGTH_SHORT).show()
         false
@@ -37,11 +35,11 @@ fun Context.safeStartActivity(
 
 /** Intent that opens a Google web search for [query] in the user's browser. */
 fun webSearchIntent(query: String): Intent =
-    Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/search?q=${Uri.encode(query)}"))
+    Intent(Intent.ACTION_VIEW, "https://www.google.com/search?q=${Uri.encode(query)}".toUri())
 
 /** Intent that opens a Play Store app search for [query]. */
 fun playStoreSearchIntent(query: String): Intent =
-    Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/search?q=${Uri.encode(query)}&c=apps"))
+    Intent(Intent.ACTION_VIEW, "https://play.google.com/store/search?q=${Uri.encode(query)}&c=apps".toUri())
 
 /** Plain-text share intent for [text]. Wrap with [Intent.createChooser] before launching. */
 fun shareTextIntent(text: String): Intent =

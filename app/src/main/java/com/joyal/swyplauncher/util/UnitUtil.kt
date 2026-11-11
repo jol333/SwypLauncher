@@ -2,7 +2,6 @@ package com.joyal.swyplauncher.util
 
 import android.content.Context
 import com.joyal.swyplauncher.R
-import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Locale
 import kotlin.math.abs
@@ -60,7 +59,7 @@ object UnitUtil {
                 val sys = android.content.res.Resources.getSystem().configuration.locales
                 for (i in 0 until sys.size()) sys.get(i)?.country?.takeIf { it.isNotBlank() }?.let { add(it.uppercase()) }
             }
-            Locale.getDefault().country?.takeIf { it.isNotBlank() }?.let { add(it.uppercase()) }
+            Locale.getDefault().country.takeIf { it.isNotBlank() }?.let { add(it.uppercase()) }
         }
         return candidates.firstOrNull() ?: "US"
     }

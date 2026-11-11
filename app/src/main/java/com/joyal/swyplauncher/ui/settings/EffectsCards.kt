@@ -3,7 +3,6 @@ package com.joyal.swyplauncher.ui.settings
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
@@ -39,7 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -53,6 +52,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.ui.theme.BentoColors
 import kotlin.math.roundToInt
@@ -70,8 +70,8 @@ fun BlurBackgroundOption(
     onBlurLevelChange: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var sliderBlurLevel by remember(blurLevel) { mutableStateOf(blurLevel.toFloat()) }
-    var lastHapticValue by remember { mutableStateOf(blurLevel.toFloat()) }
+    var sliderBlurLevel by remember(blurLevel) { mutableFloatStateOf(blurLevel.toFloat()) }
+    var lastHapticValue by remember { mutableFloatStateOf(blurLevel.toFloat()) }
     val view = LocalView.current
 
     Column(modifier = modifier) {
@@ -241,7 +241,7 @@ fun DonateSection(
                 shape = RoundedCornerShape(24.dp)
             )
             .clickable {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://buymeacoffee.com/joyel"))
+                val intent = Intent(Intent.ACTION_VIEW, "https://buymeacoffee.com/joyel".toUri())
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 try {
                     context.startActivity(intent)
@@ -326,7 +326,7 @@ fun DonateSection(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class) // ModalBottomSheet
 @Composable
 fun AssistantBottomSheet(
     onDismiss: () -> Unit,

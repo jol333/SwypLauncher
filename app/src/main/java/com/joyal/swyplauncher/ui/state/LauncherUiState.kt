@@ -74,7 +74,6 @@ data class CurrencyResultState(
     val targetAmount: Double? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val ratesTimestamp: Long? = null,  // non-null = using locally cached rates
     val fromCode: String = "",
     val toCode: String = ""
 )

@@ -2,14 +2,12 @@ package com.joyal.swyplauncher
 
 import android.app.role.RoleManager
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,13 +24,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,7 +52,6 @@ import com.joyal.swyplauncher.ui.theme.BentoColors
 import com.joyal.swyplauncher.ui.theme.SwypLauncherTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import sh.calvin.reorderable.ReorderableItem
@@ -77,11 +75,11 @@ class MainActivity : AppCompatActivity() {
     private val installedApps = mutableStateOf<List<AppInfo>>(emptyList())
 
     // Timestamp to track when user enters settings screen - forces bottom sheet state reset
-    private val screenEntryTimestamp = mutableStateOf(System.currentTimeMillis())
+    private val screenEntryTimestamp = mutableLongStateOf(System.currentTimeMillis())
 
     // Separate state for shortcuts count to update on resume without affecting bottom sheet
-    private val shortcutsCount = mutableStateOf(0)
-    private val gesturesCount = mutableStateOf(0)
+    private val shortcutsCount = mutableIntStateOf(0)
+    private val gesturesCount = mutableIntStateOf(0)
     private val assistantRoleLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { checkAssistantStatus() }
@@ -107,7 +105,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Update timestamp to trigger bottom sheet state reset on fresh activity creation
-        screenEntryTimestamp.value = System.currentTimeMillis()
+        screenEntryTimestamp.longValue = System.currentTimeMillis()
 
         setContent {
             SwypLauncherTheme {
@@ -122,12 +120,11 @@ class MainActivity : AppCompatActivity() {
                             )
                         )
                     },
-                    prefsFlow = createPrefsFlow(),
                     preferencesRepository = preferencesRepository,
                     installedApps = installedApps.value,
-                    screenEntryTimestamp = screenEntryTimestamp.value,
-                    shortcutsCount = shortcutsCount.value,
-                    gesturesCount = gesturesCount.value,
+                    screenEntryTimestamp = screenEntryTimestamp.longValue,
+                    shortcutsCount = shortcutsCount.intValue,
+                    gesturesCount = gesturesCount.intValue,
                     onLanguageChanged = {
                         // Invalidate app cache. The activity recreation will trigger a reload with the correct locale.
                         appRepository.invalidateCache()
@@ -150,8 +147,8 @@ class MainActivity : AppCompatActivity() {
                 val gestureCount = preferencesRepository.getCustomGestures().size
                 shortcutCount to gestureCount
             }
-            shortcutsCount.value = shortcuts
-            gesturesCount.value = gestures
+            shortcutsCount.intValue = shortcuts
+            gesturesCount.intValue = gestures
         }
     }
 
@@ -159,27 +156,14 @@ class MainActivity : AppCompatActivity() {
         // RoleManager.ROLE_ASSISTANT requires API 29, minSdk is 34, so always available
         val isAssistant =
             getSystemService(RoleManager::class.java).isRoleHeld(RoleManager.ROLE_ASSISTANT)
-        lifecycleScope.launch {
-            // Always update the preference to reflect the current role status
-            preferencesRepository.setDefaultAssistantConfigured(isAssistant)
-            // Shortcut search only works while holding the assistant role — turn it off
-            // automatically when the role is revoked
-            if (!isAssistant) {
-                preferencesRepository.setShortcutSearchEnabled(false)
-            }
-            isAssistantConfigured.value = isAssistant
+        // Shortcut search only works while holding the assistant role — turn it off
+        // automatically when the role is revoked
+        if (!isAssistant) {
+            preferencesRepository.setShortcutSearchEnabled(false)
         }
-    }
-
-    private fun createPrefsFlow(): MutableStateFlow<SharedPreferences> {
-        val prefs = getSharedPreferences("swyplauncher_prefs", MODE_PRIVATE)
-        val flow = MutableStateFlow(prefs)
-        return flow
+        isAssistantConfigured.value = isAssistant
     }
 }
-
-
-
 
 @Composable
 fun UsageAccessPermissionDialog(
@@ -208,7 +192,6 @@ fun UsageAccessPermissionDialog(
 
 
 // Content composable for container transform (no Dialog wrapper)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SortOrderDialogContent(
     currentOrder: com.joyal.swyplauncher.domain.repository.AppSortOrder,
@@ -300,28 +283,13 @@ fun SortOrderDialogContent(
 }
 
 // Content composable for container transform (no Dialog wrapper)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModeOrderDialogContent(
-    prefs: SharedPreferences,
+    preferencesRepository: PreferencesRepository,
     onDismiss: () -> Unit,
-    preferencesRepository: PreferencesRepository? = null,
     onSave: (Int) -> Unit = {}
 ) {
-    val saved = prefs.getString("enabled_modes", null)
-    val initialModes = if (saved != null) {
-        saved.split(",").mapNotNull {
-            try {
-                LauncherMode.valueOf(it)
-            } catch (e: Exception) {
-                null
-            }
-        }
-    } else {
-        LauncherMode.entries
-    }
-
-    var enabledModes by remember { mutableStateOf(initialModes) }
+    var enabledModes by remember { mutableStateOf(preferencesRepository.getEnabledModes()) }
     val hapticFeedback = LocalHapticFeedback.current
     val allModes = LauncherMode.entries
     val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
@@ -464,7 +432,7 @@ fun ModeOrderDialogContent(
             androidx.compose.material3.TextButton(
                 onClick = {
                     val modesToSave = enabledModes
-                    preferencesRepository?.setEnabledModes(modesToSave)
+                    preferencesRepository.setEnabledModes(modesToSave)
                     // Rebuild dynamic shortcuts off the main thread (icon raster + a
                     // ShortcutManager binder call). Uses the Activity lifecycle scope so it
                     // survives the dialog dismissal below; if unavailable, shortcuts

@@ -24,11 +24,5 @@ enum class AppLanguage(val code: String, val displayName: String, val nativeName
         fun fromCode(code: String?): AppLanguage {
             return entries.find { it.code == code } ?: SYSTEM
         }
-
-        /**
-         * Get all user-selectable languages (excluding SYSTEM for certain uses).
-         */
-        val supportedLanguages: List<AppLanguage>
-            get() = entries.filter { it != SYSTEM }
     }
 }

@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherApps
 import android.net.Uri
-import android.os.Build
 import android.provider.Settings
 import android.view.ContextThemeWrapper
 import androidx.compose.foundation.background
@@ -44,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.net.toUri
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.model.AppShortcut
@@ -69,8 +69,6 @@ fun AppContextMenu(
 
     // Fetch shortcuts
     LaunchedEffect(app.packageName) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return@LaunchedEffect
-
         try {
             val launcherApps = context.getSystemService(LauncherApps::class.java)
 
@@ -181,12 +179,12 @@ fun AppContextMenu(
             MenuOption(Icons.Outlined.ShoppingCart, stringResource(R.string.view_in_app_store)) {
                 runCatching {
                     val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = Uri.parse("market://details?id=${app.packageName}")
+                        data = "market://details?id=${app.packageName}".toUri()
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
                     runCatching { context.startActivity(intent) }.onFailure {
                         // If no app store is found, fallback to web browser
-                        intent.data = Uri.parse("https://play.google.com/store/apps/details?id=${app.packageName}")
+                        intent.data = "https://play.google.com/store/apps/details?id=${app.packageName}".toUri()
                         context.startActivity(intent)
                     }
                 }

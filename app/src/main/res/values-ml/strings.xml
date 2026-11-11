@@ -26,14 +26,10 @@
     
     <!-- Settings Screen - App Shortcuts -->
     <string name="app_shortcuts">മാന്ത്രിക വാക്കുകൾ</string>
-    <string name="active_shortcut">സജീവ മാന്ത്രിക വാക്ക്</string>
-    <string name="active_shortcuts">സജീവ മാന്ത്രിക വാക്കുകൾ</string>
     
     <!-- Settings Screen - Appearance -->
     <string name="appearance">കാണേണ്ടത് എങ്ങനെ</string>
-    <string name="grid_size">ഗ്രിഡ് വലുപ്പം</string>
     <string name="corner_radius">ഉരുണ്ട കോണുകൾ എത്രത്തോളം</string>
-    <string name="live_preview">തത്സമയ പ്രിവ്യൂ</string>
     
     <!-- Settings Screen - Sort Apps -->
     <string name="sort_apps_by">ആപ്പുകൾ കാണിക്കുന്നത്</string>
@@ -67,13 +63,10 @@
     <string name="show_all_apps">എല്ലാ ആപ്പുകളും കാണിക്കൂ</string>
     
     <!-- Settings Screen - Visual Effects -->
-    <string name="visual_effects">വിഷ്വൽ ഇഫക്റ്റുകൾ</string>
-    <string name="background_blur">ബാക്ക്ഗ്രൗണ്ട് ബ്ലർ</string>
     <string name="blur_intensity">ബ്ലറിന്റെ തീവ്രത</string>
     
     <!-- Settings Screen - Language -->
     <string name="language">ഭാഷ</string>
-    <string name="app_language">ആപ്പ് ഭാഷ</string>
     <string name="system_default">സിസ്റ്റം ഡിഫോൾട്ട്</string>
     <string name="select_language">ഭാഷ തിരഞ്ഞെടുക്കുക</string>
     
@@ -81,7 +74,6 @@
     <string name="privacy_policy">സ്വകാര്യതാ നയം</string>
     <string name="source_code">സോഴ്സ് കോഡ്</string>
     <string name="license">ലൈസൻസ്</string>
-    <string name="version_format">പതിപ്പ് %1$s</string>
     
     <!-- Settings Screen - Launch Options -->
     <string name="launch_options_card">തുറക്കാനുള്ള വഴികൾ</string>
@@ -146,8 +138,6 @@
     <string name="hide">ഒളിപ്പിക്കുക</string>
     
     <!-- Mode Names -->
-    <string name="mode_handwriting">കൈയെഴുത്ത്</string>
-    <string name="mode_keyboard">കീബോർഡ്</string>
     <string name="mode_voice">വോയ്സ്</string>
     <string name="mode_index">ഇൻഡെക്സ്</string>
     
@@ -157,12 +147,8 @@
     <string name="grant_permission">അനുമതി നൽകുക</string>
     
     <!-- Voice Mode -->
-    <string name="say_app_name">ഒരു ആപ്പിന്റെ പേര് പറയുക…</string>
-    <string name="listening">കേൾക്കുന്നു…</string>
-    <string name="tap_to_speak">സംസാരിക്കാൻ മൈക്കിൽ ടാപ്പ് ചെയ്യുക</string>
     
     <!-- Donate Section -->
-    <string name="support_development">വികസനത്തെ പിന്തുണയ്ക്കുക</string>
     <string name="buy_me_coffee">ഈ ആപ്പിനെ സഹായിക്കൂ</string>
     <string name="donate_message">ഈ ആപ്പ് നിങ്ങളുടെ സമയം ലാഭിക്കുന്നെങ്കിൽ, എനിക്ക് ഒരു കാപ്പി വാങ്ങിത്തരൂ. നിങ്ങളുടെ പിന്തുണ എന്റെ സൗജന്യ സൈഡ് പ്രോജക്ടുകൾക്ക് ഊർജ്ജം പകരുന്നു.</string>
     <string name="no_browser_found">ലിങ്ക് തുറക്കാൻ ബ്രൗസർ കണ്ടെത്താനായില്ല</string>
@@ -218,7 +204,6 @@
     
     <!-- Custom Gestures -->
     <string name="gestures_card_title">ജെസ്ചറുകൾ</string>
-    <string name="gestures_card_hint">കൈയെഴുത്ത് മോഡിൽ പ്രവർത്തിക്കുന്നു</string>
     <string name="active_gesture_singular">സജീവമായ ജെസ്ചർ</string>
     <string name="active_gesture_plural">സജീവമായ ജെസ്ചറുകൾ</string>
     <string name="gestures_title">ജെസ്ചറുകൾ</string>
@@ -227,7 +212,6 @@
     <string name="gestures_empty_desc">കൈയെഴുത്ത് മോഡിൽ ഉപയോഗിക്കാൻ രൂപങ്ങൾ (shapes) ചേർക്കുക. നിങ്ങൾക്ക് ആവശ്യമുള്ള ആപ്പുകൾ വേഗത്തിൽ തുറക്കാൻ ഇവ വരയ്ക്കാവുന്നതാണ്</string>
     <string name="new_gesture">പുതിയ ജെസ്ചർ</string>
     <string name="edit_gesture">ജെസ്ചർ എഡിറ്റ് ചെയ്യുക</string>
-    <string name="gesture_handwriting_only_chip">കൈയെഴുത്ത് മോഡിൽ മാത്രം</string>
     <string name="gesture_canvas_placeholder">എന്തെങ്കിലും വരയ്ക്കുക: △, ☆, ∞, തുടങ്ങി എന്തും</string>
     <string name="gesture_canvas_hint_empty">താഴെ തിരഞ്ഞെടുത്ത ആപ്പുകൾ കാണാൻ പിന്നീട് നിങ്ങൾക്ക് ഇത് കൈയെഴുത്ത് മോഡിൽ വരയ്ക്കാം</string>
     <string name="gesture_canvas_hint_drawn">കൊള്ളാം! ആപ്പ് സേർച്ച് ചെയ്യുമ്പോളും ഇതുപോലെ തന്നെ വരയ്ക്കാൻ ശ്രമിക്കുക</string>
@@ -239,7 +223,6 @@
     <string name="gesture_matched_label">ജെസ്ചർ മാച്ച് ആയി</string>
 
     <!-- Currency Conversion -->
-    <string name="currency_last_updated">അപ്ഡേറ്റ് ചെയ്തു: %1$s</string>
     <string name="currency_no_connection">ഇന്റർനെറ്റ് കണക്ഷൻ ഇല്ല. ദയവായി നെറ്റ്‌വർക്ക് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക</string>
     <string name="currency_unsupported">പിന്തുണയ്ക്കാത്ത കറൻസി</string>
     <string name="select_currency">കറൻസി തിരഞ്ഞെടുക്കുക</string>
@@ -258,7 +241,6 @@
     <string name="categories_enabled_singular">വിഭാഗം ഓൺ ആണ്</string>
     <string name="categories_enabled_plural">വിഭാഗങ്ങൾ ഓൺ ആണ്</string>
     <string name="select_conversion_categories">കൺവേർഷൻ വിഭാഗങ്ങൾ തിരഞ്ഞെടുക്കുക</string>
-    <string name="conversion_categories_hint">സെർച്ച് റിസൾട്ടിൽ കാണിക്കും</string>
     <string name="conversion_category_currency">കറൻസി</string>
     <string name="conversion_category_timezone">സമയ മേഖല</string>
     <string name="conversion_category_length">നീളം</string>

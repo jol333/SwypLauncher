@@ -83,16 +83,6 @@ class AppUsageRepository @Inject constructor(
         invalidateCache()
     }
 
-    suspend fun getAppUsageInfo(identifier: String): AppUsageInfo {
-        val safeIdentifier = identifier.replace("/", "__")
-        val preferences = getCachedPreferences()
-        return AppUsageInfo(
-            packageName = identifier,
-            usageCount = preferences?.get(intPreferencesKey("${safeIdentifier}_count")) ?: 0,
-            lastUsedTimestamp = preferences?.get(longPreferencesKey("${safeIdentifier}_timestamp")) ?: 0L
-        )
-    }
-
     private suspend fun getAllAppUsageInfo(): List<AppUsageInfo> {
         val preferences = getCachedPreferences() ?: return emptyList()
         return preferences.asMap()
@@ -113,14 +103,6 @@ class AppUsageRepository @Inject constructor(
         return getAllAppUsageInfo()
             .filter { it.lastUsedTimestamp > 0 }
             .sortedByDescending { it.lastUsedTimestamp }
-            .take(limit)
-            .map { it.packageName }
-    }
-
-    suspend fun getMostUsedApps(limit: Int = 2): List<String> {
-        return getAllAppUsageInfo()
-            .filter { it.usageCount > 0 }
-            .sortedByDescending { it.usageCount }
             .take(limit)
             .map { it.packageName }
     }

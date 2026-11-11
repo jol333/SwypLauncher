@@ -1,6 +1,5 @@
 package com.joyal.swyplauncher.ui.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,7 +32,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,6 +64,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -74,7 +73,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
-import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.model.ShortcutIcon
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository
@@ -85,7 +83,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.res.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShortcutEditorScreen(
     initialShortcut: String,
@@ -114,7 +111,7 @@ fun ShortcutEditorScreen(
     val nameFocusRequester = remember { FocusRequester() }
     val searchFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val context = LocalContext.current
+    val resources = LocalResources.current
 
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(500)
@@ -448,19 +445,19 @@ fun ShortcutEditorScreen(
                                 shortcutName.isEmpty() -> {
                                     showMagicWordError = true
                                     scope.launch {
-                                        snackbarHostState.showSnackbar(context.getString(R.string.please_type_magic_word))
+                                        snackbarHostState.showSnackbar(resources.getString(R.string.please_type_magic_word))
                                     }
                                 }
 
                                 shortcutName.length < 2 -> {
                                     showMagicWordError = true
                                     scope.launch {
-                                        snackbarHostState.showSnackbar(context.getString(R.string.shortcut_min_chars))
+                                        snackbarHostState.showSnackbar(resources.getString(R.string.shortcut_min_chars))
                                     }
                                 }
 
                                 selectedApps.isEmpty() -> scope.launch {
-                                    snackbarHostState.showSnackbar(context.getString(R.string.select_at_least_one_app))
+                                    snackbarHostState.showSnackbar(resources.getString(R.string.select_at_least_one_app))
                                 }
 
                                 shortcutName in existingShortcutNames && shortcutName != initialShortcut ->

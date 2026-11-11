@@ -1,11 +1,8 @@
 package com.joyal.swyplauncher.util
 
 import android.content.Context
-import java.math.BigDecimal
-import java.math.RoundingMode
 import java.util.Currency
 import java.util.Locale
-import kotlin.math.abs
 
 object CurrencyUtil {
 
@@ -135,39 +132,4 @@ object CurrencyUtil {
         val toRate = if (to == base) 1.0 else rates[to] ?: return null
         return amount / fromRate * toRate
     }
-
-    // Pretty format currency value with symbol. Uses more decimals for small (crypto) values.
-    fun formatAmount(value: Double, code: String): String {
-        val spec = CurrencyData.getByCode(code)
-        val symbol = spec?.symbol ?: code
-        val absVal = abs(value)
-        val scale = when {
-            absVal == 0.0 -> 2
-            absVal >= 1.0 -> 2
-            absVal >= 0.01 -> 4
-            absVal >= 0.0001 -> 6
-            else -> 8
-        }
-        val rounded = BigDecimal(value).setScale(scale, RoundingMode.HALF_UP)
-        val plain = if (rounded.signum() == 0 || rounded.stripTrailingZeros().scale() <= 0) {
-            rounded.setScale(0, RoundingMode.DOWN).toPlainString()
-        } else {
-            rounded.stripTrailingZeros().toPlainString()
-        }
-        val withGrouping = addThousands(plain)
-        // Add space between symbol and number when symbol is letters (e.g. "BNB 12.5")
-        val sep = if (symbol.all { it.isLetter() }) " " else ""
-        return "$symbol$sep$withGrouping"
-    }
-
-    private fun addThousands(plain: String): String {
-        val sign = if (plain.startsWith("-")) "-" else ""
-        val unsigned = if (sign.isNotEmpty()) plain.substring(1) else plain
-        val dot = unsigned.indexOf('.')
-        val intPart = if (dot == -1) unsigned else unsigned.substring(0, dot)
-        val decPart = if (dot == -1) "" else unsigned.substring(dot)
-        val grouped = intPart.reversed().chunked(3).joinToString(",").reversed()
-        return "$sign$grouped$decPart"
-    }
-
 }

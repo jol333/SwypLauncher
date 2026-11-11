@@ -25,14 +25,10 @@
     
     <!-- Settings Screen - App Shortcuts -->
     <string name="app_shortcuts">MAGIC WORDS</string>
-    <string name="active_shortcut">Active magic word</string>
-    <string name="active_shortcuts">Active magic words</string>
     
     <!-- Settings Screen - Appearance -->
     <string name="appearance">APPEARANCE</string>
-    <string name="grid_size">Grid size</string>
     <string name="corner_radius">Corner radius</string>
-    <string name="live_preview">Live Preview</string>
     
     <!-- Settings Screen - Sort Apps -->
     <string name="sort_apps_by">SORT APPS BY</string>
@@ -66,13 +62,10 @@
     <string name="show_all_apps">Show all apps</string>
 
     <!-- Settings Screen - Visual Effects -->
-    <string name="visual_effects">VISUAL EFFECTS</string>
-    <string name="background_blur">Background blur</string>
     <string name="blur_intensity">Blur intensity</string>
     
     <!-- Settings Screen - Language -->
     <string name="language">LANGUAGE</string>
-    <string name="app_language">App language</string>
     <string name="system_default">System Default</string>
     <string name="select_language">Select language</string>
     
@@ -80,7 +73,6 @@
     <string name="privacy_policy">Privacy Policy</string>
     <string name="source_code">Source Code</string>
     <string name="license">License</string>
-    <string name="version_format">Version %1$s</string>
     
     <!-- Settings Screen - Launch Options -->
     <string name="launch_options_card">WAYS TO OPEN</string>
@@ -145,8 +137,6 @@
     <string name="hide">Hide</string>
     
     <!-- Mode Names -->
-    <string name="mode_handwriting">Handwriting</string>
-    <string name="mode_keyboard">Keyboard</string>
     <string name="mode_voice">Voice</string>
     <string name="mode_index">Index</string>
     
@@ -156,12 +146,8 @@
     <string name="grant_permission">Grant Permission</string>
     
     <!-- Voice Mode -->
-    <string name="say_app_name">Say an app name…</string>
-    <string name="listening">Listening…</string>
-    <string name="tap_to_speak">Tap mic to speak</string>
     
     <!-- Donate Section -->
-    <string name="support_development">Support Development</string>
     <string name="buy_me_coffee">Buy me a coffee</string>
     <string name="donate_message">If this app saves you time, consider buying me a coffee. Your support helps fuel my free side projects</string>
     <string name="no_browser_found">No browser found to open the link</string>
@@ -217,7 +203,6 @@
     
     <!-- Custom Gestures -->
     <string name="gestures_card_title">GESTURES</string>
-    <string name="gestures_card_hint">Works in handwriting mode</string>
     <string name="active_gesture_singular">Active gesture</string>
     <string name="active_gesture_plural">Active gestures</string>
     <string name="gestures_title">Gestures</string>
@@ -226,7 +211,6 @@
     <string name="gestures_empty_desc">Add shapes to use in handwriting mode. Draw these shapes to quickly launch required apps</string>
     <string name="new_gesture">New gesture</string>
     <string name="edit_gesture">Edit gesture</string>
-    <string name="gesture_handwriting_only_chip">Works in Handwriting mode</string>
     <string name="gesture_canvas_placeholder">Draw a shape: △, ☆, ∞, or anything</string>
     <string name="gesture_canvas_hint_empty">Later, you can draw this in handwriting mode to display the apps selected below</string>
     <string name="gesture_canvas_hint_drawn">Looks good. Try to draw it the same way in app search.</string>
@@ -238,7 +222,6 @@
     <string name="gesture_matched_label">Gesture matched</string>
 
     <!-- Currency Conversion -->
-    <string name="currency_last_updated">Updated: %1$s</string>
     <string name="currency_no_connection">No internet connection. Please check your network &amp; try again</string>
     <string name="currency_unsupported">Unsupported currency</string>
     <string name="select_currency">Select currency</string>
@@ -257,7 +240,6 @@
     <string name="categories_enabled_singular">Category enabled</string>
     <string name="categories_enabled_plural">Categories enabled</string>
     <string name="select_conversion_categories">Select conversion categories</string>
-    <string name="conversion_categories_hint">Shown in search results</string>
     <string name="conversion_category_currency">Currency</string>
     <string name="conversion_category_timezone">Time Zone</string>
     <string name="conversion_category_length">Length</string>

@@ -1,9 +1,7 @@
 package com.joyal.swyplauncher.service
 
 import android.content.Intent
-import android.os.Bundle
 import android.speech.RecognitionService
-import android.speech.RecognizerIntent
 
 class AssistantRecognitionService : RecognitionService() {
 

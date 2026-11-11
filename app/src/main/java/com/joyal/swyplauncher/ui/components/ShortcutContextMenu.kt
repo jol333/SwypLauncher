@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.core.net.toUri
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.ShortcutSearchItem
 
@@ -127,12 +128,12 @@ fun ShortcutContextMenu(
             ) {
                 runCatching {
                     val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = Uri.parse("market://details?id=${shortcut.packageName}")
+                        data = "market://details?id=${shortcut.packageName}".toUri()
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
                     runCatching { context.startActivity(intent) }.onFailure {
                         intent.data =
-                            Uri.parse("https://play.google.com/store/apps/details?id=${shortcut.packageName}")
+                            "https://play.google.com/store/apps/details?id=${shortcut.packageName}".toUri()
                         context.startActivity(intent)
                     }
                 }

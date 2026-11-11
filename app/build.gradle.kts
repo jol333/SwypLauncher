@@ -22,7 +22,7 @@ kotlin {
 
 android {
     namespace = "com.joyal.swyplauncher"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.joyal.swyplauncher"
@@ -32,10 +32,6 @@ android {
             .format(DateTimeFormatter.ofPattern("yyyyMMddHH"))
             .toInt()
         versionName = "1.6"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
-        // Limit bundled languages to only those we support - moved to androidResources block
     }
 
     // Load keystore properties if available
@@ -109,6 +105,7 @@ baselineProfile {
 dependencies {
     // Core Android
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -118,7 +115,6 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.graphics.shapes)
@@ -127,13 +123,12 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     
     // ML Kit
-    implementation(libs.mlkit.text.recognition)
     implementation(libs.mlkit.digital.ink.recognition)
     
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    implementation(libs.hilt.navigation.compose)
+    implementation(libs.hilt.lifecycle.viewmodel.compose)
     
     // Coil for image loading
     implementation(libs.coil.compose)
@@ -141,7 +136,7 @@ dependencies {
     // Biometric
     implementation(libs.androidx.biometric)
     
-    // Reorderable (now using version catalog)
+    // Reorderable
     implementation(libs.reorderable)
     
     // Glance (App Widgets)
@@ -151,13 +146,4 @@ dependencies {
     // Baseline Profile & Startup Tracing
     implementation(libs.androidx.profileinstaller)
     "baselineProfile"(project(":baselineprofile"))
-
-    // Testing
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    debugImplementation(libs.androidx.compose.ui.tooling)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

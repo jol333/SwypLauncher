@@ -44,11 +44,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.domain.model.LauncherMode
 import com.joyal.swyplauncher.domain.model.ShortcutIcon
 import com.joyal.swyplauncher.domain.model.ShortcutSearchItem
 import com.joyal.swyplauncher.domain.repository.AppSortOrder
@@ -401,6 +403,7 @@ fun NoAppsFoundContent(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -453,7 +456,7 @@ fun NoAppsFoundContent(
                             iconTint = MaterialTheme.colorScheme.onSurface,
                             labelColor = MaterialTheme.colorScheme.onSurface,
                             onClick = {
-                                context.shareText(query, context.getString(R.string.share))
+                                context.shareText(query, resources.getString(R.string.share))
                             }
                         )
                     }
@@ -527,7 +530,7 @@ fun SearchModeResults(
     selectedAppIndex: Int,
     onSetSelectedIndex: (Int) -> Unit,
     launcherViewModel: LauncherViewModel,
-    launcherMode: LauncherViewModel.LauncherMode,
+    launcherMode: LauncherMode,
     currencyMode: LauncherViewModel.CurrencyMode,
     onAddShortcut: ((String) -> Unit)?,
     onDismiss: () -> Unit,

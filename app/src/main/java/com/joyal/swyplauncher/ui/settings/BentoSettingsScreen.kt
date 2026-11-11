@@ -1,9 +1,7 @@
 package com.joyal.swyplauncher.ui.settings
 
 import android.content.Intent
-import android.content.SharedPreferences
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
@@ -32,21 +30,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.outlined.ElectricBolt
-import androidx.compose.material.icons.outlined.RocketLaunch
-import androidx.compose.material.icons.outlined.SwapVert
-import androidx.compose.material.icons.outlined.TouchApp
-import androidx.compose.material.icons.outlined.Translate
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,50 +52,36 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import com.joyal.swyplauncher.ui.theme.BentoColors
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BentoSettingsScreen(
     isAssistantConfigured: Boolean,
     onSetupAssistant: () -> Unit,
     onOpenLauncher: () -> Unit,
-    prefsFlow: MutableStateFlow<SharedPreferences>,
-    preferencesRepository: PreferencesRepository? = null,
+    preferencesRepository: PreferencesRepository,
     installedApps: List<AppInfo> = emptyList(),
     screenEntryTimestamp: Long = 0L,
     shortcutsCount: Int = 0,
     gesturesCount: Int = 0,
     onLanguageChanged: () -> Unit = {}
 ) {
-    val prefs by prefsFlow.collectAsState()
-    var gridSize by remember { mutableStateOf(prefs.getInt("grid_size", 4)) }
-    var cornerRadius by remember { mutableStateOf(prefs.getFloat("corner_radius", 0.85f)) }
+    var gridSize by remember { mutableIntStateOf(preferencesRepository.getGridSize()) }
+    var cornerRadius by remember { mutableFloatStateOf(preferencesRepository.getCornerRadius()) }
     var autoOpenSingleResult by remember {
-        mutableStateOf(
-            prefs.getBoolean(
-                "auto_open_single_result",
-                false
-            )
-        )
+        mutableStateOf(preferencesRepository.isAutoOpenSingleResultEnabled())
     }
     var showModeOrderDialog by remember { mutableStateOf(false) }
     var showLaunchOptionsDialog by remember { mutableStateOf(false) }
@@ -113,21 +92,12 @@ fun BentoSettingsScreen(
     var userDismissedBottomSheet by remember(screenEntryTimestamp) { mutableStateOf(false) }
     // Show bottom sheet if not configured AND user hasn't dismissed it in this session
     val showAssistantBottomSheet = !isAssistantConfigured && !userDismissedBottomSheet
-    var appSortOrder by remember {
-        mutableStateOf(
-            preferencesRepository?.getAppSortOrder()
-                ?: com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME
-        )
-    }
+    var appSortOrder by remember { mutableStateOf(preferencesRepository.getAppSortOrder()) }
     var loadAllAppsOnOpen by remember {
-        mutableStateOf(
-            preferencesRepository?.isLoadAllAppsOnOpenEnabled() ?: true
-        )
+        mutableStateOf(preferencesRepository.isLoadAllAppsOnOpenEnabled())
     }
     var shortcutSearchEnabled by remember {
-        mutableStateOf(
-            preferencesRepository?.isShortcutSearchEnabled() ?: false
-        )
+        mutableStateOf(preferencesRepository.isShortcutSearchEnabled())
     }
     // Bottom sheet asking the user to become the default assistant before enabling
     // shortcut search (the OS only grants shortcut access to the role holder)
@@ -136,48 +106,35 @@ fun BentoSettingsScreen(
     LaunchedEffect(isAssistantConfigured) {
         if (!isAssistantConfigured && shortcutSearchEnabled) {
             shortcutSearchEnabled = false
-            preferencesRepository?.setShortcutSearchEnabled(false)
+            preferencesRepository.setShortcutSearchEnabled(false)
         }
     }
     var backgroundBlurEnabled by remember {
-        mutableStateOf(
-            preferencesRepository?.isBackgroundBlurEnabled() ?: false
-        )
+        mutableStateOf(preferencesRepository.isBackgroundBlurEnabled())
     }
-    var blurLevel by remember { mutableStateOf(preferencesRepository?.getBlurLevel() ?: 80) }
+    var blurLevel by remember { mutableIntStateOf(preferencesRepository.getBlurLevel()) }
     // Hide the Visual Effects section on devices where cross-window blur is disabled
     val systemBlurSupported = com.joyal.swyplauncher.ui.util.rememberSystemBlurSupported()
     
     // Language state
     var showLanguageDialog by remember { mutableStateOf(false) }
-    var currentLanguage by remember {
-        mutableStateOf(
-            preferencesRepository?.getAppLanguage()
-                ?: com.joyal.swyplauncher.domain.model.AppLanguage.SYSTEM
-        )
-    }
+    var currentLanguage by remember { mutableStateOf(preferencesRepository.getAppLanguage()) }
 
     val listState = rememberLazyListState()
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-
-
 
     // Get enabled modes count (mutable to update when dialog saves)
     var enabledModesCount by remember {
-        val saved = prefs.getString("enabled_modes", null)
-        mutableStateOf(if (saved != null) saved.split(",").size else 4)
+        mutableIntStateOf(preferencesRepository.getEnabledModes().size)
     }
 
     // Conversion categories state
-    var enabledConversionCount by remember {
-        val saved = preferencesRepository?.getEnabledConversionCategories()
-        mutableStateOf(saved?.size ?: TOTAL_CONVERSION_CATEGORIES)
-    }
     var enabledConversionCategories by remember {
-        val saved = preferencesRepository?.getEnabledConversionCategories()
-        mutableStateOf(saved ?: ALL_CONVERSION_CATEGORIES.toSet())
+        mutableStateOf(
+            preferencesRepository.getEnabledConversionCategories() ?: ALL_CONVERSION_CATEGORIES.toSet()
+        )
     }
+    var enabledConversionCount by remember { mutableIntStateOf(enabledConversionCategories.size) }
 
     // Calculate scroll progress for donate section animation
     val scrollProgress by remember {
@@ -435,11 +392,11 @@ fun BentoSettingsScreen(
                     cornerRadius = cornerRadius,
                     onGridSizeChange = {
                         gridSize = it
-                        prefs.edit().putInt("grid_size", gridSize).apply()
+                        preferencesRepository.setGridSize(it)
                     },
                     onCornerRadiusChange = {
                         cornerRadius = it
-                        prefs.edit().putFloat("corner_radius", cornerRadius).apply()
+                        preferencesRepository.setCornerRadius(it)
                     },
                     previewApps = installedApps.take(6) // Always pass max for live preview while dragging
                 )
@@ -459,7 +416,7 @@ fun BentoSettingsScreen(
                         checked = autoOpenSingleResult,
                         onCheckedChange = {
                             autoOpenSingleResult = it
-                            prefs.edit().putBoolean("auto_open_single_result", it).apply()
+                            preferencesRepository.setAutoOpenSingleResult(it)
                         },
                         modifier = Modifier.weight(1f),
                         offsetX = autoOpenOffset
@@ -486,11 +443,11 @@ fun BentoSettingsScreen(
                         when {
                             !wantEnabled -> {
                                 shortcutSearchEnabled = false
-                                preferencesRepository?.setShortcutSearchEnabled(false)
+                                preferencesRepository.setShortcutSearchEnabled(false)
                             }
                             isAssistantConfigured -> {
                                 shortcutSearchEnabled = true
-                                preferencesRepository?.setShortcutSearchEnabled(true)
+                                preferencesRepository.setShortcutSearchEnabled(true)
                             }
                             else -> showShortcutSearchAssistantSheet = true
                         }
@@ -511,22 +468,22 @@ fun BentoSettingsScreen(
                     loadAllApps = loadAllAppsOnOpen,
                     onLoadAllAppsChange = {
                         loadAllAppsOnOpen = it
-                        preferencesRepository?.setLoadAllAppsOnOpen(it)
+                        preferencesRepository.setLoadAllAppsOnOpen(it)
                     },
                     showBlurOption = systemBlurSupported,
                     blurEnabled = backgroundBlurEnabled,
                     onBlurEnabledChange = {
                         backgroundBlurEnabled = it
-                        preferencesRepository?.setBackgroundBlurEnabled(it)
+                        preferencesRepository.setBackgroundBlurEnabled(it)
                         if (it) {
                             blurLevel = 80
-                            preferencesRepository?.setBlurLevel(blurLevel)
+                            preferencesRepository.setBlurLevel(blurLevel)
                         }
                     },
                     blurLevel = blurLevel,
                     onBlurLevelChange = {
                         blurLevel = it
-                        preferencesRepository?.setBlurLevel(blurLevel)
+                        preferencesRepository.setBlurLevel(blurLevel)
                     }
                 )
             }
@@ -665,14 +622,11 @@ fun BentoSettingsScreen(
 
                         val versionName = remember {
                             try {
-                                context.packageManager.getPackageInfo(
-                                    context.packageName,
-                                    0
-                                ).versionName ?: context.getString(R.string.version_unknown)
+                                context.packageManager.getPackageInfo(context.packageName, 0).versionName
                             } catch (e: Exception) {
-                                context.getString(R.string.version_unknown)
+                                null
                             }
-                        }
+                        } ?: stringResource(R.string.version_unknown)
 
                         Text(
                             text = stringResource(R.string.version_label, versionName),
@@ -721,9 +675,8 @@ fun BentoSettingsScreen(
             },
             popupContent = {
                 com.joyal.swyplauncher.ModeOrderDialogContent(
-                    prefs = prefs,
-                    onDismiss = { showModeOrderDialog = false },
                     preferencesRepository = preferencesRepository,
+                    onDismiss = { showModeOrderDialog = false },
                     onSave = { newCount -> enabledModesCount = newCount }
                 )
             }
@@ -744,7 +697,7 @@ fun BentoSettingsScreen(
                     onDismiss = { showSortOrderDialog = false },
                     onSelect = { order ->
                         appSortOrder = order
-                        preferencesRepository?.setAppSortOrder(order)
+                        preferencesRepository.setAppSortOrder(order)
                         showSortOrderDialog = false
                     },
                     context = context
@@ -767,7 +720,7 @@ fun BentoSettingsScreen(
                     onDismiss = { showLanguageDialog = false },
                     onSelect = { language ->
                         currentLanguage = language
-                        preferencesRepository?.setAppLanguage(language)
+                        preferencesRepository.setAppLanguage(language)
                         com.joyal.swyplauncher.util.LocaleManager.applyLanguage(language)
                         onLanguageChanged()
                         showLanguageDialog = false
@@ -808,7 +761,7 @@ fun BentoSettingsScreen(
                     onSave = { categories ->
                         enabledConversionCategories = categories
                         enabledConversionCount = categories.size
-                        preferencesRepository?.setEnabledConversionCategories(categories)
+                        preferencesRepository.setEnabledConversionCategories(categories)
                         showConversionDialog = false
                     }
                 )

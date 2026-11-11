@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.domain.model.LauncherMode
 import com.joyal.swyplauncher.domain.model.ShortcutIcon
 import com.joyal.swyplauncher.domain.model.ShortcutSearchItem
 import com.joyal.swyplauncher.domain.repository.CurrencyRepository
@@ -68,6 +69,53 @@ class LauncherViewModel @Inject constructor(
     private var keyboardFilterJob: Job? = null
     private var voiceFilterJob: Job? = null
     private var handwritingFilterJob: Job? = null
+
+    /** Cancels [mode]'s running currency conversion, then tracks the one [start] launches. Main thread. */
+    private inline fun replaceCurrencyJob(mode: CurrencyMode, start: () -> Job) {
+        when (mode) {
+            CurrencyMode.KEYBOARD -> { keyboardCurrencyJob?.cancel(); keyboardCurrencyJob = start() }
+            CurrencyMode.VOICE -> { voiceCurrencyJob?.cancel(); voiceCurrencyJob = start() }
+            CurrencyMode.HANDWRITING -> { handwritingCurrencyJob?.cancel(); handwritingCurrencyJob = start() }
+        }
+    }
+
+    // Each search mode keeps its own converter results in LauncherUiState; these pick the
+    // fields that belong to a mode.
+    private fun LauncherUiState.currencyResult(mode: CurrencyMode) = when (mode) {
+        CurrencyMode.KEYBOARD -> keyboardCurrencyResult
+        CurrencyMode.VOICE -> voiceCurrencyResult
+        CurrencyMode.HANDWRITING -> handwritingCurrencyResult
+    }
+
+    private fun LauncherUiState.withCurrencyResult(mode: CurrencyMode, result: CurrencyResultState?) = when (mode) {
+        CurrencyMode.KEYBOARD -> copy(keyboardCurrencyResult = result)
+        CurrencyMode.VOICE -> copy(voiceCurrencyResult = result)
+        CurrencyMode.HANDWRITING -> copy(handwritingCurrencyResult = result)
+    }
+
+    private fun LauncherUiState.unitResult(mode: CurrencyMode) = when (mode) {
+        CurrencyMode.KEYBOARD -> keyboardUnitResult
+        CurrencyMode.VOICE -> voiceUnitResult
+        CurrencyMode.HANDWRITING -> handwritingUnitResult
+    }
+
+    private fun LauncherUiState.withUnitResult(mode: CurrencyMode, result: UnitResultState?) = when (mode) {
+        CurrencyMode.KEYBOARD -> copy(keyboardUnitResult = result)
+        CurrencyMode.VOICE -> copy(voiceUnitResult = result)
+        CurrencyMode.HANDWRITING -> copy(handwritingUnitResult = result)
+    }
+
+    private fun LauncherUiState.timeZoneResult(mode: CurrencyMode) = when (mode) {
+        CurrencyMode.KEYBOARD -> keyboardTimeZoneResult
+        CurrencyMode.VOICE -> voiceTimeZoneResult
+        CurrencyMode.HANDWRITING -> handwritingTimeZoneResult
+    }
+
+    private fun LauncherUiState.withTimeZoneResult(mode: CurrencyMode, result: TimeZoneResultState?) = when (mode) {
+        CurrencyMode.KEYBOARD -> copy(keyboardTimeZoneResult = result)
+        CurrencyMode.VOICE -> copy(voiceTimeZoneResult = result)
+        CurrencyMode.HANDWRITING -> copy(handwritingTimeZoneResult = result)
+    }
 
     private val _uiState = MutableStateFlow(LauncherUiState())
     val uiState: StateFlow<LauncherUiState> = _uiState.asStateFlow()
@@ -495,22 +543,13 @@ class LauncherViewModel @Inject constructor(
         )
     }
 
-    private fun activeTimeZone(mode: CurrencyMode): TimeZoneResultState? = when (mode) {
-        CurrencyMode.KEYBOARD -> _uiState.value.keyboardTimeZoneResult
-        CurrencyMode.VOICE -> _uiState.value.voiceTimeZoneResult
-        CurrencyMode.HANDWRITING -> _uiState.value.handwritingTimeZoneResult
-    }
+    private fun activeTimeZone(mode: CurrencyMode): TimeZoneResultState? =
+        _uiState.value.timeZoneResult(mode)
 
     private fun commitTimeZone(state: TimeZoneResultState, mode: CurrencyMode) {
         val built = TimeZoneUtil.build(state.primaryRef, state.secondaryRef, state.epochMillis, state.formatPref)
         val rebuilt = state.copy(primaryRows = built.primaryRows, secondaryRows = built.secondaryRows)
-        _uiState.update { s ->
-            when (mode) {
-                CurrencyMode.KEYBOARD -> s.copy(keyboardTimeZoneResult = rebuilt)
-                CurrencyMode.VOICE -> s.copy(voiceTimeZoneResult = rebuilt)
-                CurrencyMode.HANDWRITING -> s.copy(handwritingTimeZoneResult = rebuilt)
-            }
-        }
+        _uiState.update { it.withTimeZoneResult(mode, rebuilt) }
     }
 
     /**
@@ -587,11 +626,7 @@ class LauncherViewModel @Inject constructor(
 
     // Interactive unit edits (typing a value or changing a unit). Synchronous recompute.
     fun updateUnitConversion(amount: Double, fromId: String, toId: String, isSourceChanged: Boolean, mode: CurrencyMode) {
-        val active = when (mode) {
-            CurrencyMode.KEYBOARD -> _uiState.value.keyboardUnitResult
-            CurrencyMode.VOICE -> _uiState.value.voiceUnitResult
-            CurrencyMode.HANDWRITING -> _uiState.value.handwritingUnitResult
-        } ?: return
+        val active = _uiState.value.unitResult(mode) ?: return
 
         val newState = if (isSourceChanged) {
             val converted = UnitUtil.convert(amount, fromId, toId)
@@ -610,84 +645,11 @@ class LauncherViewModel @Inject constructor(
                 error = if (converted == null) convError(active.category) else null
             )
         }
-        _uiState.update { s ->
-            when (mode) {
-                CurrencyMode.KEYBOARD -> s.copy(keyboardUnitResult = newState)
-                CurrencyMode.VOICE -> s.copy(voiceUnitResult = newState)
-                CurrencyMode.HANDWRITING -> s.copy(handwritingUnitResult = newState)
-            }
-        }
+        _uiState.update { it.withUnitResult(mode, newState) }
     }
 
-    private fun launchCurrencyConversion(parsed: CurrencyUtil.Parsed, mode: CurrencyMode) {
-        when (mode) {
-            CurrencyMode.KEYBOARD -> keyboardCurrencyJob?.cancel()
-            CurrencyMode.VOICE -> voiceCurrencyJob?.cancel()
-            CurrencyMode.HANDWRITING -> handwritingCurrencyJob?.cancel()
-        }
-        val targetSourceAmount = parsed.amount
-        val targetSourceCode = parsed.from
-        val job = viewModelScope.launch(Dispatchers.Default) {
-            val result = currencyRepository.getRates()
-            val newState = buildCurrencyState(parsed, result)
-            // Only commit if the user's current input still matches what we just converted
-            _uiState.update { s ->
-                val active = when (mode) {
-                    CurrencyMode.KEYBOARD -> s.keyboardCurrencyResult
-                    CurrencyMode.VOICE -> s.voiceCurrencyResult
-                    CurrencyMode.HANDWRITING -> s.handwritingCurrencyResult
-                }
-                if (active?.sourceAmount != targetSourceAmount || active.fromCode != targetSourceCode) return@update s
-                when (mode) {
-                    CurrencyMode.KEYBOARD -> s.copy(keyboardCurrencyResult = newState)
-                    CurrencyMode.VOICE -> s.copy(voiceCurrencyResult = newState)
-                    CurrencyMode.HANDWRITING -> s.copy(handwritingCurrencyResult = newState)
-                }
-            }
-        }
-        when (mode) {
-            CurrencyMode.KEYBOARD -> keyboardCurrencyJob = job
-            CurrencyMode.VOICE -> voiceCurrencyJob = job
-            CurrencyMode.HANDWRITING -> handwritingCurrencyJob = job
-        }
-    }
-
-    private fun buildCurrencyState(parsed: CurrencyUtil.Parsed, result: CurrencyRepository.RatesResult): CurrencyResultState {
-        return when (result) {
-            is CurrencyRepository.RatesResult.Success -> {
-                val converted = CurrencyUtil.convert(parsed.amount, parsed.from, parsed.to, result.base, result.rates)
-                if (converted == null) {
-                    CurrencyResultState(
-                        sourceAmount = parsed.amount,
-                        error = appContext.getString(R.string.currency_unsupported),
-                        fromCode = parsed.from,
-                        toCode = parsed.to
-                    )
-                } else {
-                    CurrencyResultState(
-                        sourceAmount = parsed.amount,
-                        targetAmount = converted,
-                        ratesTimestamp = if (result.fromCache) result.timestamp else null,
-                        fromCode = parsed.from,
-                        toCode = parsed.to
-                    )
-                }
-            }
-            is CurrencyRepository.RatesResult.Error -> CurrencyResultState(
-                sourceAmount = parsed.amount,
-                error = result.message,
-                fromCode = parsed.from,
-                toCode = parsed.to
-            )
-        }
-    }
-    
     fun updateCurrencyConversion(amount: Double, fromCode: String, toCode: String, isSourceChanged: Boolean, mode: CurrencyMode) {
-        val active = when (mode) {
-            CurrencyMode.KEYBOARD -> _uiState.value.keyboardCurrencyResult
-            CurrencyMode.VOICE -> _uiState.value.voiceCurrencyResult
-            CurrencyMode.HANDWRITING -> _uiState.value.handwritingCurrencyResult
-        } ?: return
+        val active = _uiState.value.currencyResult(mode) ?: return
 
         // Set immediate loading state if rates are not in memory, else we can compute immediately
         val needsLoad = !currencyRepository.hasRatesInMemory()
@@ -707,83 +669,68 @@ class LauncherViewModel @Inject constructor(
             toCode = toCode
         )
         
-        _uiState.update { s ->
-            when (mode) {
-                CurrencyMode.KEYBOARD -> s.copy(keyboardCurrencyResult = pendingState)
-                CurrencyMode.VOICE -> s.copy(voiceCurrencyResult = pendingState)
-                CurrencyMode.HANDWRITING -> s.copy(handwritingCurrencyResult = pendingState)
-            }
-        }
+        _uiState.update { it.withCurrencyResult(mode, pendingState) }
         
         launchCurrencyConversion(parsed, mode, isSourceChanged)
     }
 
-    private fun launchCurrencyConversion(parsed: CurrencyUtil.Parsed, mode: CurrencyMode, isSourceChanged: Boolean) {
-        when (mode) {
-            CurrencyMode.KEYBOARD -> keyboardCurrencyJob?.cancel()
-            CurrencyMode.VOICE -> voiceCurrencyJob?.cancel()
-            CurrencyMode.HANDWRITING -> handwritingCurrencyJob?.cancel()
-        }
+    /**
+     * Fetches rates (memory, disk or network) and commits the converted amount for [mode].
+     * [isSourceChanged] is false when the user edited the target field: [parsed] then runs
+     * target -> source and the result is mapped back onto the source side.
+     */
+    private fun launchCurrencyConversion(
+        parsed: CurrencyUtil.Parsed,
+        mode: CurrencyMode,
+        isSourceChanged: Boolean = true
+    ) {
         val targetSourceAmount = parsed.amount
         val targetSourceCode = parsed.from
-        val job = viewModelScope.launch(Dispatchers.Default) {
-            val result = currencyRepository.getRates()
-            
-            // Build state, but carefully map it back since we might be doing inverse conversion
-            val newState = when (result) {
-                is CurrencyRepository.RatesResult.Success -> {
-                    val converted = CurrencyUtil.convert(parsed.amount, parsed.from, parsed.to, result.base, result.rates)
-                    if (converted == null) {
-                        CurrencyResultState(
-                            sourceAmount = if (isSourceChanged) parsed.amount else 0.0, // Error state
-                            targetAmount = if (!isSourceChanged) parsed.amount else null,
-                            error = appContext.getString(R.string.currency_unsupported),
-                            fromCode = if (isSourceChanged) parsed.from else parsed.to,
-                            toCode = if (isSourceChanged) parsed.to else parsed.from
-                        )
-                    } else {
-                        CurrencyResultState(
-                            sourceAmount = if (isSourceChanged) parsed.amount else converted,
-                            targetAmount = if (!isSourceChanged) parsed.amount else converted,
-                            ratesTimestamp = if (result.fromCache) result.timestamp else null,
-                            fromCode = if (isSourceChanged) parsed.from else parsed.to,
-                            toCode = if (isSourceChanged) parsed.to else parsed.from
-                        )
+        replaceCurrencyJob(mode) {
+            viewModelScope.launch(Dispatchers.Default) {
+                val result = currencyRepository.getRates()
+
+                // Build state, but carefully map it back since we might be doing inverse conversion
+                val newState = when (result) {
+                    is CurrencyRepository.RatesResult.Success -> {
+                        val converted = CurrencyUtil.convert(parsed.amount, parsed.from, parsed.to, result.base, result.rates)
+                        if (converted == null) {
+                            CurrencyResultState(
+                                sourceAmount = if (isSourceChanged) parsed.amount else 0.0, // Error state
+                                targetAmount = if (!isSourceChanged) parsed.amount else null,
+                                error = appContext.getString(R.string.currency_unsupported),
+                                fromCode = if (isSourceChanged) parsed.from else parsed.to,
+                                toCode = if (isSourceChanged) parsed.to else parsed.from
+                            )
+                        } else {
+                            CurrencyResultState(
+                                sourceAmount = if (isSourceChanged) parsed.amount else converted,
+                                targetAmount = if (!isSourceChanged) parsed.amount else converted,
+                                fromCode = if (isSourceChanged) parsed.from else parsed.to,
+                                toCode = if (isSourceChanged) parsed.to else parsed.from
+                            )
+                        }
                     }
+                    is CurrencyRepository.RatesResult.Error -> CurrencyResultState(
+                        sourceAmount = if (isSourceChanged) parsed.amount else 0.0,
+                        targetAmount = if (!isSourceChanged) parsed.amount else null,
+                        error = result.message,
+                        fromCode = if (isSourceChanged) parsed.from else parsed.to,
+                        toCode = if (isSourceChanged) parsed.to else parsed.from
+                    )
                 }
-                is CurrencyRepository.RatesResult.Error -> CurrencyResultState(
-                    sourceAmount = if (isSourceChanged) parsed.amount else 0.0,
-                    targetAmount = if (!isSourceChanged) parsed.amount else null,
-                    error = result.message,
-                    fromCode = if (isSourceChanged) parsed.from else parsed.to,
-                    toCode = if (isSourceChanged) parsed.to else parsed.from
-                )
-            }
-            
-            _uiState.update { s ->
-                val active = when (mode) {
-                    CurrencyMode.KEYBOARD -> s.keyboardCurrencyResult
-                    CurrencyMode.VOICE -> s.voiceCurrencyResult
-                    CurrencyMode.HANDWRITING -> s.handwritingCurrencyResult
-                }
-                
-                // We check against the active state's current values which should have been set by updateCurrencyConversion
-                val currentCheckingAmount = if (isSourceChanged) active?.sourceAmount else active?.targetAmount
-                val currentCheckingCode = if (isSourceChanged) active?.fromCode else active?.toCode
-                
-                if (currentCheckingAmount != targetSourceAmount || currentCheckingCode != targetSourceCode) return@update s
-                
-                when (mode) {
-                    CurrencyMode.KEYBOARD -> s.copy(keyboardCurrencyResult = newState)
-                    CurrencyMode.VOICE -> s.copy(voiceCurrencyResult = newState)
-                    CurrencyMode.HANDWRITING -> s.copy(handwritingCurrencyResult = newState)
+
+                // Only commit if the user's current input still matches what was just converted
+                _uiState.update { s ->
+                    val active = s.currencyResult(mode)
+                    val currentCheckingAmount = if (isSourceChanged) active?.sourceAmount else active?.targetAmount
+                    val currentCheckingCode = if (isSourceChanged) active?.fromCode else active?.toCode
+
+                    if (currentCheckingAmount != targetSourceAmount || currentCheckingCode != targetSourceCode) return@update s
+
+                    s.withCurrencyResult(mode, newState)
                 }
             }
-        }
-        when (mode) {
-            CurrencyMode.KEYBOARD -> keyboardCurrencyJob = job
-            CurrencyMode.VOICE -> voiceCurrencyJob = job
-            CurrencyMode.HANDWRITING -> handwritingCurrencyJob = job
         }
     }
 
@@ -1006,10 +953,6 @@ class LauncherViewModel @Inject constructor(
         preferencesRepository.setShortcutSearchAliases(current)
     }
 
-    enum class LauncherMode {
-        KEYBOARD, VOICE, HANDWRITING, INDEX
-    }
-
     fun hideApp(identifier: String, mode: LauncherMode, searchQuery: String = "") {
         preferencesRepository.addHiddenApp(identifier)
         val hiddenPackage = identifier.substringBefore('/')
@@ -1017,107 +960,61 @@ class LauncherViewModel @Inject constructor(
             val currentState = _uiState.value
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                val (apps, smartApps, newlyInstalledPackage) = withContext(Dispatchers.IO) {
-                    val allApps = getInstalledAppsUseCase()
-                    val hiddenApps = preferencesRepository.getHiddenApps()
-                    val apps = allApps.filter { it.getIdentifier() !in hiddenApps }
-                    val gridSize = preferencesRepository.getGridSize()
-                    val smart = getSmartAppListUseCase(apps, gridSize)
-                    
-                    // Check if first smart app is newly installed (within 24 hours and not opened)
-                    val now = System.currentTimeMillis()
-                    val twentyFourHoursAgo = now - (24 * 60 * 60 * 1000)
-                    val newlyInstalled = smart.firstOrNull()?.let { firstApp ->
-                        if (firstApp.installTime > twentyFourHoursAgo && 
-                            !recordAppUsageUseCase.hasBeenOpened(firstApp.packageName, firstApp.activityName)) {
-                            firstApp.getIdentifier()
-                        } else null
-                    }
-                    
-                    Triple(apps, smart, newlyInstalled)
+                // Same filter/sort/smart-apps pipeline as loadApps(), now without the hidden app
+                val result = withContext(Dispatchers.IO) {
+                    buildAppLoadResult(getInstalledAppsUseCase())
                 }
-                
-                // Only update the active mode's filter, preserve others by removing the hidden app
-                val (keyboardFiltered, keyboardSmart, keyboardNewlyInstalled) = when (mode) {
-                    LauncherMode.KEYBOARD -> {
-                        if (searchQuery.isNotBlank()) {
-                            val filtered = apps.filter { it.label.contains(searchQuery, ignoreCase = true) }
-                            val (smart, newlyInstalled) = computeSmartApps(filtered)
-                            Triple(filtered, smart, newlyInstalled)
-                        } else Triple(apps, smartApps, newlyInstalledPackage)
+                val apps = result.apps
+
+                // The mode the app was hidden from re-applies its search (or shows everything);
+                // the other modes keep their current results minus the hidden app.
+                suspend fun refilter(
+                    targetMode: LauncherMode,
+                    hasQuery: Boolean,
+                    previous: List<AppInfo>,
+                    matches: (AppInfo) -> Boolean
+                ): Triple<List<AppInfo>, List<AppInfo>, String?> {
+                    val unfiltered = Triple(apps, result.smartApps, result.newlyInstalledPackage)
+                    if (mode == targetMode && !hasQuery) return unfiltered
+                    val filtered =
+                        if (mode == targetMode) apps.filter(matches)
+                        else previous.filter { it.getIdentifier() != identifier }
+                    if (mode != targetMode && filtered.isEmpty()) {
+                        return Triple(filtered, unfiltered.second, unfiltered.third)
                     }
-                    else -> {
-                        // Preserve existing filter, just remove the hidden app
-                        val filtered = currentState.keyboardFilteredApps.filter { it.getIdentifier() != identifier }
-                        val (smart, newlyInstalled) = if (filtered.isNotEmpty()) computeSmartApps(filtered) else (smartApps to newlyInstalledPackage)
-                        Triple(filtered, smart, newlyInstalled)
-                    }
+                    val (smart, newlyInstalled) = computeSmartApps(filtered)
+                    return Triple(filtered, smart, newlyInstalled)
                 }
-                
-                val (voiceFiltered, voiceSmart, voiceNewlyInstalled) = when (mode) {
-                    LauncherMode.VOICE -> {
-                        if (searchQuery.isNotBlank()) {
-                            val filtered = apps.filter { it.label.contains(searchQuery, ignoreCase = true) }
-                            val (smart, newlyInstalled) = computeSmartApps(filtered)
-                            Triple(filtered, smart, newlyInstalled)
-                        } else Triple(apps, smartApps, newlyInstalledPackage)
-                    }
-                    else -> {
-                        // Preserve existing filter, just remove the hidden app
-                        val filtered = currentState.voiceFilteredApps.filter { it.getIdentifier() != identifier }
-                        val (smart, newlyInstalled) = if (filtered.isNotEmpty()) computeSmartApps(filtered) else (smartApps to newlyInstalledPackage)
-                        Triple(filtered, smart, newlyInstalled)
-                    }
-                }
-                
-                val (handwritingFiltered, handwritingSmart, handwritingNewlyInstalled) = when (mode) {
-                    LauncherMode.HANDWRITING -> {
-                        if (searchQuery.isNotBlank()) {
-                            val filtered = apps.filter { it.label.startsWith(searchQuery, ignoreCase = true) }
-                            val (smart, newlyInstalled) = computeSmartApps(filtered)
-                            Triple(filtered, smart, newlyInstalled)
-                        } else Triple(apps, smartApps, newlyInstalledPackage)
-                    }
-                    else -> {
-                        // Preserve existing filter, just remove the hidden app
-                        val filtered = currentState.handwritingFilteredApps.filter { it.getIdentifier() != identifier }
-                        val (smart, newlyInstalled) = if (filtered.isNotEmpty()) computeSmartApps(filtered) else (smartApps to newlyInstalledPackage)
-                        Triple(filtered, smart, newlyInstalled)
-                    }
-                }
-                
-                val (indexFiltered, indexSmart, indexNewlyInstalled) = when (mode) {
-                    LauncherMode.INDEX -> {
-                        if (searchQuery.length == 1) {
-                            val filtered = apps.filter { it.firstLetter == searchQuery[0].uppercaseChar() }
-                            val (smart, newlyInstalled) = computeSmartApps(filtered)
-                            Triple(filtered, smart, newlyInstalled)
-                        } else Triple(apps, smartApps, newlyInstalledPackage)
-                    }
-                    else -> {
-                        // Preserve existing filter, just remove the hidden app
-                        val filtered = currentState.indexFilteredApps.filter { it.getIdentifier() != identifier }
-                        val (smart, newlyInstalled) = if (filtered.isNotEmpty()) computeSmartApps(filtered) else (smartApps to newlyInstalledPackage)
-                        Triple(filtered, smart, newlyInstalled)
-                    }
-                }
-                
+
+                val keyboard = refilter(
+                    LauncherMode.KEYBOARD, searchQuery.isNotBlank(), currentState.keyboardFilteredApps
+                ) { it.label.contains(searchQuery, ignoreCase = true) }
+                val voice = refilter(
+                    LauncherMode.VOICE, searchQuery.isNotBlank(), currentState.voiceFilteredApps
+                ) { it.label.contains(searchQuery, ignoreCase = true) }
+                val handwriting = refilter(
+                    LauncherMode.HANDWRITING, searchQuery.isNotBlank(), currentState.handwritingFilteredApps
+                ) { it.label.startsWith(searchQuery, ignoreCase = true) }
+                val index = refilter(
+                    LauncherMode.INDEX, searchQuery.length == 1, currentState.indexFilteredApps
+                ) { it.firstLetter == searchQuery[0].uppercaseChar() }
+
                 _uiState.update {
                     it.copy(
                         apps = apps,
-                        handwritingFilteredApps = handwritingFiltered,
-                        handwritingSmartApps = handwritingSmart,
-                        indexFilteredApps = indexFiltered,
-                        indexSmartApps = indexSmart,
-                        keyboardFilteredApps = keyboardFiltered,
-                        keyboardSmartApps = keyboardSmart,
-                        voiceFilteredApps = voiceFiltered,
-                        voiceSmartApps = voiceSmart,
+                        handwritingFilteredApps = handwriting.first,
+                        handwritingSmartApps = handwriting.second,
+                        indexFilteredApps = index.first,
+                        indexSmartApps = index.second,
+                        keyboardFilteredApps = keyboard.first,
+                        keyboardSmartApps = keyboard.second,
+                        voiceFilteredApps = voice.first,
+                        voiceSmartApps = voice.second,
                         newlyInstalledAppPackage = when (mode) {
-                            LauncherMode.KEYBOARD -> keyboardNewlyInstalled
-                            LauncherMode.VOICE -> voiceNewlyInstalled
-                            LauncherMode.HANDWRITING -> handwritingNewlyInstalled
-                            LauncherMode.INDEX -> indexNewlyInstalled
+                            LauncherMode.KEYBOARD -> keyboard.third
+                            LauncherMode.VOICE -> voice.third
+                            LauncherMode.HANDWRITING -> handwriting.third
+                            LauncherMode.INDEX -> index.third
                         },
                         // Hidden apps are excluded from shortcut search, so drop the
                         // hidden app's shortcuts from the currently displayed results too
@@ -1147,13 +1044,13 @@ class LauncherViewModel @Inject constructor(
         loadApps()
     }
 
-    fun getHiddenApps(): List<AppInfo> {
+    /** Loads the currently-hidden apps into state so they can be un-hidden. */
+    fun getHiddenApps() {
         viewModelScope.launch {
             val allApps = getInstalledAppsUseCase()
             val hiddenIds = preferencesRepository.getHiddenApps()
             _uiState.update { it.copy(hiddenApps = allApps.filter { app -> app.getIdentifier() in hiddenIds }) }
         }
-        return _uiState.value.hiddenApps
     }
 
     /** Loads the currently-hidden app shortcuts into state so they can be un-hidden. */

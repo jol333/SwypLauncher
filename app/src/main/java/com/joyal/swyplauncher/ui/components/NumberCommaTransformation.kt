@@ -49,7 +49,6 @@ internal class NumberCommaTransformation(locale: Locale) : VisualTransformation 
                 if (offset <= (if (isNegative) 1 else 0)) return offset
                 val intLen = intPart.length
                 if (offset <= intLen) {
-                    val originalSub = intPart.substring(0, offset)
                     val transformedSub = formattedInt.takeWhile { it != decimalSeparator }
                     var mappedOffset = 0
                     var digitCount = 0
