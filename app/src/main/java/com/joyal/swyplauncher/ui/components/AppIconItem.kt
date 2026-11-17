@@ -54,12 +54,14 @@ fun AppIconItem(
     val maxRadius = 28.dp
     val cornerRadius = maxRadius * cornerRadiusPercent
 
-    // Built once per app rather than on every recomposition of the grid cell
-    val iconRequest = remember(app, context) {
+    // Built once per app rather than on every recomposition of the grid cell. The key changes
+    // (and the icon reloads) when an icon pack is applied or an icon is picked for an app.
+    val iconKey = AppIconFetcher.memoryCacheKey(app)
+    val iconRequest = remember(app, context, iconKey) {
         ImageRequest.Builder(context)
             .data(app) // Pass the AppInfo object directly
             .size(168) // 3x size for high-DPI screens (56dp * 3)
-            .memoryCacheKey(AppIconFetcher.memoryCacheKey(app)) // Stable cache key
+            .memoryCacheKey(iconKey) // Stable cache key
             .build()
     }
 
@@ -173,11 +175,13 @@ fun AppIconItem(
         }
 
         if (showContextMenu) {
+            val iconPicker = LocalAppIconPicker.current?.takeIf { it.isAvailable }
             AppContextMenu(
                 app = app,
                 onDismiss = onDismissMenu,
                 onHide = onHide,
                 onAddShortcut = onAddShortcut,
+                onChangeIcon = iconPicker?.let { picker -> { picker.open(app) } },
                 cornerRadiusPercent = cornerRadiusPercent
             )
         }

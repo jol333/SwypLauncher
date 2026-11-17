@@ -82,6 +82,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
+import com.joyal.swyplauncher.ui.util.AppIconFetcher
 import com.joyal.swyplauncher.domain.model.ShortcutIcon
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository
@@ -452,7 +453,7 @@ fun OverlappingAppIcons(
                             model = ImageRequest.Builder(context)
                                 .data(item.appInfo)
                                 .size(96)
-                                .memoryCacheKey("app_icon_${item.id}")
+                                .memoryCacheKey(AppIconFetcher.memoryCacheKey(item.id))
                                 .diskCacheKey("app_icon_${item.id}")
                                 .build(),
                             contentDescription = null,

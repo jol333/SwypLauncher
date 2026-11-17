@@ -74,6 +74,15 @@ interface PreferencesRepository {
     fun getEnabledConversionCategories(): Set<String>?
     fun setEnabledConversionCategories(categories: Set<String>)
 
+    // Icon pack applied to every app (its package name), or null for the apps' own icons.
+    fun getIconPack(): String?
+    fun setIconPack(packageName: String?)
+
+    // Icons picked for individual apps from the long-press menu, keyed by app identifier.
+    // Read and written through IconPackRepository, which caches the parsed map.
+    fun getAppIconChoices(): Map<String, com.joyal.swyplauncher.domain.model.AppIconChoice>
+    fun setAppIconChoices(choices: Map<String, com.joyal.swyplauncher.domain.model.AppIconChoice>)
+
     // Currency rates cache (base currency + rates JSON + fetched timestamp)
     fun getCurrencyRatesJson(): String?
     fun getCurrencyRatesBase(): String?

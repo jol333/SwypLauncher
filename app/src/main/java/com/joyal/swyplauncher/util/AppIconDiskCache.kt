@@ -7,6 +7,7 @@ import com.joyal.swyplauncher.domain.model.AppInfo
 import java.io.File
 import java.io.FileOutputStream
 import java.security.MessageDigest
+import java.util.Calendar
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
 
@@ -16,7 +17,10 @@ import kotlin.math.abs
  * order of magnitude cheaper, which is what makes the grid paint quickly in a fresh process.
  *
  * Entries are versioned by the app's last-update time, so an updated app gets a new file and
- * [prune] drops the old one. All calls do disk I/O — keep them off the main thread.
+ * [prune] drops the old one. They are also keyed by a `style` token naming what the icon was
+ * drawn from (empty for the app's own icon, see `IconPackRepository.iconStyleToken`), so applying
+ * another icon pack can never serve an icon rendered for the previous one.
+ * All calls do disk I/O — keep them off the main thread.
  */
 object AppIconDiskCache {
 
@@ -27,7 +31,7 @@ object AppIconDiskCache {
 
     private fun directory(context: Context) = File(context.cacheDir, "app_icons")
 
-    private fun fileName(app: AppInfo): String {
+    private fun fileName(app: AppInfo, style: String): String {
         val id = app.getIdentifier().replace('/', '@')
         // Package/class names are filesystem-safe; hash anything unusual or overly long.
         val safeId = if (id.length <= 160 && id.all { it.isLetterOrDigit() || it in "._@$-" }) {
@@ -36,21 +40,22 @@ object AppIconDiskCache {
             MessageDigest.getInstance("SHA-1").digest(id.toByteArray())
                 .joinToString("") { "%02x".format(it) }
         }
-        return "${safeId}_${app.lastUpdateTime}_${app.iconDensity}.png"
+        val styleSuffix = if (style.isEmpty()) "" else "_$style"
+        return "${safeId}_${app.lastUpdateTime}_${app.iconDensity}$styleSuffix.png"
     }
 
-    fun read(context: Context, app: AppInfo): Bitmap? = try {
-        val file = File(directory(context), fileName(app))
+    fun read(context: Context, app: AppInfo, style: String): Bitmap? = try {
+        val file = File(directory(context), fileName(app, style))
         if (file.exists()) BitmapFactory.decodeFile(file.path) else null
     } catch (_: Exception) {
         // Unreadable entry; the caller renders the icon again and overwrites it.
         null
     }
 
-    fun write(context: Context, app: AppInfo, bitmap: Bitmap) {
+    fun write(context: Context, app: AppInfo, style: String, bitmap: Bitmap) {
         try {
             val dir = directory(context).apply { mkdirs() }
-            val target = File(dir, fileName(app))
+            val target = File(dir, fileName(app, style))
             // Write-then-rename so a reader never sees a half-written PNG.
             val temp = File(dir, "${target.name}.${tempCounter.incrementAndGet()}.tmp")
             FileOutputStream(temp).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
@@ -61,24 +66,40 @@ object AppIconDiskCache {
     }
 
     /** True when the cached icon hasn't been checked against a fresh render for a day. */
-    fun isDueForRevalidation(context: Context, app: AppInfo): Boolean {
-        val lastChecked = File(directory(context), fileName(app)).lastModified()
+    fun isDueForRevalidation(context: Context, app: AppInfo, style: String): Boolean {
+        val lastChecked = File(directory(context), fileName(app, style)).lastModified()
         return System.currentTimeMillis() - lastChecked > REVALIDATION_INTERVAL_MS
     }
 
     /** Records that the cached icon was just confirmed to still match a fresh render. */
-    fun markRevalidated(context: Context, app: AppInfo) {
+    fun markRevalidated(context: Context, app: AppInfo, style: String) {
         try {
-            File(directory(context), fileName(app)).setLastModified(System.currentTimeMillis())
+            File(directory(context), fileName(app, style)).setLastModified(System.currentTimeMillis())
         } catch (_: Exception) {
             // Only means it gets checked again sooner than necessary.
         }
     }
 
-    /** Deletes entries that no longer belong to any of [installedApps] (uninstalled or updated). */
-    fun prune(context: Context, installedApps: List<AppInfo>) {
+    /**
+     * Style token for an icon that is only right today (an icon pack's dynamic calendar icon):
+     * tomorrow it names a different file, so yesterday's date is never served from the cache.
+     */
+    fun dailyStyle(style: String): String =
+        "${style}d${Calendar.getInstance().get(Calendar.DAY_OF_MONTH)}"
+
+    /**
+     * Deletes entries that no longer belong to any of [installedApps] (uninstalled or updated),
+     * or that were drawn in another style than the app's [currentStyle] (an icon pack that is no
+     * longer applied).
+     */
+    fun prune(context: Context, installedApps: List<AppInfo>, currentStyle: (AppInfo) -> String) {
         try {
-            val keep = installedApps.mapTo(HashSet()) { fileName(it) }
+            val keep = HashSet<String>()
+            installedApps.forEach { app ->
+                val style = currentStyle(app)
+                keep += fileName(app, style)
+                if (style.isNotEmpty()) keep += fileName(app, dailyStyle(style))
+            }
             directory(context).listFiles()?.forEach { if (it.name !in keep) it.delete() }
         } catch (_: Exception) {
             // Stale files only cost a little cache space; try again on the next refresh.

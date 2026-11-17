@@ -56,6 +56,12 @@
             android:theme="@style/Theme.SwypLauncher.Translucent" />
 
         <activity
+            android:name=".IconPackActivity"
+            android:exported="false"
+            android:label="@string/icon_pack_screen_title"
+            android:theme="@style/Theme.SwypLauncher.Translucent" />
+
+        <activity
             android:name=".ui.AssistActivity"
             android:exported="true"
             android:theme="@style/Theme.SwypLauncher.Translucent"

@@ -14,6 +14,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -56,6 +57,7 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -75,6 +77,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageShader
 import androidx.compose.ui.graphics.Outline
@@ -85,6 +88,7 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -115,6 +119,9 @@ import com.joyal.swyplauncher.ui.screens.IndexModeScreen
 import com.joyal.swyplauncher.ui.screens.KeyboardModeScreen
 import com.joyal.swyplauncher.ui.screens.VoiceModeScreen
 import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
+import com.joyal.swyplauncher.ui.components.AppIconPicker
+import com.joyal.swyplauncher.ui.components.LocalAppIconPicker
+import com.joyal.swyplauncher.ui.components.rememberAppIconPicker
 import com.joyal.swyplauncher.ui.theme.SwypLauncherTheme
 import com.joyal.swyplauncher.ui.util.rememberSystemBlurSupported
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
@@ -141,6 +148,9 @@ class AssistActivity : AppCompatActivity() {
 
     @Inject
     lateinit var shortcutSearchRepository: com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository
+
+    @Inject
+    lateinit var iconPackRepository: com.joyal.swyplauncher.domain.repository.IconPackRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -176,14 +186,20 @@ class AssistActivity : AppCompatActivity() {
 
         setContent {
             SwypLauncherTheme {
-                AssistantScreen(
-                    onDismiss = ::finish,
-                    activity = this,
-                    preferencesRepository = preferencesRepository,
-                    getInstalledAppsUseCase = getInstalledAppsUseCase,
-                    shortcutSearchRepository = shortcutSearchRepository,
-                    initialMode = initialMode
-                )
+                // "Change icon" in any app's long-press menu opens the picker hosted below
+                val iconPicker = rememberAppIconPicker(iconPackRepository)
+                CompositionLocalProvider(LocalAppIconPicker provides iconPicker) {
+                    AssistantScreen(
+                        onDismiss = ::finish,
+                        activity = this,
+                        preferencesRepository = preferencesRepository,
+                        getInstalledAppsUseCase = getInstalledAppsUseCase,
+                        shortcutSearchRepository = shortcutSearchRepository,
+                        iconPackRepository = iconPackRepository,
+                        iconPicker = iconPicker,
+                        initialMode = initialMode
+                    )
+                }
             }
         }
 
@@ -233,6 +249,8 @@ fun AssistantScreen(
     preferencesRepository: com.joyal.swyplauncher.domain.repository.PreferencesRepository,
     getInstalledAppsUseCase: com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase,
     shortcutSearchRepository: com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository,
+    iconPackRepository: com.joyal.swyplauncher.domain.repository.IconPackRepository,
+    iconPicker: AppIconPicker,
     initialMode: LauncherMode? = null,
     launcherViewModel: LauncherViewModel = hiltViewModel(),
     modeViewModel: ModeViewModel = hiltViewModel()
@@ -485,7 +503,23 @@ fun AssistantScreen(
             }
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        // While the icon picker is up, the assistant behind it goes out of focus. The layer only
+        // exists for that time, and the animated amount is read inside it, so neither opening
+        // the assistant nor the blur animation costs a recomposition of the sheet.
+        val iconPickerBlur = animateFloatAsState(
+            targetValue = if (iconPicker.isOpen) 1f else 0f,
+            animationSpec = tween(300),
+            finishedListener = { iconPicker.onClosed() },
+            label = "iconPickerBlur"
+        )
+        val iconPickerBlurModifier = if (iconPicker.app != null) {
+            Modifier.graphicsLayer {
+                val radius = 24.dp.toPx() * iconPickerBlur.value
+                renderEffect = if (radius >= 1f) BlurEffect(radius, radius, TileMode.Clamp) else null
+            }
+        } else Modifier
+
+        Box(modifier = Modifier.fillMaxSize().then(iconPickerBlurModifier)) {
             val backdropRange = (maxSheetFraction - effectiveMinSheetFraction).coerceAtLeast(0.0001f)
 
             Box(
@@ -885,6 +919,23 @@ fun AssistantScreen(
                     shortcutAppId = null
                 }
             )
+        }
+
+        // Icon picker for one app ("Change icon" in its long-press menu), over everything else
+        androidx.compose.animation.AnimatedVisibility(
+            visible = iconPicker.isOpen,
+            enter = fadeIn(tween(220)) + slideInVertically(tween(320, easing = EaseOut)) { it / 8 },
+            exit = fadeOut(tween(200)) + slideOutVertically(tween(240, easing = EaseIn)) { it / 8 }
+        ) {
+            val iconCornerRadius by launcherViewModel.cornerRadius.collectAsState()
+            iconPicker.app?.let { app ->
+                com.joyal.swyplauncher.ui.screens.IconPickerScreen(
+                    app = app,
+                    iconPackRepository = iconPackRepository,
+                    cornerRadius = iconCornerRadius,
+                    onDismiss = iconPicker::close
+                )
+            }
         }
     }
 }

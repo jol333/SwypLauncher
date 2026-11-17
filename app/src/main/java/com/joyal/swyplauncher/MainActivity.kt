@@ -35,16 +35,20 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.domain.model.IconPackInfo
 import com.joyal.swyplauncher.domain.model.LauncherMode
 import com.joyal.swyplauncher.domain.repository.AppRepository
+import com.joyal.swyplauncher.domain.repository.IconPackRepository
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import com.joyal.swyplauncher.domain.usecase.GetInstalledAppsUseCase
 import com.joyal.swyplauncher.ui.settings.BentoSettingsScreen
@@ -58,6 +62,8 @@ import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import javax.inject.Inject
 import androidx.compose.ui.res.stringResource
+import com.joyal.swyplauncher.ui.settings.IconPackShowcaseLoader
+import kotlinx.coroutines.flow.first
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -71,6 +77,9 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var appRepository: AppRepository
 
+    @Inject
+    lateinit var iconPackRepository: IconPackRepository
+
     private val isAssistantConfigured = mutableStateOf(false)
     private val installedApps = mutableStateOf<List<AppInfo>>(emptyList())
 
@@ -80,6 +89,12 @@ class MainActivity : AppCompatActivity() {
     // Separate state for shortcuts count to update on resume without affecting bottom sheet
     private val shortcutsCount = mutableIntStateOf(0)
     private val gesturesCount = mutableIntStateOf(0)
+
+    // Icon pack tile: installed packs (none = no tile), the one applied, individually picked icons
+    private val iconPacks = mutableStateOf<List<IconPackInfo>>(emptyList())
+    private val selectedIconPack = mutableStateOf<String?>(null)
+    private val pickedIconCount = mutableIntStateOf(0)
+    private val iconPackShowcase = mutableStateOf<List<ImageBitmap>>(emptyList())
     private val assistantRoleLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { checkAssistantStatus() }
@@ -125,6 +140,10 @@ class MainActivity : AppCompatActivity() {
                     screenEntryTimestamp = screenEntryTimestamp.longValue,
                     shortcutsCount = shortcutsCount.intValue,
                     gesturesCount = gesturesCount.intValue,
+                    iconPacks = iconPacks.value,
+                    selectedIconPack = selectedIconPack.value,
+                    pickedIconCount = pickedIconCount.intValue,
+                    iconPackShowcase = iconPackShowcase.value,
                     onLanguageChanged = {
                         // Invalidate app cache. The activity recreation will trigger a reload with the correct locale.
                         appRepository.invalidateCache()
@@ -149,6 +168,25 @@ class MainActivity : AppCompatActivity() {
             }
             shortcutsCount.intValue = shortcuts
             gesturesCount.intValue = gestures
+        }
+        // Icon packs can be installed, removed or applied while this screen is in the background
+        lifecycleScope.launch {
+            val packs = try {
+                iconPackRepository.getIconPacks()
+            } catch (e: Exception) {
+                emptyList()
+            }
+            val picked = withContext(Dispatchers.Default) { iconPackRepository.getIconChoices().size }
+            iconPacks.value = packs
+            selectedIconPack.value = iconPackRepository.getSelectedIconPack()
+            pickedIconCount.intValue = picked
+            // The tile's backdrop: rendered in the background once the app list is in
+            if (packs.isNotEmpty()) {
+                val apps = snapshotFlow { installedApps.value }.first { it.isNotEmpty() }
+                iconPackShowcase.value = IconPackShowcaseLoader.load(
+                    this@MainActivity, iconPackRepository, packs, selectedIconPack.value, apps
+                )
+            }
         }
     }
 

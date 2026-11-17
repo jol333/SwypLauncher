@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
+import com.joyal.swyplauncher.ui.util.AppIconFetcher
 import com.joyal.swyplauncher.domain.model.ShortcutIcon
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import com.joyal.swyplauncher.domain.repository.ShortcutSearchRepository
@@ -542,7 +543,7 @@ fun SelectedAppChip(
                     model = ImageRequest.Builder(context)
                         .data(item.appInfo)
                         .size(144)
-                        .memoryCacheKey("app_icon_${item.id}")
+                        .memoryCacheKey(AppIconFetcher.memoryCacheKey(item.id))
                         .diskCacheKey("app_icon_${item.id}")
                         .build(),
                     contentDescription = null,
@@ -633,7 +634,7 @@ fun AppSelectionItem(
                 model = ImageRequest.Builder(context)
                     .data(item.appInfo)
                     .size(120)
-                    .memoryCacheKey("app_icon_${item.id}")
+                    .memoryCacheKey(AppIconFetcher.memoryCacheKey(item.id))
                     .diskCacheKey("app_icon_${item.id}")
                     .build(),
                 contentDescription = null,

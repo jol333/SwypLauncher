@@ -48,6 +48,7 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.boundsInRoot
@@ -61,6 +62,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.domain.model.AppInfo
+import com.joyal.swyplauncher.domain.model.IconPackInfo
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import com.joyal.swyplauncher.ui.theme.BentoColors
 import kotlin.math.min
@@ -76,6 +78,12 @@ fun BentoSettingsScreen(
     screenEntryTimestamp: Long = 0L,
     shortcutsCount: Int = 0,
     gesturesCount: Int = 0,
+    // Installed icon packs; the Icon pack tile is left out entirely while there are none
+    iconPacks: List<IconPackInfo> = emptyList(),
+    selectedIconPack: String? = null,
+    pickedIconCount: Int = 0,
+    // Icons from the installed packs, for the Icon pack tile's backdrop (empty until loaded)
+    iconPackShowcase: List<ImageBitmap> = emptyList(),
     onLanguageChanged: () -> Unit = {}
 ) {
     var gridSize by remember { mutableIntStateOf(preferencesRepository.getGridSize()) }
@@ -400,6 +408,29 @@ fun BentoSettingsScreen(
                     },
                     previewApps = installedApps.take(6) // Always pass max for live preview while dragging
                 )
+            }
+
+            // Icon pack: opens the icon pack screen (only with at least one pack installed)
+            if (iconPacks.isNotEmpty()) {
+                item {
+                    IconPackCard(
+                        packs = iconPacks,
+                        selectedPackage = selectedIconPack,
+                        pickedIconCount = pickedIconCount,
+                        showcaseIcons = iconPackShowcase,
+                        onClick = {
+                            context.startActivity(
+                                Intent(
+                                    context,
+                                    com.joyal.swyplauncher.IconPackActivity::class.java
+                                )
+                            )
+                        },
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .offset(y = (-32).dp)
+                    )
+                }
             }
 
             // Auto-open & Sort apps by Row

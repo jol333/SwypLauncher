@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
+import com.joyal.swyplauncher.ui.util.AppIconFetcher
 import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.R
 import com.joyal.swyplauncher.ui.theme.BentoColors
@@ -106,7 +107,7 @@ fun AppearanceCard(
                                 model = ImageRequest.Builder(context)
                                     .data(app)
                                     .size(168)
-                                    .memoryCacheKey("app_icon_${app.getIdentifier()}")
+                                    .memoryCacheKey(AppIconFetcher.memoryCacheKey(app))
                                     .build(),
                                 contentDescription = app.label,
                                 contentScale = ContentScale.Fit,

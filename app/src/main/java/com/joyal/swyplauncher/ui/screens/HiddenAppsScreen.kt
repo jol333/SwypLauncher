@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.joyal.swyplauncher.ui.components.AppContextMenu
 import com.joyal.swyplauncher.ui.components.AppIconItem
+import com.joyal.swyplauncher.ui.components.LocalAppIconPicker
 import com.joyal.swyplauncher.ui.components.ShortcutIconItem
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
 import com.joyal.swyplauncher.R
@@ -157,9 +158,11 @@ fun HiddenAppsScreen(
                                 )
 
                                 if (selectedAppIdentifier == app.getIdentifier()) {
+                                    val iconPicker = LocalAppIconPicker.current?.takeIf { it.isAvailable }
                                     AppContextMenu(
                                         app = app,
                                         onDismiss = { selectedAppIdentifier = null },
+                                        onChangeIcon = iconPicker?.let { picker -> { picker.open(app) } },
                                         onUnhide = {
                                             launcherViewModel.unhideApp(app.getIdentifier())
                                             launcherViewModel.getHiddenApps()

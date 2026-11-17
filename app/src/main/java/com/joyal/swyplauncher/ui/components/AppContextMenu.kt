@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Label
+import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.ShoppingCart
@@ -57,6 +58,8 @@ fun AppContextMenu(
     onUnhide: () -> Unit = {},
     showHideOption: Boolean = true,
     onAddShortcut: (() -> Unit)? = null,
+    // Null when no icon pack is installed: the option is then left out altogether
+    onChangeIcon: (() -> Unit)? = null,
     cornerRadiusPercent: Float = 0.85f
 ) {
     val context = LocalContext.current
@@ -106,7 +109,7 @@ fun AppContextMenu(
     val totalShortcuts = limitedDynamicShortcuts.size + manifestShortcuts.size + pinnedShortcuts.size
 
     // Calculate menu height dynamically based on shortcuts
-    val menuItemCount = if (onAddShortcut != null) 5 else 4
+    val menuItemCount = 4 + (if (onAddShortcut != null) 1 else 0) + (if (onChangeIcon != null) 1 else 0)
     val totalHeight = (menuItemCount + totalShortcuts) * 56 + (if (totalShortcuts > 0) 24 else 0) + 16
     val offsetY = with(density) { (-totalHeight).dp.roundToPx() }
 
@@ -160,6 +163,14 @@ fun AppContextMenu(
             if (onAddShortcut != null) {
                 MenuOption(Icons.AutoMirrored.Outlined.Label, stringResource(R.string.set_a_shortcut)) {
                     onAddShortcut()
+                    genie.dismiss()
+                }
+            }
+
+            // Pick another icon for this app from an installed icon pack
+            if (onChangeIcon != null) {
+                MenuOption(Icons.Outlined.Category, stringResource(R.string.change_icon)) {
+                    onChangeIcon()
                     genie.dismiss()
                 }
             }

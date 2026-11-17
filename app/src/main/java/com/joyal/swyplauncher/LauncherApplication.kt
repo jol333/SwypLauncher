@@ -7,6 +7,13 @@ import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
+import com.joyal.swyplauncher.domain.model.AppChangeEvent
+import com.joyal.swyplauncher.ui.util.AppIconFetcher
+import com.joyal.swyplauncher.ui.util.AppIconPreviewFetcher
+import com.joyal.swyplauncher.ui.util.AppIconPreviewKeyer
+import com.joyal.swyplauncher.ui.util.AppIconRenderer
+import com.joyal.swyplauncher.ui.util.IconPackIconFetcher
+import com.joyal.swyplauncher.ui.util.IconPackIconKeyer
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +36,9 @@ class LauncherApplication : Application(), SingletonImageLoader.Factory {
     @javax.inject.Inject
     lateinit var recordAppUsageUseCase: com.joyal.swyplauncher.domain.usecase.RecordAppUsageUseCase
 
+    @javax.inject.Inject
+    lateinit var iconPackRepository: com.joyal.swyplauncher.domain.repository.IconPackRepository
+
     // Process-lifetime scope for fire-and-forget startup work (lives as long as the process).
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -36,6 +46,25 @@ class LauncherApplication : Application(), SingletonImageLoader.Factory {
         super.onCreate()
         prewarmAppListInBackground()
         downloadHandwritingModelInBackground()
+        keepIconPacksInSync()
+    }
+
+    // Icon packs are ordinary apps: when one is updated or removed, whatever was cached from it
+    // is stale. And whenever icons may look different, bump the Compose-visible version that is
+    // part of every app icon's request, so icons on screen reload.
+    private fun keepIconPacksInSync() {
+        appScope.launch {
+            appRepository.observeAppChanges().collect { event ->
+                val packageName = when (event) {
+                    is AppChangeEvent.AppInstalled -> event.packageName
+                    is AppChangeEvent.AppUninstalled -> event.packageName
+                }
+                iconPackRepository.onPackageChanged(packageName)
+            }
+        }
+        appScope.launch {
+            iconPackRepository.iconVersion.collect { AppIconFetcher.iconVersion = it }
+        }
     }
 
     // The assistant overlay is usually the first thing shown by a new process. Get the persisted
@@ -76,6 +105,8 @@ class LauncherApplication : Application(), SingletonImageLoader.Factory {
         // handwriting/voice use re-creates the client locally — no re-download.
         if (level >= ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
             mlKitRepository.cleanup()
+            // Parsed icon packs and their open APKs; re-read when an icon next needs rendering
+            iconPackRepository.trimMemory()
         }
     }
 
@@ -94,7 +125,13 @@ class LauncherApplication : Application(), SingletonImageLoader.Factory {
                     .build()
             }
             .components {
-                add(com.joyal.swyplauncher.ui.util.AppIconFetcher.Factory(context))
+                val renderer = AppIconRenderer(context, iconPackRepository)
+                add(AppIconFetcher.Factory(context, renderer, iconPackRepository))
+                // Icon pack previews and the icons inside a pack
+                add(AppIconPreviewKeyer)
+                add(AppIconPreviewFetcher.Factory(renderer))
+                add(IconPackIconKeyer)
+                add(IconPackIconFetcher.Factory(renderer))
             }
             .build()
     }

@@ -3,6 +3,8 @@ package com.joyal.swyplauncher.data.repository
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.joyal.swyplauncher.domain.model.AppIconChoice
+import com.joyal.swyplauncher.domain.model.IconPackIcon
 import com.joyal.swyplauncher.domain.model.LauncherMode
 import com.joyal.swyplauncher.domain.repository.PreferencesRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -266,6 +268,50 @@ class PreferencesRepositoryImpl @Inject constructor(
         prefs.edit { putStringSet(KEY_ENABLED_CONVERSION_CATEGORIES, categories) }
     }
 
+    override fun getIconPack(): String? = prefs.getString(KEY_ICON_PACK, null)
+
+    override fun setIconPack(packageName: String?) {
+        prefs.edit {
+            if (packageName != null) putString(KEY_ICON_PACK, packageName) else remove(KEY_ICON_PACK)
+        }
+    }
+
+    // JSON: { appIdentifier: { "pack": packPackage, "icon": drawableName } }, where an empty
+    // object means "the app's own icon". Entries that don't parse are skipped, not fatal.
+    override fun getAppIconChoices(): Map<String, AppIconChoice> {
+        val raw = prefs.getString(KEY_APP_ICON_CHOICES, null) ?: return emptyMap()
+        return try {
+            val json = org.json.JSONObject(raw)
+            buildMap {
+                json.keys().forEach { appId ->
+                    val entry = json.optJSONObject(appId) ?: return@forEach
+                    val pack = entry.optString("pack")
+                    val icon = entry.optString("icon")
+                    when {
+                        entry.length() == 0 -> put(appId, AppIconChoice.Original)
+                        pack.isNotEmpty() && icon.isNotEmpty() ->
+                            put(appId, AppIconChoice.FromPack(IconPackIcon(pack, icon)))
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            emptyMap()
+        }
+    }
+
+    override fun setAppIconChoices(choices: Map<String, AppIconChoice>) {
+        val json = org.json.JSONObject()
+        choices.forEach { (appId, choice) ->
+            val entry = org.json.JSONObject()
+            if (choice is AppIconChoice.FromPack) {
+                entry.put("pack", choice.icon.packPackage)
+                entry.put("icon", choice.icon.drawableName)
+            }
+            json.put(appId, entry)
+        }
+        prefs.edit { putString(KEY_APP_ICON_CHOICES, json.toString()) }
+    }
+
     companion object {
         private const val KEY_HANDWRITING_INIT_TOAST_SHOWN = "handwriting_init_toast_shown"
         private const val KEY_HANDWRITING_MODEL_DOWNLOADED = "handwriting_model_downloaded"
@@ -291,5 +337,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         private const val KEY_CURRENCY_RATES_TIMESTAMP = "currency_rates_timestamp"
         private const val KEY_ENABLED_CONVERSION_CATEGORIES = "enabled_conversion_categories"
         private const val KEY_TIMEZONE_CATEGORY_MIGRATED = "timezone_category_migrated"
+        private const val KEY_ICON_PACK = "icon_pack"
+        private const val KEY_APP_ICON_CHOICES = "app_icon_choices"
     }
 }

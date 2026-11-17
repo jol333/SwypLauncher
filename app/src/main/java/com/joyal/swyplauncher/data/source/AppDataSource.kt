@@ -37,7 +37,8 @@ import javax.inject.Singleton
 
 @Singleton
 class AppDataSource @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    private val iconPackRepository: com.joyal.swyplauncher.domain.repository.IconPackRepository
 ) : com.joyal.swyplauncher.domain.repository.AppRepository {
     private val packageManager: PackageManager = context.packageManager
 
@@ -134,7 +135,7 @@ class AppDataSource @Inject constructor(
             iconCachePruned = true
             withContext(Dispatchers.IO) {
                 if (changed) writeSnapshot(apps)
-                AppIconDiskCache.prune(context, apps)
+                AppIconDiskCache.prune(context, apps, iconPackRepository::iconStyleToken)
             }
         }
 
