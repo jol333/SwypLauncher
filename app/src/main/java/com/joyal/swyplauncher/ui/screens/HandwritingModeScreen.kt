@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -339,11 +340,11 @@ fun HandwritingModeScreen(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Drawing input area.
-        Box(
+        // Drawing input area: the canvas plus the "Recognized / Undo / Clear" row below it, so a
+        // stroke can also start in the row's reserved space while that row is hidden.
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(canvasHeight)
                 .pointerInput(handwritingState.isInitialized) {
                     if (handwritingState.isInitialized) {
                         detectDragGestures(
@@ -390,29 +391,14 @@ fun HandwritingModeScreen(
                     }
                 }
         ) {
-            // Initialization and error states - only show if not initialized yet
-            when (val result = handwritingState.recognitionResult) {
-                is RecognitionResult.Initializing -> {
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        androidx.compose.material3.CircularProgressIndicator(
-                            modifier = Modifier.padding(16.dp)
-                        )
-                        Text(
-                            text = stringResource(R.string.downloading_model),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-
-                is RecognitionResult.Error -> {
-                    if (result.isInitializationError) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(canvasHeight)
+            ) {
+                // Initialization and error states - only show if not initialized yet
+                when (val result = handwritingState.recognitionResult) {
+                    is RecognitionResult.Initializing -> {
                         Column(
                             modifier = Modifier
                                 .align(Alignment.Center)
@@ -420,119 +406,148 @@ fun HandwritingModeScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
+                            androidx.compose.material3.CircularProgressIndicator(
+                                modifier = Modifier.padding(16.dp)
+                            )
+                            Text(
+                                text = stringResource(R.string.downloading_model),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+
+                    is RecognitionResult.Error -> {
+                        if (result.isInitializationError) {
+                            Column(
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .padding(32.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                Text(
+                                    text = result.message,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                androidx.compose.material3.Button(
+                                    onClick = { handwritingViewModel.retryInitialization() }
+                                ) {
+                                    Text(stringResource(R.string.retry))
+                                }
+                            }
+                        } else {
                             Text(
                                 text = result.message,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.error
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .padding(16.dp)
                             )
-                            androidx.compose.material3.Button(
-                                onClick = { handwritingViewModel.retryInitialization() }
-                            ) {
-                                Text(stringResource(R.string.retry))
-                            }
                         }
-                    } else {
-                        Text(
-                            text = result.message,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .padding(16.dp)
-                        )
                     }
-                }
 
-                else -> {
-                    // "Scribble here" hint - show only when initialized, no strokes, and not currently drawing
-                    if (handwritingState.isInitialized && handwritingState.strokes.isEmpty() && !isDrawing) {
-                        Icon(
-                            imageVector = androidx.compose.ui.graphics.vector.ImageVector.vectorResource(
-                                R.drawable.ic_scribble_here
-                            ),
-                            contentDescription = stringResource(R.string.scribble_here),
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(top = 24.dp)
-                                .size(width = 158.dp, height = 21.dp)
-                                .alpha(0.2f),
-                            tint = Color.White
-                        )
+                    else -> {
+                        // "Scribble here" hint - show only when initialized, no strokes, and not currently drawing
+                        if (handwritingState.isInitialized && handwritingState.strokes.isEmpty() && !isDrawing) {
+                            Icon(
+                                imageVector = androidx.compose.ui.graphics.vector.ImageVector.vectorResource(
+                                    R.drawable.ic_scribble_here
+                                ),
+                                contentDescription = stringResource(R.string.scribble_here),
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .padding(top = 24.dp)
+                                    .size(width = 158.dp, height = 21.dp)
+                                    .alpha(0.2f),
+                                tint = Color.White
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        // "Recognized:" label and "Undo/Clear" actions - always reserve space to prevent jumping
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .alpha(if (handwritingState.strokes.isNotEmpty()) 1f else 0f),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val gestureNow = matchedGesture
-            Text(
-                text = if (gestureNow != null) {
-                    stringResource(R.string.gesture_matched_label)
-                } else {
-                    "${stringResource(R.string.recognized)} ${handwritingState.recognizedText}"
-                },
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.White,
-                modifier = Modifier.padding(start = 12.dp)
-            )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Undo button with tooltip
-                TooltipAbove(text = stringResource(R.string.undo)) {
-                    androidx.compose.material3.IconButton(
-                        onClick = {
-                            if (handwritingState.strokes.size == 1) {
-                                // Last stroke - clear everything
-                                handwritingViewModel.clearStrokes()
-                                launcherViewModel.resetFilterHandwriting()
-                                currentPath.clear()
-                                particles.clear()
-                            } else {
-                                // Remove last stroke
-                                handwritingViewModel.removeLastStroke()
-                            }
-                        },
-                        enabled = handwritingState.strokes.isNotEmpty()
+            val showActions = handwritingState.strokes.isNotEmpty()
+            Layout(
+                content = {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = androidx.compose.ui.graphics.vector.ImageVector.vectorResource(
-                                R.drawable.ic_undo
-                            ),
-                            contentDescription = stringResource(R.string.undo),
-                            tint = if (handwritingState.strokes.isNotEmpty())
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        val gestureNow = matchedGesture
+                        Text(
+                            text = if (gestureNow != null) {
+                                stringResource(R.string.gesture_matched_label)
+                            } else {
+                                "${stringResource(R.string.recognized)} ${handwritingState.recognizedText}"
+                            },
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White,
+                            modifier = Modifier.padding(start = 12.dp)
                         )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Undo button with tooltip
+                            TooltipAbove(text = stringResource(R.string.undo)) {
+                                androidx.compose.material3.IconButton(
+                                    onClick = {
+                                        if (handwritingState.strokes.size == 1) {
+                                            // Last stroke - clear everything
+                                            handwritingViewModel.clearStrokes()
+                                            launcherViewModel.resetFilterHandwriting()
+                                            currentPath.clear()
+                                            particles.clear()
+                                        } else {
+                                            // Remove last stroke
+                                            handwritingViewModel.removeLastStroke()
+                                        }
+                                    },
+                                    enabled = handwritingState.strokes.isNotEmpty()
+                                ) {
+                                    Icon(
+                                        imageVector = androidx.compose.ui.graphics.vector.ImageVector.vectorResource(
+                                            R.drawable.ic_undo
+                                        ),
+                                        contentDescription = stringResource(R.string.undo),
+                                        tint = if (handwritingState.strokes.isNotEmpty())
+                                            MaterialTheme.colorScheme.primary
+                                        else
+                                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                    )
+                                }
+                            }
+
+                            // Clear button
+                            TextButton(
+                                onClick = {
+                                    handwritingViewModel.clearStrokes()
+                                    launcherViewModel.resetFilterHandwriting()
+                                    // Also clear visual effects
+                                    currentPath.clear()
+                                    particles.clear()
+                                },
+                                enabled = handwritingState.strokes.isNotEmpty()
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.clear_action),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
                     }
                 }
-
-                // Clear button
-                TextButton(
-                    onClick = {
-                        handwritingViewModel.clearStrokes()
-                        launcherViewModel.resetFilterHandwriting()
-                        // Also clear visual effects
-                        currentPath.clear()
-                        particles.clear()
-                    },
-                    enabled = handwritingState.strokes.isNotEmpty()
-                ) {
-                    Text(
-                        text = stringResource(R.string.clear_action),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+            ) { measurables, constraints ->
+                val row = measurables.first().measure(constraints)
+                layout(row.width, row.height) {
+                    if (showActions) row.place(0, 0)
                 }
             }
         }

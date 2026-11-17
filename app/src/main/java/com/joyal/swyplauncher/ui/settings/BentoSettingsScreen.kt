@@ -88,6 +88,8 @@ fun BentoSettingsScreen(
 ) {
     var gridSize by remember { mutableIntStateOf(preferencesRepository.getGridSize()) }
     var cornerRadius by remember { mutableFloatStateOf(preferencesRepository.getCornerRadius()) }
+    // Applying an icon pack (on the icon pack screen) also changes the corner radius
+    LaunchedEffect(selectedIconPack) { cornerRadius = preferencesRepository.getCornerRadius() }
     var autoOpenSingleResult by remember {
         mutableStateOf(preferencesRepository.isAutoOpenSingleResultEnabled())
     }

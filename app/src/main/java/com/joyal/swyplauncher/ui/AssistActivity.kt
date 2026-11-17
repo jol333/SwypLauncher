@@ -519,6 +519,27 @@ fun AssistantScreen(
             }
         } else Modifier
 
+        if (iconPicker.app != null && rememberSystemBlurSupported()) {
+            val window = activity.window
+            val density = LocalDensity.current
+            // What the window blurs outside the picker: the user's background blur, if on
+            val restingRadius = remember {
+                if (preferencesRepository.isBackgroundBlurEnabled()) preferencesRepository.getBlurLevel() else 0
+            }
+            LaunchedEffect(window) {
+                val pickerRadius = with(density) { 32.dp.toPx() }
+                // snapshotFlow only emits when the step changes
+                snapshotFlow { (iconPickerBlur.value * PICKER_BLUR_STEPS).roundToInt() }.collect { step ->
+                    window.setBlurBehind(
+                        maxOf(restingRadius, (pickerRadius * step / PICKER_BLUR_STEPS).roundToInt())
+                    )
+                }
+            }
+            DisposableEffect(window) {
+                onDispose { window.setBlurBehind(restingRadius) }
+            }
+        }
+
         Box(modifier = Modifier.fillMaxSize().then(iconPickerBlurModifier)) {
             val backdropRange = (maxSheetFraction - effectiveMinSheetFraction).coerceAtLeast(0.0001f)
 
@@ -962,6 +983,21 @@ fun UsageStatsPermissionPromptDialog(
             }
         }
     )
+}
+
+// How many window updates the icon picker's background blur takes to come in (or go)
+private const val PICKER_BLUR_STEPS = 5
+
+/** Blurs everything under this window by [radius] pixels; 0 turns the blur off. */
+private fun android.view.Window.setBlurBehind(radius: Int) {
+    val params = attributes
+    params.blurBehindRadius = radius
+    params.flags = if (radius > 0) {
+        params.flags or android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND
+    } else {
+        params.flags and android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND.inv()
+    }
+    attributes = params
 }
 
 /**

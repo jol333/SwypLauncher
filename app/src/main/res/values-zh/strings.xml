@@ -31,6 +31,47 @@
     <string name="appearance">外观</string>
     <string name="corner_radius">圆角半径</string>
     
+    <!-- Settings Screen - Icon pack tile -->
+    <string name="icon_pack_card_title">图标包</string>
+    <plurals name="icon_packs_installed">
+        <item quantity="one">已安装 %d 个图标包</item>
+        <item quantity="other">已安装 %d 个图标包</item>
+    </plurals>
+    <plurals name="icon_pack_picked_icons">
+        <item quantity="one">自选了 %d 个图标</item>
+        <item quantity="other">自选了 %d 个图标</item>
+    </plurals>
+
+    <!-- Icon pack screen -->
+    <string name="icon_pack_screen_title">图标包</string>
+    <!-- The "no icon pack" option: every app keeps its own icon -->
+    <string name="icon_pack_default">默认</string>
+    <string name="icon_pack_default_desc">应用自带的默认图标</string>
+    <!-- %1$d = apps the pack has an icon for, %2$d = all installed apps -->
+    <string name="icon_pack_coverage">适配了 %2$d 个应用中的 %1$d 个</string>
+    <string name="icon_pack_apply">应用</string>
+    <string name="icon_pack_in_use">使用中</string>
+    <!-- Asked when applying a pack while some apps have an individually chosen icon -->
+    <string name="icon_pack_keep_picked_title">保留你自选的图标吗？</string>
+    <plurals name="icon_pack_keep_picked_message">
+        <item quantity="one">有 %d 个应用使用了你自选的图标。</item>
+        <item quantity="other">有 %d 个应用使用了你自选的图标。</item>
+    </plurals>
+    <string name="icon_pack_keep_picked">保留我的图标</string>
+    <string name="icon_pack_replace_picked">应用到所有应用</string>
+
+    <!-- Icon picker for a single app (long-press menu > Change icon) -->
+    <string name="change_icon">更换图标</string>
+    <string name="icon_picker_for_this_app">适用于此应用</string>
+    <!-- The app's own icon, as opposed to one from an icon pack -->
+    <string name="icon_picker_original">原始图标</string>
+    <string name="icon_picker_reset">重置</string>
+    <string name="icon_picker_confirm">使用此图标</string>
+    <string name="icon_picker_search_hint">搜索图标</string>
+    <string name="icon_picker_no_match">没有图标包包含此应用的图标。在上方打开某个图标包以挑选任意图标。</string>
+    <string name="icon_picker_no_results">没有匹配搜索结果的图标</string>
+    <string name="icon_picker_pack_empty">此图标包中没有可供选择的图标</string>
+
     <!-- Settings Screen - Sort Apps -->
     <string name="sort_apps_by">应用排序</string>
     <string name="app_sort_order">应用排序方式</string>

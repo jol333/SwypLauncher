@@ -1,14 +1,23 @@
 package com.joyal.swyplauncher.ui.components
 
+import android.graphics.Rect
+import android.view.View
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,11 +30,22 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
+import androidx.compose.ui.window.PopupProperties
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -92,6 +112,87 @@ internal data class GenieMenuAnimation(
     val dismiss: () -> Unit,
     val isDismissing: Boolean,
 )
+
+/** Gap kept between a context menu and the top/bottom edges of the visible screen area. */
+private val MenuEdgeMargin = 16.dp
+
+@Composable
+internal fun GenieContextMenuPopup(
+    genie: GenieMenuAnimation,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val view = LocalView.current
+    val marginPx = with(LocalDensity.current) { MenuEdgeMargin.roundToPx() }
+    val positionProvider = remember(view, marginPx) { ContextMenuPositionProvider(view, marginPx) }
+
+    Popup(
+        popupPositionProvider = positionProvider,
+        onDismissRequest = genie.dismiss,
+        properties = PopupProperties(
+            focusable = !genie.isDismissing, // Release focus when dismissing
+            dismissOnBackPress = !genie.isDismissing,
+            dismissOnClickOutside = !genie.isDismissing
+        )
+    ) {
+        Column(
+            modifier = genie.graphicsLayerModifier
+                // The popup measures its content against the visible display frame; leave the
+                // edge gap on both sides of it so the position provider can honor it.
+                .layout { measurable, constraints ->
+                    val capped = if (constraints.hasBoundedHeight) {
+                        constraints.copy(
+                            maxHeight = (constraints.maxHeight - 2 * marginPx)
+                                .coerceAtLeast(constraints.minHeight)
+                        )
+                    } else constraints
+                    val placeable = measurable.measure(capped)
+                    layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+                }
+                .width(IntrinsicSize.Min)
+                // Clip to the rounded shape so scrolled items run right up to its edges
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFF1E1E1E))
+                .padding(horizontal = 8.dp)
+                .verticalScroll(rememberScrollState())
+                // Vertical padding inside the scroll: only around the first/last item
+                .padding(vertical = 8.dp),
+            content = content
+        )
+    }
+}
+
+private class ContextMenuPositionProvider(
+    private val view: View,
+    private val margin: Int
+) : PopupPositionProvider {
+    private val frame = Rect()
+    private val windowOrigin = IntArray(2)
+
+    override fun calculatePosition(
+        anchorBounds: IntRect,
+        windowSize: IntSize,
+        layoutDirection: LayoutDirection,
+        popupContentSize: IntSize
+    ): IntOffset {
+        // Visible frame (screen coordinates) → this window's coordinates, which both
+        // anchorBounds and the popup's position use.
+        view.getWindowVisibleDisplayFrame(frame)
+        view.rootView.getLocationOnScreen(windowOrigin)
+        frame.offset(-windowOrigin[0], -windowOrigin[1])
+
+        val top = frame.top + margin
+        val bottom = frame.bottom - margin
+        val y = (anchorBounds.top - popupContentSize.height)
+            .coerceIn(top, (bottom - popupContentSize.height).coerceAtLeast(top))
+
+        val preferredX = if (layoutDirection == LayoutDirection.Ltr) anchorBounds.left
+        else anchorBounds.right - popupContentSize.width
+        val x = preferredX
+            .coerceIn(frame.left, (frame.right - popupContentSize.width).coerceAtLeast(frame.left))
+
+        return IntOffset(x, y)
+    }
+}
 
 /** A single tappable row (leading icon + label) inside a genie context menu. */
 @Composable

@@ -31,6 +31,47 @@
     <string name="appearance">APARIENCIA</string>
     <string name="corner_radius">Radio de esquinas</string>
     
+    <!-- Settings Screen - Icon pack tile -->
+    <string name="icon_pack_card_title">PAQUETE DE ICONOS</string>
+    <plurals name="icon_packs_installed">
+        <item quantity="one">%d paquete instalado</item>
+        <item quantity="other">%d paquetes instalados</item>
+    </plurals>
+    <plurals name="icon_pack_picked_icons">
+        <item quantity="one">%d icono elegido por ti</item>
+        <item quantity="other">%d iconos elegidos por ti</item>
+    </plurals>
+
+    <!-- Icon pack screen -->
+    <string name="icon_pack_screen_title">Paquete de iconos</string>
+    <!-- The "no icon pack" option: every app keeps its own icon -->
+    <string name="icon_pack_default">Predeterminado</string>
+    <string name="icon_pack_default_desc">Los iconos originales de tus apps</string>
+    <!-- %1$d = apps the pack has an icon for, %2$d = all installed apps -->
+    <string name="icon_pack_coverage">Cubre %1$d de tus %2$d apps</string>
+    <string name="icon_pack_apply">Aplicar</string>
+    <string name="icon_pack_in_use">En uso</string>
+    <!-- Asked when applying a pack while some apps have an individually chosen icon -->
+    <string name="icon_pack_keep_picked_title">¿Mantener los iconos que elegiste?</string>
+    <plurals name="icon_pack_keep_picked_message">
+        <item quantity="one">%d app tiene un icono que elegiste tú mismo.</item>
+        <item quantity="other">%d apps tienen un icono que elegiste tú mismo.</item>
+    </plurals>
+    <string name="icon_pack_keep_picked">Mantener mis iconos</string>
+    <string name="icon_pack_replace_picked">Aplicar a todas las apps</string>
+
+    <!-- Icon picker for a single app (long-press menu > Change icon) -->
+    <string name="change_icon">Cambiar icono</string>
+    <string name="icon_picker_for_this_app">Para esta app</string>
+    <!-- The app's own icon, as opposed to one from an icon pack -->
+    <string name="icon_picker_original">Original</string>
+    <string name="icon_picker_reset">Restablecer</string>
+    <string name="icon_picker_confirm">Usar este icono</string>
+    <string name="icon_picker_search_hint">Buscar iconos</string>
+    <string name="icon_picker_no_match">Ningún paquete de iconos tiene un icono para esta app. Abre un paquete arriba para elegir cualquiera de sus iconos.</string>
+    <string name="icon_picker_no_results">Ningún icono coincide con tu búsqueda</string>
+    <string name="icon_picker_pack_empty">Este paquete no tiene iconos para elegir</string>
+
     <!-- Settings Screen - Sort Apps -->
     <string name="sort_apps_by">ORDENAR APPS POR</string>
     <string name="app_sort_order">Orden de apps</string>

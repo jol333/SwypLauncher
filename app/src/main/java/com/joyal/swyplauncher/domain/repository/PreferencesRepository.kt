@@ -78,6 +78,11 @@ interface PreferencesRepository {
     fun getIconPack(): String?
     fun setIconPack(packageName: String?)
 
+    // The corner radius from before an icon pack was applied (which sets it to 0), to bring back
+    // when the apps' own icons are; null when there is none to bring back.
+    fun getCornerRadiusBeforeIconPack(): Float?
+    fun setCornerRadiusBeforeIconPack(radius: Float?)
+
     // Icons picked for individual apps from the long-press menu, keyed by app identifier.
     // Read and written through IconPackRepository, which caches the parsed map.
     fun getAppIconChoices(): Map<String, com.joyal.swyplauncher.domain.model.AppIconChoice>

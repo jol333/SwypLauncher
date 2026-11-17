@@ -276,6 +276,18 @@ class PreferencesRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getCornerRadiusBeforeIconPack(): Float? =
+        if (prefs.contains(KEY_CORNER_RADIUS_BEFORE_ICON_PACK)) {
+            prefs.getFloat(KEY_CORNER_RADIUS_BEFORE_ICON_PACK, 0f)
+        } else null
+
+    override fun setCornerRadiusBeforeIconPack(radius: Float?) {
+        prefs.edit {
+            if (radius != null) putFloat(KEY_CORNER_RADIUS_BEFORE_ICON_PACK, radius)
+            else remove(KEY_CORNER_RADIUS_BEFORE_ICON_PACK)
+        }
+    }
+
     // JSON: { appIdentifier: { "pack": packPackage, "icon": drawableName } }, where an empty
     // object means "the app's own icon". Entries that don't parse are skipped, not fatal.
     override fun getAppIconChoices(): Map<String, AppIconChoice> {
@@ -338,6 +350,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         private const val KEY_ENABLED_CONVERSION_CATEGORIES = "enabled_conversion_categories"
         private const val KEY_TIMEZONE_CATEGORY_MIGRATED = "timezone_category_migrated"
         private const val KEY_ICON_PACK = "icon_pack"
+        private const val KEY_CORNER_RADIUS_BEFORE_ICON_PACK = "corner_radius_before_icon_pack"
         private const val KEY_APP_ICON_CHOICES = "app_icon_choices"
     }
 }

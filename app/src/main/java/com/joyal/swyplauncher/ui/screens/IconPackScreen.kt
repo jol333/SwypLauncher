@@ -266,13 +266,16 @@ private fun IconPackChooser(
             .windowInsetsPadding(WindowInsets.safeDrawing)
 
         val stageSwipe = Modifier.swipesRail(pagerState)
+        // The stage shows the corners applying would give: none for a pack (they bring their
+        // own shapes), the user's own rounding for the apps' own icons
+        val stageCornerRadius = remember(stagedPackage) { iconPackRepository.cornerRadiusFor(stagedPackage) }
         val stage: @Composable (Modifier) -> Unit = { modifier ->
             IconStage(
                 apps = previewApps,
                 packPackage = stagedPackage,
                 columns = gridSize,
                 maxRows = maxRows,
-                cornerRadius = cornerRadius,
+                cornerRadius = stageCornerRadius,
                 modifier = modifier.then(stageSwipe)
             )
         }

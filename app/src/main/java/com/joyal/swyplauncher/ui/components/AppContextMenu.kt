@@ -7,10 +7,7 @@ import android.content.pm.LauncherApps
 import android.net.Uri
 import android.provider.Settings
 import android.view.ContextThemeWrapper
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -38,11 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
 import com.joyal.swyplauncher.R
@@ -63,7 +56,6 @@ fun AppContextMenu(
     cornerRadiusPercent: Float = 0.85f
 ) {
     val context = LocalContext.current
-    val density = LocalDensity.current
     var dynamicShortcuts by remember { mutableStateOf<List<AppShortcut>>(emptyList()) }
     var manifestShortcuts by remember { mutableStateOf<List<AppShortcut>>(emptyList()) }
     var pinnedShortcuts by remember { mutableStateOf<List<AppShortcut>>(emptyList()) }
@@ -108,153 +100,133 @@ fun AppContextMenu(
     val limitedDynamicShortcuts = dynamicShortcuts.take(availableForDynamic)
     val totalShortcuts = limitedDynamicShortcuts.size + manifestShortcuts.size + pinnedShortcuts.size
 
-    // Calculate menu height dynamically based on shortcuts
-    val menuItemCount = 4 + (if (onAddShortcut != null) 1 else 0) + (if (onChangeIcon != null) 1 else 0)
-    val totalHeight = (menuItemCount + totalShortcuts) * 56 + (if (totalShortcuts > 0) 24 else 0) + 16
-    val offsetY = with(density) { (-totalHeight).dp.roundToPx() }
-
-    Popup(
-        onDismissRequest = { genie.dismiss() },
-        offset = IntOffset(0, offsetY),
-        properties = PopupProperties(
-            focusable = !genie.isDismissing, // Release focus when dismissing
-            dismissOnBackPress = !genie.isDismissing,
-            dismissOnClickOutside = !genie.isDismissing
-        )
-    ) {
-        Column(
-            modifier = genie.graphicsLayerModifier
-                .width(IntrinsicSize.Min)
-                .background(Color(0xFF1E1E1E), RoundedCornerShape(12.dp))
-                .padding(8.dp)
-        ) {
-            // Render shortcuts: DYNAMIC, MANIFEST, PINNED
-            listOf(
-                limitedDynamicShortcuts to LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC,
-                manifestShortcuts to LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST,
-                pinnedShortcuts to LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED
-            ).forEach { (shortcuts, flag) ->
-                shortcuts.forEach { shortcut ->
-                    ShortcutOption(shortcut, cornerRadiusPercent) {
-                        runCatching {
-                            val launcherApps = context.getSystemService(LauncherApps::class.java)
-                            val query = LauncherApps.ShortcutQuery().apply {
-                                setQueryFlags(flag)
-                                setPackage(app.packageName)
-                                setShortcutIds(listOf(shortcut.id))
-                            }
-                            launcherApps.getShortcuts(query, android.os.Process.myUserHandle())
-                                ?.firstOrNull()?.let { launcherApps.startShortcut(it, null, null) }
+    GenieContextMenuPopup(genie) {
+        // Render shortcuts: DYNAMIC, MANIFEST, PINNED
+        listOf(
+            limitedDynamicShortcuts to LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC,
+            manifestShortcuts to LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST,
+            pinnedShortcuts to LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED
+        ).forEach { (shortcuts, flag) ->
+            shortcuts.forEach { shortcut ->
+                ShortcutOption(shortcut, cornerRadiusPercent) {
+                    runCatching {
+                        val launcherApps = context.getSystemService(LauncherApps::class.java)
+                        val query = LauncherApps.ShortcutQuery().apply {
+                            setQueryFlags(flag)
+                            setPackage(app.packageName)
+                            setShortcutIds(listOf(shortcut.id))
                         }
+                        launcherApps.getShortcuts(query, android.os.Process.myUserHandle())
+                            ?.firstOrNull()?.let { launcherApps.startShortcut(it, null, null) }
+                    }
+                    genie.dismiss()
+                }
+            }
+        }
+
+        // Divider after all shortcuts if any exist
+        if (totalShortcuts > 0) {
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                color = Color.White.copy(alpha = 0.1f)
+            )
+        }
+
+        // Add shortcut option
+        if (onAddShortcut != null) {
+            MenuOption(Icons.AutoMirrored.Outlined.Label, stringResource(R.string.set_a_shortcut)) {
+                onAddShortcut()
+                genie.dismiss()
+            }
+        }
+
+        // Pick another icon for this app from an installed icon pack
+        if (onChangeIcon != null) {
+            MenuOption(Icons.Outlined.Category, stringResource(R.string.change_icon)) {
+                onChangeIcon()
+                genie.dismiss()
+            }
+        }
+
+        // App info
+        MenuOption(Icons.Outlined.Info, stringResource(R.string.app_info)) {
+            runCatching {
+                context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", app.packageName, null)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                })
+            }
+            genie.dismiss()
+        }
+
+        // View in Play Store
+        MenuOption(Icons.Outlined.ShoppingCart, stringResource(R.string.view_in_app_store)) {
+            runCatching {
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    data = "market://details?id=${app.packageName}".toUri()
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                runCatching { context.startActivity(intent) }.onFailure {
+                    // If no app store is found, fallback to web browser
+                    intent.data = "https://play.google.com/store/apps/details?id=${app.packageName}".toUri()
+                    context.startActivity(intent)
+                }
+            }
+            genie.dismiss()
+        }
+
+        // Hide/Unhide app
+        MenuOption(
+            if (showHideOption) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+            if (showHideOption) stringResource(R.string.hide_app) else stringResource(R.string.unhide_app)
+        ) {
+            if (showHideOption) onHide() else onUnhide()
+            genie.dismiss()
+        }
+
+        // Uninstall option
+        // Store string resources for use in AlertDialog (which can't use stringResource)
+        val cannotUninstallTitle = stringResource(R.string.cannot_uninstall)
+        val cannotUninstallMessage = stringResource(R.string.cannot_uninstall_message)
+        val hideLabel = stringResource(R.string.hide)
+        val cancelLabel = stringResource(R.string.cancel)
+        MenuOption(Icons.Outlined.Delete, stringResource(R.string.uninstall)) {
+            runCatching {
+                val appInfo = context.packageManager.getApplicationInfo(app.packageName, 0)
+                val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+
+                when {
+                    isSystemApp && !showHideOption -> {
+                        context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", app.packageName, null)
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        })
+                        genie.dismiss()
+                    }
+                    isSystemApp -> {
+                        AlertDialog.Builder(ContextThemeWrapper(context, android.R.style.Theme_DeviceDefault_Dialog_Alert))
+                            .setTitle(cannotUninstallTitle)
+                            .setMessage(cannotUninstallMessage)
+                            .setPositiveButton(hideLabel) { dialog, _ ->
+                                onHide()
+                                dialog.dismiss()
+                                genie.dismiss()
+                            }
+                            .setNegativeButton(cancelLabel) { dialog, _ ->
+                                dialog.dismiss()
+                                genie.dismiss()
+                            }
+                            .show()
+                    }
+                    else -> {
+                        context.startActivity(Intent(Intent.ACTION_DELETE).apply {
+                            data = Uri.fromParts("package", app.packageName, null)
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        })
                         genie.dismiss()
                     }
                 }
-            }
-
-            // Divider after all shortcuts if any exist
-            if (totalShortcuts > 0) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp),
-                    color = Color.White.copy(alpha = 0.1f)
-                )
-            }
-
-            // Add shortcut option
-            if (onAddShortcut != null) {
-                MenuOption(Icons.AutoMirrored.Outlined.Label, stringResource(R.string.set_a_shortcut)) {
-                    onAddShortcut()
-                    genie.dismiss()
-                }
-            }
-
-            // Pick another icon for this app from an installed icon pack
-            if (onChangeIcon != null) {
-                MenuOption(Icons.Outlined.Category, stringResource(R.string.change_icon)) {
-                    onChangeIcon()
-                    genie.dismiss()
-                }
-            }
-
-            // App info
-            MenuOption(Icons.Outlined.Info, stringResource(R.string.app_info)) {
-                runCatching {
-                    context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.fromParts("package", app.packageName, null)
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    })
-                }
-                genie.dismiss()
-            }
-
-            // View in Play Store
-            MenuOption(Icons.Outlined.ShoppingCart, stringResource(R.string.view_in_app_store)) {
-                runCatching {
-                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = "market://details?id=${app.packageName}".toUri()
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    runCatching { context.startActivity(intent) }.onFailure {
-                        // If no app store is found, fallback to web browser
-                        intent.data = "https://play.google.com/store/apps/details?id=${app.packageName}".toUri()
-                        context.startActivity(intent)
-                    }
-                }
-                genie.dismiss()
-            }
-
-            // Hide/Unhide app
-            MenuOption(
-                if (showHideOption) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
-                if (showHideOption) stringResource(R.string.hide_app) else stringResource(R.string.unhide_app)
-            ) {
-                if (showHideOption) onHide() else onUnhide()
-                genie.dismiss()
-            }
-
-            // Uninstall option
-            // Store string resources for use in AlertDialog (which can't use stringResource)
-            val cannotUninstallTitle = stringResource(R.string.cannot_uninstall)
-            val cannotUninstallMessage = stringResource(R.string.cannot_uninstall_message)
-            val hideLabel = stringResource(R.string.hide)
-            val cancelLabel = stringResource(R.string.cancel)
-            MenuOption(Icons.Outlined.Delete, stringResource(R.string.uninstall)) {
-                runCatching {
-                    val appInfo = context.packageManager.getApplicationInfo(app.packageName, 0)
-                    val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-
-                    when {
-                        isSystemApp && !showHideOption -> {
-                            context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                data = Uri.fromParts("package", app.packageName, null)
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            })
-                            genie.dismiss()
-                        }
-                        isSystemApp -> {
-                            AlertDialog.Builder(ContextThemeWrapper(context, android.R.style.Theme_DeviceDefault_Dialog_Alert))
-                                .setTitle(cannotUninstallTitle)
-                                .setMessage(cannotUninstallMessage)
-                                .setPositiveButton(hideLabel) { dialog, _ ->
-                                    onHide()
-                                    dialog.dismiss()
-                                    genie.dismiss()
-                                }
-                                .setNegativeButton(cancelLabel) { dialog, _ ->
-                                    dialog.dismiss()
-                                    genie.dismiss()
-                                }
-                                .show()
-                        }
-                        else -> {
-                            context.startActivity(Intent(Intent.ACTION_DELETE).apply {
-                                data = Uri.fromParts("package", app.packageName, null)
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            })
-                            genie.dismiss()
-                        }
-                    }
-                }.onFailure { genie.dismiss() }
-            }
+            }.onFailure { genie.dismiss() }
         }
     }
 }

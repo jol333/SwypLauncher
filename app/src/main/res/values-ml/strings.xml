@@ -31,6 +31,47 @@
     <string name="appearance">കാണേണ്ടത് എങ്ങനെ</string>
     <string name="corner_radius">ഉരുണ്ട കോണുകൾ എത്രത്തോളം</string>
     
+    <!-- Settings Screen - Icon pack tile -->
+    <string name="icon_pack_card_title">ഐക്കൺ പാക്ക്</string>
+    <plurals name="icon_packs_installed">
+        <item quantity="one">%d പാക്ക് ഇൻസ്റ്റാൾ ചെയ്തിട്ടുണ്ട്</item>
+        <item quantity="other">%d പാക്കുകൾ ഇൻസ്റ്റാൾ ചെയ്തിട്ടുണ്ട്</item>
+    </plurals>
+    <plurals name="icon_pack_picked_icons">
+        <item quantity="one">നിങ്ങൾ തിരഞ്ഞെടുത്ത %d ഐക്കൺ</item>
+        <item quantity="other">നിങ്ങൾ തിരഞ്ഞെടുത്ത %d ഐക്കണുകൾ</item>
+    </plurals>
+
+    <!-- Icon pack screen -->
+    <string name="icon_pack_screen_title">ഐക്കൺ പാക്ക്</string>
+    <!-- The "no icon pack" option: every app keeps its own icon -->
+    <string name="icon_pack_default">ഡിഫോൾട്ട്</string>
+    <string name="icon_pack_default_desc">നിങ്ങളുടെ ആപ്പുകൾക്കൊപ്പം വരുന്ന യഥാർത്ഥ ഐക്കണുകൾ</string>
+    <!-- %1$d = apps the pack has an icon for, %2$d = all installed apps -->
+    <string name="icon_pack_coverage">നിങ്ങളുടെ %2$d ആപ്പുകളിൽ %1$d എണ്ണത്തിന് ലഭ്യമാണ്</string>
+    <string name="icon_pack_apply">സെറ്റ് ചെയ്യുക</string>
+    <string name="icon_pack_in_use">ഉപയോഗത്തിലാണ്</string>
+    <!-- Asked when applying a pack while some apps have an individually chosen icon -->
+    <string name="icon_pack_keep_picked_title">നിങ്ങൾ തിരഞ്ഞെടുത്ത ഐക്കണുകൾ നിലനിർത്തണോ?</string>
+    <plurals name="icon_pack_keep_picked_message">
+        <item quantity="one">%d ആപ്പിൽ നിങ്ങൾ സ്വയം തിരഞ്ഞെടുത്ത ഐക്കൺ ഉണ്ട്.</item>
+        <item quantity="other">%d ആപ്പുകളിൽ നിങ്ങൾ സ്വയം തിരഞ്ഞെടുത്ത ഐക്കണുകൾ ഉണ്ട്.</item>
+    </plurals>
+    <string name="icon_pack_keep_picked">എന്റെ ഐക്കണുകൾ നിലനിർത്തുക</string>
+    <string name="icon_pack_replace_picked">എല്ലാ ആപ്പുകൾക്കും ബാധകമാക്കുക</string>
+
+    <!-- Icon picker for a single app (long-press menu > Change icon) -->
+    <string name="change_icon">ഐക്കൺ മാറ്റുക</string>
+    <string name="icon_picker_for_this_app">ഈ ആപ്പിനായി</string>
+    <!-- The app's own icon, as opposed to one from an icon pack -->
+    <string name="icon_picker_original">ഒറിജിനൽ</string>
+    <string name="icon_picker_reset">റീസെറ്റ്</string>
+    <string name="icon_picker_confirm">ഈ ഐക്കൺ ഉപയോഗിക്കുക</string>
+    <string name="icon_picker_search_hint">ഐക്കണുകൾ തിരയുക</string>
+    <string name="icon_picker_no_match">ഒരു ഐക്കൺ പാക്കിലും ഈ ആപ്പിനായുള്ള ഐക്കൺ ഇല്ല. അവയിൽ നിന്നൊരു ഐക്കൺ തിരഞ്ഞെടുക്കാൻ മുകളിലുള്ള ഏതെങ്കിലും പാക്ക് തുറക്കുക.</string>
+    <string name="icon_picker_no_results">നിങ്ങൾ തിരഞ്ഞ ഐക്കണുകളൊന്നും കണ്ടെത്താനായില്ല</string>
+    <string name="icon_picker_pack_empty">ഈ പാക്കിൽ തിരഞ്ഞെടുക്കാൻ ഐക്കണുകളൊന്നുമില്ല</string>
+
     <!-- Settings Screen - Sort Apps -->
     <string name="sort_apps_by">ആപ്പുകൾ കാണിക്കുന്നത്</string>
     <string name="app_sort_order">ആപ്പ് ക്രമം</string>

@@ -107,12 +107,32 @@ class IconPackRepositoryImpl @Inject constructor(
         getSelectedIconPack()?.takeIf { packUpdateTime(it) != NOT_INSTALLED }
 
     override fun setSelectedIconPack(packageName: String?, clearChoices: Boolean) {
+        val cornerRadius = cornerRadiusFor(packageName)
+        if (packageName != null) {
+            // Kept from the first pack on; switching between packs doesn't overwrite it
+            if (preferencesRepository.getCornerRadiusBeforeIconPack() == null) {
+                preferencesRepository.setCornerRadiusBeforeIconPack(preferencesRepository.getCornerRadius())
+            }
+        } else {
+            preferencesRepository.setCornerRadiusBeforeIconPack(null)
+        }
+        preferencesRepository.setCornerRadius(cornerRadius)
         preferencesRepository.setIconPack(packageName)
         if (clearChoices) {
             preferencesRepository.setAppIconChoices(emptyMap())
             cachedChoices = emptyMap()
         }
         _iconVersion.update { it + 1 }
+    }
+
+    override fun cornerRadiusFor(packageName: String?): Float {
+        val current = preferencesRepository.getCornerRadius()
+        return when {
+            packageName != null -> 0f
+            current == 0f -> preferencesRepository.getCornerRadiusBeforeIconPack() ?: current
+            // The user rounded the pack's icons themselves: that is what they want now
+            else -> current
+        }
     }
 
     override fun getIconChoices(): Map<String, AppIconChoice> =

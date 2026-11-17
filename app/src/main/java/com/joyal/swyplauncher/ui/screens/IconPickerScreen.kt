@@ -24,6 +24,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,9 +48,14 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -65,18 +71,27 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -105,7 +120,10 @@ import com.joyal.swyplauncher.ui.settings.BentoTypography
 import com.joyal.swyplauncher.ui.theme.BentoColors
 import com.joyal.swyplauncher.ui.util.AppIconPreview
 import com.joyal.swyplauncher.ui.util.logoModel
+import com.joyal.swyplauncher.ui.util.rememberSystemBlurSupported
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -136,12 +154,17 @@ fun IconPickerScreen(
     val appliedPack = remember { iconPackRepository.getSelectedIconPack() }
     // Tapped, but not saved yet
     var selection by remember(appId) { mutableStateOf<AppIconChoice?>(null) }
-    // Null is the "for this app" tab, otherwise the package of the pack being browsed
-    var openPack by remember(appId) { mutableStateOf<String?>(null) }
 
     // Null until the installed packs are known (they usually are: the long-press menu asked)
     val packs by produceState(initialValue = iconPackRepository.peekIconPacks()) {
         value = iconPackRepository.getIconPacks()
+    }
+    // Page 0 is the "for this app" tab, page n browses packs[n - 1]; swiping walks the tabs
+    val pagerState = rememberPagerState { 1 + packs.orEmpty().size }
+    val scope = rememberCoroutineScope()
+    // A search field on the page swiped away shouldn't leave the keyboard behind
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.settledPage }.drop(1).collect { keyboard?.hide() }
     }
 
     // Preview models are drawn larger than grid icons, so ask for a sharper render
@@ -173,11 +196,10 @@ fun IconPickerScreen(
             // Nothing behind the picker should react to touches
             .pointerInput(Unit) { detectTapGestures { } }
     ) {
-        // Translucent, so the blurred assistant stays faintly visible under the light
         AmbientBackdrop(
             colors = rememberAmbientColors(previewModel),
             modifier = Modifier.fillMaxSize(),
-            base = Color.Black.copy(alpha = 0.74f)
+            base = Color.Black.copy(alpha = if (rememberSystemBlurSupported()) 0.74f else 0.9f)
         )
 
         val header: @Composable () -> Unit = {
@@ -219,17 +241,19 @@ fun IconPickerScreen(
             Column(modifier = modifier) {
                 PackTabs(
                     packs = packs.orEmpty(),
-                    openPack = openPack,
-                    onOpen = { openPack = it },
+                    // Where the pager is headed, so a tapped tab lights up at once rather than
+                    // each tab passed on the way
+                    selectedPage = pagerState.targetPage,
+                    onOpen = { page -> scope.launch { pagerState.animateScrollToPage(page) } },
                     cornerRadius = cornerRadius
                 )
                 Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                    AnimatedContent(
-                        targetState = openPack,
-                        transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
-                        contentKey = { it.orEmpty() },
-                        label = "pickerTab"
-                    ) { pack ->
+                    HorizontalPager(
+                        state = pagerState,
+                        key = { page -> if (page == 0) "" else packs.orEmpty()[page - 1].packageName },
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        val pack = packs?.getOrNull(page - 1)?.packageName
                         if (pack == null) {
                             ForThisAppGrid(
                                 app = app,
@@ -385,33 +409,48 @@ private fun previewRequest(context: Context, model: Any) =
         }
     }.build()
 
-/** "For this app", then one tab per installed pack, each wearing the pack's logo. */
+/**
+ * "For this app", then one tab per installed pack, each wearing the pack's logo. Tab n opens pager
+ * page n; the selected tab is scrolled to the middle of the row so swiping never loses it.
+ */
 @Composable
 private fun PackTabs(
     packs: List<IconPackInfo>,
-    openPack: String?,
-    onOpen: (String?) -> Unit,
+    selectedPage: Int,
+    onOpen: (Int) -> Unit,
     cornerRadius: Float
 ) {
+    val listState = rememberLazyListState()
+    LaunchedEffect(selectedPage) {
+        // Bring it on screen first if it isn't, so its size is known
+        if (listState.layoutInfo.visibleItemsInfo.none { it.index == selectedPage }) {
+            listState.animateScrollToItem(selectedPage)
+        }
+        val info = listState.layoutInfo
+        val tab = info.visibleItemsInfo.firstOrNull { it.index == selectedPage } ?: return@LaunchedEffect
+        val viewportCenter = (info.viewportStartOffset + info.viewportEndOffset) / 2
+        listState.animateScrollBy((tab.offset + tab.size / 2 - viewportCenter).toFloat())
+    }
     LazyRow(
+        state = listState,
         contentPadding = PaddingValues(horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         item(key = "for_this_app") {
             PackTab(
-                selected = openPack == null,
+                selected = selectedPage == 0,
                 label = stringResource(R.string.icon_picker_for_this_app),
-                onClick = { onOpen(null) }
+                onClick = { onOpen(0) }
             ) { tint ->
                 Icon(Icons.Outlined.AutoAwesome, null, tint = tint, modifier = Modifier.size(18.dp))
             }
         }
-        items(packs, key = { it.packageName }) { pack ->
+        itemsIndexed(packs, key = { _, pack -> pack.packageName }) { index, pack ->
             PackTab(
-                selected = openPack == pack.packageName,
+                selected = selectedPage == index + 1,
                 label = pack.label,
-                onClick = { onOpen(pack.packageName) }
+                onClick = { onOpen(index + 1) }
             ) {
                 AsyncImage(
                     model = remember(pack) { pack.logoModel() },
@@ -488,13 +527,15 @@ private fun ForThisAppGrid(
     // A pack can list an icon for the app that it doesn't actually contain; those drop out
     var unloadable by remember(app) { mutableStateOf(emptySet<IconPackIcon>()) }
     val shown = suggestions?.filter { it.icon !in unloadable }
+    val gridState = rememberLazyGridState()
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(96.dp),
+        state = gridState,
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().topFadeOnScroll(gridState)
     ) {
         item(key = "original") {
             IconTile(
@@ -553,11 +594,13 @@ private fun PackIconGrid(
         }
     }
     val selectedIcon = (selection as? AppIconChoice.FromPack)?.icon
+    val gridState = rememberLazyGridState()
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(68.dp),
+        state = gridState,
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 96.dp),
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().topFadeOnScroll(gridState)
     ) {
         if (!icons.isNullOrEmpty()) {
             item(key = "search", span = { GridItemSpan(maxLineSpan) }, contentType = "search") {
@@ -607,6 +650,36 @@ private fun PackIconGrid(
         }
     }
 }
+
+
+private fun Modifier.topFadeOnScroll(state: LazyGridState): Modifier = this
+    .graphicsLayer {
+        // Offscreen, so the fade cuts into the icons and not into the backdrop behind them. Only
+        // while it's needed: an unscrolled grid draws as before.
+        compositingStrategy = if (state.canScrollBackward) {
+            CompositingStrategy.Offscreen
+        } else {
+            CompositingStrategy.Auto
+        }
+    }
+    .drawWithContent {
+        drawContent()
+        if (!state.canScrollBackward) return@drawWithContent
+        val fadePx = TopFade.toPx()
+        val strength = if (state.firstVisibleItemIndex > 0) 1f
+        else (state.firstVisibleItemScrollOffset / fadePx).coerceIn(0f, 1f)
+        drawRect(
+            brush = Brush.verticalGradient(
+                0f to Color.Black.copy(alpha = 1f - strength),
+                1f to Color.Black,
+                endY = fadePx
+            ),
+            size = Size(size.width, fadePx),
+            blendMode = BlendMode.DstIn
+        )
+    }
+
+private val TopFade = 28.dp
 
 @Composable
 private fun IconTile(

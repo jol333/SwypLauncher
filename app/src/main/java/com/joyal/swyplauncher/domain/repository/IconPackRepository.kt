@@ -34,8 +34,9 @@ interface IconPackRepository {
     /** [getSelectedIconPack], but null once that pack has been uninstalled. */
     fun getActiveIconPack(): String?
 
-    /** [clearChoices] also drops every individually picked icon, so the pack applies everywhere. */
     fun setSelectedIconPack(packageName: String?, clearChoices: Boolean)
+
+    fun cornerRadiusFor(packageName: String?): Float
 
     /** Individually picked icons, keyed by [AppInfo.getIdentifier]. */
     fun getIconChoices(): Map<String, AppIconChoice>
@@ -43,10 +44,6 @@ interface IconPackRepository {
     /** Null removes the choice, so the app follows the applied pack again. */
     fun setIconChoice(appIdentifier: String, choice: AppIconChoice?)
 
-    /**
-     * Short file-name-safe token for what [app]'s icon is currently drawn from; empty for the
-     * app's own icon. Versions the on-disk icon cache. May do a binder call: not for the main thread.
-     */
     fun iconStyleToken(app: AppInfo): String
 
     // The calls below read the pack's APK and block: IO threads only.
