@@ -1,1 +1,29 @@
 Swyp Launcher is a digital assistant application that serves as a launcher to launch apps quickly from anywhere without minimizing or leaving what you are currently doing. The app provides four distinct interaction modes (handwriting, index, keyboard, and voice) optimized for single-handed operation. All UI elements are positioned at the bottom half of the screen for easy thumb access. It's completely free and all four modes run locally without any internet connection.
+
+<b>Four interaction modes</b>
+• Handwriting: draw letters or gestures to find apps, with on-device recognition
+• Index: browse apps alphabetically with a letter grid
+• Keyboard: type to search with real-time filtering
+• Voice: launch apps hands-free with speech recognition
+
+<b>Smart features</b>
+• Usage-based ranking: apps are ordered by how often and how recently you use them
+• Custom gestures: draw your own shapes to show the apps you choose
+• App shortcut search: find and run app shortcuts directly from the results
+• Calculator, currency (live rates, including popular cryptocurrencies), unit (18 categories) and time zone conversion right in the search box
+• Hidden apps: hide apps from the list, and optionally still find them through search
+
+<b>Make it yours</b>
+• Icon packs: apply any installed icon pack, or pick a custom icon for a single app from its long-press menu
+• Adjust grid size, icon shape, background blur and sort order (name, usage, category or newest installed)
+• Choose which modes are enabled and in what order
+
+<b>Open it from anywhere</b>
+• Swipe from a bottom corner or long-press the power button (set as your default digital assistant)
+• Resizable home-screen widget with mode buttons, a search bar or a grid of modes, following your light/dark theme
+• Quick Settings tile and home-screen shortcuts for each mode
+
+<b>Privacy first</b>
+• All processing happens on your device
+• No tracking, no ads, no data collection
+• Open source

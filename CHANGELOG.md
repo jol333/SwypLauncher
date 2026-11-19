@@ -2,6 +2,57 @@
 
 All notable changes to Swyp Launcher will be documented in this file.
 
+## [1.7.0] - 2026-11-19
+
+### Added
+- Icon pack support: apply any installed third-party icon pack (ADW/Nova format), with pack previews, coverage stats and fallback styling (mask, background, scale) for apps the pack doesn't cover
+- Per-app custom icons: long-press an app and choose "Change icon" to pick an icon from any installed pack
+- "Newest" sort order that lists recently installed apps first
+- Option to include hidden apps and shortcuts in search results, with an unhide action in their context menu
+- Redesigned home-screen widget with responsive layouts (compact, button row, search bar, column and bento grid) that follow the system light/dark theme and update when the enabled modes change
+
+### Changed
+- Much faster assistant cold start: apps are shown from an on-disk snapshot in the first frame, rendered icons are cached on disk, and app scanning, usage stats, ML Kit setup and icon decoding run off the main thread
+- Release builds are now optimized and shrunk with R8 and ship a baseline profile, making the app smaller and quicker to start
+- Custom gestures that match no visible app now fall back to a handwriting text search
+- Search-related toggles are grouped under a new "Search results" section in settings
+- Polished icon picker, context menus (now kept within screen bounds and scrollable) and handwriting layout
+- Upgraded build tools, Kotlin, Compose, Material 3 and AndroidX libraries
+
+### Fixed
+- ANR (app not responding) on low-end phones while drawing the mode buttons for the first time
+
+---
+
+## [1.6.0] - 2026-07-06
+
+### Added
+- App shortcut search: find and run app shortcuts directly from search results, with icons and a context menu
+- App shortcuts can be added to shortcut groups, hidden, and assigned to custom gestures
+- Time zone conversion (e.g. "Chile time now", "14:58 in Japan")
+- Option to load all apps when the assistant opens
+- Swipe between adjacent letters in Index mode when it is the only enabled mode
+- Shimmer loading grid in Index mode
+
+### Fixed
+- Memory leaks and ANRs; debug logs are stripped from release builds
+
+---
+
+## [1.5.0] - 2026-06-03
+
+### Added
+- Custom gestures: draw your own shapes in handwriting mode to show chosen apps
+- Currency conversion at live rates, including popular cryptocurrencies
+- Unit conversion across 18 categories, with settings to choose which conversion categories are enabled
+- Background blur for the assistant and settings screens
+
+### Changed
+- The assistant bottom sheet now respects navigation-bar and keyboard insets
+- Faster app-change observation and voice interaction service startup
+
+---
+
 ## [1.4.1] - 2026-02-24
 
 ### Added

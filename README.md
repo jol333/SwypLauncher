@@ -34,8 +34,10 @@ Swyp Launcher is a modern Android assistant application that serves as a launche
 
 - **Usage-Based Ranking**: Apps automatically ordered by frequency and recency
 - **App Shortcuts**: Quick access to specific apps by searching pre-defined terms
-- **Hidden Apps**: Hide certain apps from appearing in the main app list
-- **Customizable UI**: Adjust grid size, icon shapes, background blur and sort order
+- **Hidden Apps**: Hide certain apps from appearing in the main app list, and optionally still find them through search
+- **Icon Packs**: Apply any installed third-party icon pack, or pick a custom icon for individual apps from their long-press menu
+- **Customizable UI**: Adjust grid size, icon shapes, background blur and sort order (name, usage, category, or newest installed)
+- **Home-Screen Widget**: Resizable widget whose layout adapts to its size (mode buttons, search bar, or a bento grid of modes) and follows your system theme
 - **System Integration**: Works as Android's default assistant (swipe from corner or long-press power button)
 - **Currency Conversion**: Convert from any currency to any at live rate. Popular crypto currencies are also supported
 - **Time Zone Conversion**: See the time of any country instantly (Search 'Chile time now', '14:58 in Japan' etc.)
@@ -91,6 +93,7 @@ cd swyplauncher
 - **Power Button**: Long-press the power button
 - **App Icon**: Long-press the app icon and select an interaction mode directly
 - **Mode Shortcut**: Add a shortcut to your homescreen & launch from there
+- **Home-Screen Widget**: Add the Swyp Launcher widget and tap the search bar or a mode button
 - **Quick Settings Tile**: Add a quick setting tile to your control center & launch from there
 
 ### Switching Modes
@@ -104,9 +107,10 @@ app/src/main/java/com/joyal/swyplauncher/
 ├── data/              # Repository implementations and data sources
 ├── di/                # Hilt dependency injection modules
 ├── domain/            # Business logic, use cases, and models
-├── service/           # Android VoiceInteractionService implementations
-├── ui/                # Compose screens, ViewModels, and components
-└── util/              # Utility classes and extensions
+├── service/           # VoiceInteractionService implementations and Quick Settings tile
+├── ui/                # Compose screens, ViewModels, settings, and components
+├── util/              # Converters, gestures, icon cache, icon-pack parser, and other utilities
+└── widget/            # Glance home-screen widget
 ```
 
 ## Contributing

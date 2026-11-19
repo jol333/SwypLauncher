@@ -571,7 +571,7 @@ fun SwipeDismissContainer(
     val nestedScrollConnection = remember(orientation) {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (orientation == Orientation.Vertical) {
+                if (orientation == Orientation.Vertical && source == NestedScrollSource.UserInput) {
                     val delta = available.y
                     // Only allow dragging if we are allowed to dismiss and pulling down
                     if (delta > 0 && offset.value > 0 && allowDismiss) {
@@ -594,7 +594,7 @@ fun SwipeDismissContainer(
                 available: Offset,
                 source: NestedScrollSource
             ): Offset {
-                if (orientation == Orientation.Vertical) {
+                if (orientation == Orientation.Vertical && source == NestedScrollSource.UserInput) {
                     val delta = available.y
                     // Only allow dismiss if we are allowed to dismiss (started at top)
                     if (delta > 0 && allowDismiss) {
@@ -606,16 +606,16 @@ fun SwipeDismissContainer(
                 return Offset.Zero
             }
 
-            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (orientation == Orientation.Vertical) {
-                    if (offset.value > threshold) {
-                        offset.animateTo(limit, tween(300))
-                        onDismiss()
-                    } else {
-                        offset.animateTo(0f, spring())
-                    }
+            // Settle on release, taking the whole fling so the list doesn't fling underneath
+            override suspend fun onPreFling(available: Velocity): Velocity {
+                if (orientation != Orientation.Vertical || offset.value <= 0f) return Velocity.Zero
+                if (offset.value > threshold || available.y > 1000f) {
+                    offset.animateTo(limit, tween(300))
+                    onDismiss()
+                } else {
+                    offset.animateTo(0f, spring())
                 }
-                return super.onPostFling(consumed, available)
+                return available
             }
         }
     }

@@ -36,10 +36,12 @@
     <plurals name="icon_packs_installed">
         <item quantity="one">%d pacote instalado</item>
         <item quantity="other">%d pacotes instalados</item>
+        <item quantity="many">%d pacotes instalados</item>
     </plurals>
     <plurals name="icon_pack_picked_icons">
         <item quantity="one">%d ícone escolhido por você</item>
         <item quantity="other">%d ícones escolhidos por você</item>
+        <item quantity="many">%d ícones escolhidos por você</item>
     </plurals>
 
     <!-- Icon pack screen -->
@@ -56,6 +58,7 @@
     <plurals name="icon_pack_keep_picked_message">
         <item quantity="one">%d app tem um ícone que você mesmo escolheu.</item>
         <item quantity="other">%d apps têm ícones que você mesmo escolheu.</item>
+        <item quantity="many">%d apps têm ícones que você mesmo escolheu.</item>
     </plurals>
     <string name="icon_pack_keep_picked">Manter meus ícones</string>
     <string name="icon_pack_replace_picked">Aplicar a todos os apps</string>

@@ -31,7 +31,7 @@ android {
         versionCode = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"))
             .format(DateTimeFormatter.ofPattern("yyyyMMddHH"))
             .toInt()
-        versionName = "1.6"
+        versionName = "1.7"
     }
 
     // Load keystore properties if available
