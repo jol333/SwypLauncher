@@ -127,6 +127,8 @@ import com.joyal.swyplauncher.ui.util.rememberSystemBlurSupported
 import com.joyal.swyplauncher.ui.viewmodel.LauncherViewModel
 import com.joyal.swyplauncher.ui.viewmodel.ModeViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -157,6 +159,10 @@ class AssistActivity : AppCompatActivity() {
 
         // Loads apps before composition
         prewarmLauncherViewModel
+
+        // The mode buttons' shapes are needed by the first draw; build them in parallel with
+        // composition instead of on the main thread (a no-op once built in this process).
+        lifecycleScope.launch(Dispatchers.Default) { prewarmModeButtonShapes() }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() = finish()
@@ -1151,6 +1157,16 @@ private val modeButtonMorph by lazy { Morph(MaterialShapes.Cookie4Sided, Materia
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private val settingsButtonShape by lazy { MaterialShapes.Sunny }
+
+/**
+ * Builds the two shapes above. The first touch of [MaterialShapes] constructs every shape in it,
+ * which on low-end phones is slow enough to stall the assistant's first draw (seen as an ANR),
+ * so [AssistActivity] calls this on a background thread while the first frame is composed.
+ */
+internal fun prewarmModeButtonShapes() {
+    modeButtonMorph
+    settingsButtonShape
+}
 
 @Composable
 fun RowScope.ModeButton(

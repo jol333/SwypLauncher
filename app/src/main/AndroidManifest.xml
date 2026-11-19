@@ -74,6 +74,19 @@
             </intent-filter>
         </activity>
 
+        <!-- WorkManager (used only by the widget) starts on first use instead of on every process
+             start; LauncherApplication supplies its configuration. -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
         <!-- Voice Interaction Service -->
         <service
             android:name=".service.AssistantVoiceInteractionService"

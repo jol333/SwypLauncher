@@ -22,6 +22,9 @@ profileInstaller = "1.4.1"
 benchmarkMacroJunit4 = "1.5.0"
 uiautomator = "2.4.1"
 glance = "1.2.0"
+# Only to compile LauncherApplication's Configuration.Provider; keep it equal to the version
+# Glance pulls in (check with dependencyInsight) so adding it changes nothing at runtime.
+workRuntime = "2.7.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +54,7 @@ androidx-benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchm
 androidx-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
 glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
+androidx-work-runtime = { group = "androidx.work", name = "work-runtime", version.ref = "workRuntime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -2,6 +2,7 @@ package com.joyal.swyplauncher
 
 import android.app.Application
 import android.content.ComponentCallbacks2
+import androidx.work.Configuration
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -22,7 +23,7 @@ import kotlinx.coroutines.launch
 import okio.Path.Companion.toOkioPath
 
 @HiltAndroidApp
-class LauncherApplication : Application(), SingletonImageLoader.Factory {
+class LauncherApplication : Application(), SingletonImageLoader.Factory, Configuration.Provider {
 
     @javax.inject.Inject
     lateinit var downloadHandwritingModelUseCase: com.joyal.swyplauncher.domain.usecase.DownloadHandwritingModelUseCase
@@ -109,6 +110,13 @@ class LauncherApplication : Application(), SingletonImageLoader.Factory {
             iconPackRepository.trimMemory()
         }
     }
+
+    // WorkManager only runs the widget's Glance jobs, yet its startup initializer opened its
+    // database and reconciled jobs on every process start, competing for disk with the assistant's
+    // cold start (seen in ANR traces on low-end phones). Its initializer is removed in the
+    // manifest, so it is created from this default configuration the first time the widget (or a
+    // scheduled job) asks for it.
+    override fun getWorkManagerConfiguration(): Configuration = Configuration.Builder().build()
 
     override fun newImageLoader(context: PlatformContext): ImageLoader {
         return ImageLoader.Builder(context)

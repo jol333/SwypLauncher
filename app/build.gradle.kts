@@ -142,6 +142,8 @@ dependencies {
     // Glance (App Widgets)
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)
+    // Glance's WorkManager, declared directly for LauncherApplication's on-demand initialization
+    implementation(libs.androidx.work.runtime)
 
     // Baseline Profile & Startup Tracing
     implementation(libs.androidx.profileinstaller)

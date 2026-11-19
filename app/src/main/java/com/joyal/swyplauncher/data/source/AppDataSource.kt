@@ -159,6 +159,9 @@ class AppDataSource @Inject constructor(
             .map { chunk -> async { chunk.mapNotNull { toAppInfo(it, iconDensity) } } }
             .awaitAll()
             .flatten()
+            // Some devices report the same launcher activity twice; the identifier is the app
+            // grids' item key, so a repeat would crash the grid (duplicate lazy-layout key).
+            .distinctBy { it.getIdentifier() }
             .sortedBy { it.sortKey }
     }
 
@@ -262,7 +265,7 @@ class AppDataSource @Inject constructor(
                         category = category,
                         lastUpdateTime = lastUpdateTime
                     )
-                }
+                }.distinctBy { it.getIdentifier() } // Written by a build that didn't dedupe the scan
             }
         } catch (e: Exception) {
             // Truncated/corrupt/outdated file: behave as if there were no snapshot.
