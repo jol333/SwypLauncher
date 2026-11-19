@@ -331,6 +331,7 @@ fun DonateSection(
 fun AssistantBottomSheet(
     onDismiss: () -> Unit,
     onSetupClick: () -> Unit,
+    title: String? = null,
     message: String? = null
 ) {
     ModalBottomSheet(
@@ -380,7 +381,7 @@ fun AssistantBottomSheet(
                 Spacer(Modifier.height(16.dp))
 
                 Text(
-                    text = stringResource(R.string.set_as_default_assistant),
+                    text = title ?: stringResource(R.string.set_as_default_assistant),
                     color = BentoColors.TextPrimary,
                     style = BentoTypography.titleLarge,
                     textAlign = TextAlign.Center

@@ -35,6 +35,11 @@ interface PreferencesRepository {
     fun isShortcutSearchEnabled(): Boolean
     fun setShortcutSearchEnabled(enabled: Boolean)
 
+    // Include hidden apps (and their app shortcuts) in search results (default off). Hidden apps
+    // still stay out of the plain app list, Index mode and custom-gesture results.
+    fun isShowHiddenAppsInSearchEnabled(): Boolean
+    fun setShowHiddenAppsInSearch(enabled: Boolean)
+
     // Individually hidden app-shortcut search results, keyed by "packageName/shortcutId".
     fun getHiddenShortcuts(): Set<String>
     fun addHiddenShortcut(identifier: String)
@@ -96,5 +101,5 @@ interface PreferencesRepository {
 }
 
 enum class AppSortOrder {
-    NAME, USAGE, CATEGORY
+    NAME, USAGE, CATEGORY, INSTALL_DATE
 }

@@ -102,6 +102,9 @@ fun AppResultGrid(
     onHideApp: (AppInfo) -> Unit,
     onAddShortcut: ((String) -> Unit)?,
     modifier: Modifier = Modifier,
+    // Identifiers of hidden apps among [items] (shown by search); their menu offers "Unhide"
+    hiddenAppIds: Set<String> = emptySet(),
+    onUnhideApp: ((AppInfo) -> Unit)? = null,
     onLaunchShortcut: ((ShortcutSearchItem) -> Unit)? = null,
     loadShortcutIcon: (suspend (ShortcutSearchItem) -> ShortcutIcon?)? = null,
     onHideShortcut: ((ShortcutSearchItem) -> Unit)? = null,
@@ -167,6 +170,7 @@ fun AppResultGrid(
                     )
 
                     is AppListItem.App -> {
+                        val isHidden = item.appInfo.getIdentifier() in hiddenAppIds
                         val appIcon: @Composable () -> Unit = {
                             AppIconItem(
                                 app = item.appInfo,
@@ -177,6 +181,11 @@ fun AppResultGrid(
                                 onDismissMenu = { onSetSelectedIndex(-1) },
                                 onHide = {
                                     onHideApp(item.appInfo)
+                                    onSetSelectedIndex(-1)
+                                },
+                                showHideOption = !isHidden,
+                                onUnhide = {
+                                    onUnhideApp?.invoke(item.appInfo)
                                     onSetSelectedIndex(-1)
                                 },
                                 onAddShortcut = onAddShortcut?.let { callback ->
@@ -522,6 +531,8 @@ fun SearchModeResults(
     smartApps: List<AppInfo>,
     appsToShow: List<AppInfo>,
     hiddenApps: List<AppInfo>,
+    // Hidden apps that searches match ("show hidden apps in search" on)
+    searchableHiddenApps: List<AppInfo>,
     sortOrder: AppSortOrder,
     gridSize: Int,
     cornerRadius: Float,
@@ -571,6 +582,9 @@ fun SearchModeResults(
         )
 
         smartApps.isNotEmpty() || appsToShow.isNotEmpty() || shortcutResults.isNotEmpty() -> {
+            val hiddenAppIds = remember(searchableHiddenApps) {
+                searchableHiddenApps.mapTo(HashSet()) { it.getIdentifier() }
+            }
             val combinedAppList = remember(
                 smartApps, appsToShow, shortcutResults, sortOrder, query, gridSize, forceShowShortcuts
             ) {
@@ -607,6 +621,8 @@ fun SearchModeResults(
                 },
                 onAddShortcut = onAddShortcut,
                 modifier = modifier,
+                hiddenAppIds = hiddenAppIds,
+                onUnhideApp = { app -> launcherViewModel.unhideApp(app.getIdentifier()) },
                 onLaunchShortcut = { shortcut ->
                     launcherViewModel.launchShortcut(shortcut)
                     onDismiss()

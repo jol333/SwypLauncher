@@ -46,6 +46,9 @@ fun AppIconItem(
     showContextMenu: Boolean = false,
     onDismissMenu: () -> Unit = {},
     onHide: () -> Unit = {},
+    // False for a hidden app shown in search results: the menu then offers "Unhide" instead
+    showHideOption: Boolean = true,
+    onUnhide: () -> Unit = {},
     onAddShortcut: (() -> Unit)? = null,
     cornerRadiusPercent: Float = 0.85f
 ) {
@@ -180,6 +183,8 @@ fun AppIconItem(
                 app = app,
                 onDismiss = onDismissMenu,
                 onHide = onHide,
+                onUnhide = onUnhide,
+                showHideOption = showHideOption,
                 onAddShortcut = onAddShortcut,
                 onChangeIcon = iconPicker?.let { picker -> { picker.open(app) } },
                 cornerRadiusPercent = cornerRadiusPercent

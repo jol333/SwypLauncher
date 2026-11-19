@@ -84,15 +84,22 @@
     <string name="by_usage">By usage</string>
     <string name="by_category">By category</string>
     <string name="grouped_by_app_category">Grouped by app category</string>
+    <string name="sort_install_date">Newest</string>
+    <string name="sort_install_date_desc">Newly installed apps appear first</string>
+    <string name="by_install_date">By install date</string>
     
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">Auto-open app</string>
     <string name="auto_open_desc">Open app automatically if single search result</string>
 
-    <!-- Settings Screen - App shortcut search -->
-    <string name="shortcut_search_title">Search app shortcuts</string>
-    <string name="shortcut_search_desc">Show app shortcut actions in search results</string>
-    <string name="shortcut_search_assistant_needed">Searching app shortcuts needs Swyp Launcher to be your default digital assistant</string>
+    <!-- Settings Screen - Search section -->
+    <string name="search_results_label">SEARCH RESULTS</string>
+    <string name="shortcut_search_title">Include app shortcuts</string>
+    <string name="shortcut_search_desc">Find quick actions inside apps in search results</string>
+    <string name="show_hidden_apps_in_search_title">Include hidden apps</string>
+    <string name="show_hidden_apps_in_search_desc">Show hidden apps in search results</string>
+    <string name="default_assistant_required">Only default assistant can search app shortcuts</string>
+    <string name="shortcut_search_assistant_needed">Android requires Swyp Launcher to be your default digital assistant to search app shortcuts</string>
     <string name="hide_shortcut">Hide</string>
     <string name="shortcut_alias_hint">Type a magic word to find \"%1$s\" in search</string>
 

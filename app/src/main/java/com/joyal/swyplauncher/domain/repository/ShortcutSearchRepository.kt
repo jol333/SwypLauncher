@@ -26,9 +26,11 @@ interface ShortcutSearchRepository {
 
     /**
      * All shortcuts available in the system. Returns empty when the feature is disabled,
-     * or the assistant role isn't held.
+     * or the assistant role isn't held. [forResults] is true when the shortcuts are shown as
+     * assistant results (gesture matches): hidden apps' shortcuts are then kept if the user
+     * shows hidden apps in search. Pickers leave it false and never list them.
      */
-    suspend fun getAllShortcuts(): List<ShortcutSearchItem>
+    suspend fun getAllShortcuts(forResults: Boolean = false): List<ShortcutSearchItem>
 
     /**
      * The currently-hidden shortcuts that are still resolvable in the system (so they can be

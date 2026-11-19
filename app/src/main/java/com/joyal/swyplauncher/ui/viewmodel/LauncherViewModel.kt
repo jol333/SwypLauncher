@@ -30,6 +30,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -167,6 +168,8 @@ class LauncherViewModel @Inject constructor(
 
     private data class AppLoadResult(
         val apps: List<AppInfo>,
+        // Hidden apps that text searches also match; empty unless the preference is on
+        val searchableHiddenApps: List<AppInfo>,
         val smartApps: List<AppInfo>,
         val newlyInstalledPackage: String?,
         val usageMap: Map<String, Int>
@@ -247,11 +250,14 @@ class LauncherViewModel @Inject constructor(
         usageMapOverride: Map<String, Int>? = null
     ): AppLoadResult {
         val hiddenApps = preferencesRepository.getHiddenApps()
-        val filteredApps = allApps.filter { it.getIdentifier() !in hiddenApps }
+        val (hiddenList, filteredApps) = allApps.partition { it.getIdentifier() in hiddenApps }
 
         val usageMap = usageMapOverride ?: recordAppUsageUseCase.getUsageMap()
         val sortOrder = preferencesRepository.getAppSortOrder()
         val apps = com.joyal.swyplauncher.ui.util.sortApps(filteredApps, sortOrder, usageMap)
+        val searchableHiddenApps =
+            if (hiddenList.isEmpty() || !preferencesRepository.isShowHiddenAppsInSearchEnabled()) emptyList()
+            else com.joyal.swyplauncher.ui.util.sortApps(hiddenList, sortOrder, usageMap)
 
         val gridSize = preferencesRepository.getGridSize()
         val smart = getSmartAppListUseCase(apps, gridSize, usageMap)
@@ -259,6 +265,7 @@ class LauncherViewModel @Inject constructor(
 
         return AppLoadResult(
             apps = apps,
+            searchableHiddenApps = searchableHiddenApps,
             smartApps = smart,
             newlyInstalledPackage = newlyInstalled,
             usageMap = usageMap
@@ -278,25 +285,35 @@ class LauncherViewModel @Inject constructor(
         val handwritingGestureShortcutIds = filters.handwritingGestureShortcutIds
         val indexLetter = filters.indexLetter
 
+        // Searches and gesture matches also include hidden apps when that preference is on
+        val searchPool = searchPool(result.apps, result.searchableHiddenApps)
+        // Null when no gesture is active, or the active one has nothing visible to show (then
+        // the handwriting mode falls back to its recognized text, like a fresh gesture match)
+        val gestureResults = handwritingGestureIds?.let { ids ->
+            withContext(Dispatchers.Default) {
+                gestureResults(searchPool, ids, handwritingGestureShortcutIds)
+            }
+        }
+
         val (keyboard, voice, handwriting, index) = withContext(Dispatchers.Default) {
             val shortcuts =
                 if (keyboardQuery.isNotBlank() || voiceQuery.isNotBlank() || handwritingPrefix.isNotBlank()) {
                     preferencesRepository.getAppShortcuts()
                 } else emptyMap()
 
-            val keyboard = refilterForRefresh(result) { apps ->
+            val keyboard = refilterForRefresh(result) { _ ->
                 if (keyboardQuery.isBlank()) null
-                else apps.filter { matchesQueryOrShortcut(it, keyboardQuery, shortcuts, prefixMatch = false) }
+                else searchPool.filter { matchesQueryOrShortcut(it, keyboardQuery, shortcuts, prefixMatch = false) }
             }
-            val voice = refilterForRefresh(result) { apps ->
+            val voice = refilterForRefresh(result) { _ ->
                 if (voiceQuery.isBlank()) null
-                else apps.filter { matchesQueryOrShortcut(it, voiceQuery, shortcuts, prefixMatch = false) }
+                else searchPool.filter { matchesQueryOrShortcut(it, voiceQuery, shortcuts, prefixMatch = false) }
             }
             val handwriting = refilterForRefresh(result) { apps ->
                 when {
-                    handwritingGestureIds != null -> apps.filter { it.getIdentifier() in handwritingGestureIds }
+                    gestureResults != null -> gestureResults.first
                     handwritingPrefix.isNotBlank() ->
-                        apps.filter { matchesQueryOrShortcut(it, handwritingPrefix, shortcuts, prefixMatch = true) }
+                        searchPool.filter { matchesQueryOrShortcut(it, handwritingPrefix, shortcuts, prefixMatch = true) }
                     else -> null
                 }
             }
@@ -321,8 +338,7 @@ class LauncherViewModel @Inject constructor(
                 Triple(
                     shortcutsFor(keyboardQuery, prefixMatch = false),
                     shortcutsFor(voiceQuery, prefixMatch = false),
-                    if (handwritingGestureIds != null) resolveGestureShortcuts(handwritingGestureShortcutIds)
-                    else shortcutsFor(handwritingPrefix, prefixMatch = true)
+                    gestureResults?.second ?: shortcutsFor(handwritingPrefix, prefixMatch = true)
                 )
             }
 
@@ -332,10 +348,12 @@ class LauncherViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 apps = result.apps,
+                searchableHiddenApps = result.searchableHiddenApps,
                 availableLetters = letters,
                 handwritingFilteredApps = handwriting.first,
                 handwritingSmartApps = handwriting.second,
                 handwritingShortcutResults = handwritingShortcuts,
+                handwritingGestureMatched = gestureResults != null,
                 indexFilteredApps = index.first,
                 indexSmartApps = index.second,
                 keyboardFilteredApps = keyboard.first,
@@ -404,17 +422,21 @@ class LauncherViewModel @Inject constructor(
     }
 
     // Runs parse + filter + smart-app compute on Default so keystrokes aren't blocked.
-    private fun launchModeFilter(query: String, mode: CurrencyMode, prefixMatch: Boolean): Job {
-        return viewModelScope.launch(Dispatchers.Default) {
+    private fun launchModeFilter(query: String, mode: CurrencyMode, prefixMatch: Boolean): Job =
+        viewModelScope.launch(Dispatchers.Default) { runModeFilter(query, mode, prefixMatch) }
+
+    private suspend fun runModeFilter(query: String, mode: CurrencyMode, prefixMatch: Boolean) {
+        coroutineScope {
             val parseResult = computeCalcOrCurrency(query)
             ensureActive()
 
-            val currentApps = _uiState.value.apps
+            val state = _uiState.value
             val filtered = if (query.isBlank()) {
-                currentApps
+                state.apps
             } else {
                 val shortcuts = preferencesRepository.getAppShortcuts()
-                currentApps.filter { matchesQueryOrShortcut(it, query, shortcuts, prefixMatch) }
+                searchPool(state.apps, state.searchableHiddenApps)
+                    .filter { matchesQueryOrShortcut(it, query, shortcuts, prefixMatch) }
             }
 
             val (smart, newlyInstalled) = if (filtered.isEmpty()) {
@@ -461,6 +483,7 @@ class LauncherViewModel @Inject constructor(
                         handwritingFilteredApps = filtered,
                         handwritingSmartApps = smart,
                         handwritingShortcutResults = shortcutResults,
+                        handwritingGestureMatched = false,
                         newlyInstalledAppPackage = newlyInstalled,
                         handwritingCalculatorResult = parseResult.calc,
                         handwritingCurrencyResult = parseResult.currency,
@@ -734,25 +757,57 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
-    // Handwriting mode filter by matched custom gesture's assigned apps and app shortcuts
-    fun filterAppsByCustomGestureHandwriting(appIds: Set<String>, shortcutIds: Set<String>) {
+    /**
+     * Handwriting mode filter by matched custom gesture's assigned apps and app shortcuts.
+     * When none of them can be shown (hidden, uninstalled, or shortcut search off), the ink is
+     * treated as plain handwriting and [recognizedText] is searched instead.
+     */
+    fun filterAppsByCustomGestureHandwriting(
+        appIds: Set<String>,
+        shortcutIds: Set<String>,
+        recognizedText: String
+    ) {
         activeFilters = activeFilters.copy(
-            handwritingPrefix = "",
+            handwritingPrefix = recognizedText,
             handwritingGestureAppIds = appIds,
             handwritingGestureShortcutIds = shortcutIds
         )
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
         handwritingFilterJob = viewModelScope.launch(Dispatchers.Default) {
-            val currentApps = _uiState.value.apps
-            val filtered = currentApps.filter { it.getIdentifier() in appIds }
-            val shortcuts = resolveGestureShortcuts(shortcutIds)
+            val state = _uiState.value
+            val results = gestureResults(
+                searchPool(state.apps, state.searchableHiddenApps), appIds, shortcutIds
+            )
+            if (results == null) {
+                if (recognizedText.isNotBlank()) {
+                    runModeFilter(recognizedText, CurrencyMode.HANDWRITING, prefixMatch = true)
+                } else {
+                    val (smart, newlyInstalled) = computeSmartApps(state.apps)
+                    _uiState.update {
+                        it.copy(
+                            handwritingFilteredApps = state.apps,
+                            handwritingSmartApps = smart,
+                            handwritingShortcutResults = emptyList(),
+                            handwritingGestureMatched = false,
+                            newlyInstalledAppPackage = newlyInstalled,
+                            handwritingCalculatorResult = null,
+                            handwritingCurrencyResult = null,
+                            handwritingUnitResult = null,
+                            handwritingTimeZoneResult = null
+                        )
+                    }
+                }
+                return@launch
+            }
+            val (filtered, shortcuts) = results
             val (smart, newlyInstalled) = computeSmartApps(filtered)
             _uiState.update {
                 it.copy(
                     handwritingFilteredApps = filtered,
                     handwritingSmartApps = smart,
                     handwritingShortcutResults = shortcuts,
+                    handwritingGestureMatched = true,
                     newlyInstalledAppPackage = newlyInstalled,
                     handwritingCalculatorResult = null,
                     handwritingCurrencyResult = null,
@@ -763,6 +818,17 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
+    /** A gesture's visible apps (from [pool]) and shortcuts, or null when it has neither. */
+    private suspend fun gestureResults(
+        pool: List<AppInfo>,
+        appIds: Set<String>,
+        shortcutIds: Set<String>?
+    ): Pair<List<AppInfo>, List<ShortcutSearchItem>>? {
+        val apps = pool.filter { it.getIdentifier() in appIds }
+        val shortcuts = resolveGestureShortcuts(shortcutIds)
+        return if (apps.isEmpty() && shortcuts.isEmpty()) null else apps to shortcuts
+    }
+
     /**
      * Resolves a gesture's assigned app-shortcut identifiers to live [ShortcutSearchItem]s.
      * Returns empty when the feature is disabled or the assistant role is missing (so a gesture
@@ -770,10 +836,14 @@ class LauncherViewModel @Inject constructor(
      */
     private suspend fun resolveGestureShortcuts(shortcutIds: Set<String>?): List<ShortcutSearchItem> {
         if (shortcutIds.isNullOrEmpty()) return emptyList()
-        return runCatching { shortcutSearchRepository.getAllShortcuts() }
+        return runCatching { shortcutSearchRepository.getAllShortcuts(forResults = true) }
             .getOrDefault(emptyList())
             .filter { it.identifier() in shortcutIds }
     }
+
+    /** Apps a search or gesture matches against: the visible apps, then any searchable hidden ones. */
+    private fun searchPool(apps: List<AppInfo>, searchableHiddenApps: List<AppInfo>): List<AppInfo> =
+        if (searchableHiddenApps.isEmpty()) apps else apps + searchableHiddenApps
 
     private fun matchesQueryOrShortcut(
         app: AppInfo,
@@ -824,7 +894,7 @@ class LauncherViewModel @Inject constructor(
         )
         handwritingFilterJob?.cancel()
         handwritingCurrencyJob?.cancel()
-        resetFilter { copy(handwritingFilteredApps = apps, handwritingSmartApps = it.first, handwritingShortcutResults = emptyList(), newlyInstalledAppPackage = it.second, handwritingCalculatorResult = null, handwritingCurrencyResult = null, handwritingUnitResult = null, handwritingTimeZoneResult = null) }
+        resetFilter { copy(handwritingFilteredApps = apps, handwritingSmartApps = it.first, handwritingShortcutResults = emptyList(), handwritingGestureMatched = false, newlyInstalledAppPackage = it.second, handwritingCalculatorResult = null, handwritingCurrencyResult = null, handwritingUnitResult = null, handwritingTimeZoneResult = null) }
     }
     fun resetFilterIndex() {
         activeFilters = activeFilters.copy(indexLetter = null)
@@ -1002,6 +1072,7 @@ class LauncherViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         apps = apps,
+                        searchableHiddenApps = result.searchableHiddenApps,
                         handwritingFilteredApps = handwriting.first,
                         handwritingSmartApps = handwriting.second,
                         indexFilteredApps = index.first,

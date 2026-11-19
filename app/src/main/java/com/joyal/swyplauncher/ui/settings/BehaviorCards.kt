@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -66,23 +67,79 @@ fun AutoOpenCard(
 }
 
 /**
- * App-shortcut search toggle. Same card layout as [AutoOpenCard]; full-width, so the
- * content wraps instead of stretching to the 180dp two-column card height.
+ * Full-width card grouping the search-result preferences: app-shortcut search and showing hidden
+ * apps in search. Same layout as [WhenAssistantOpensCard].
  */
 @Composable
-fun ShortcutSearchCard(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
+fun SearchResultsCard(
+    shortcutSearchEnabled: Boolean,
+    onShortcutSearchChange: (Boolean) -> Unit,
+    showHiddenApps: Boolean,
+    onShowHiddenAppsChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    ToggleSettingCard(
-        title = stringResource(R.string.shortcut_search_title),
-        description = stringResource(R.string.shortcut_search_desc),
-        checked = checked,
-        onCheckedChange = onCheckedChange,
-        modifier = modifier,
-        fillHeight = false
-    )
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        BentoColors.CardBackground.copy(alpha = 0.6f),
+                        BentoColors.CardBackground
+                    )
+                )
+            )
+            .border(
+                width = 1.dp,
+                color = BentoColors.BorderLight,
+                shape = RoundedCornerShape(24.dp)
+            )
+            .padding(24.dp)
+    ) {
+        Column {
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Search,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = BentoColors.AccentGreen
+                )
+                Text(
+                    text = stringResource(R.string.search_results_label),
+                    color = BentoColors.TextLabel,
+                    style = BentoTypography.labelLarge
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Option 1: app-shortcut actions (needs the default-assistant role)
+            SettingToggleRow(
+                title = stringResource(R.string.shortcut_search_title),
+                description = stringResource(R.string.shortcut_search_desc),
+                checked = shortcutSearchEnabled,
+                onCheckedChange = onShortcutSearchChange
+            )
+
+            Spacer(Modifier.height(16.dp))
+            HorizontalDivider(color = BentoColors.BorderLight)
+            Spacer(Modifier.height(16.dp))
+
+            // Option 2: hidden apps (and their shortcuts) match searches too
+            SettingToggleRow(
+                title = stringResource(R.string.show_hidden_apps_in_search_title),
+                description = stringResource(R.string.show_hidden_apps_in_search_desc),
+                checked = showHiddenApps,
+                onCheckedChange = onShowHiddenAppsChange
+            )
+        }
+    }
 }
 
 @Composable
@@ -519,6 +576,7 @@ fun SortAppsByCardContent(sortOrder: AppSortOrder) {
                 AppSortOrder.NAME -> stringResource(R.string.sort_name)
                 AppSortOrder.USAGE -> stringResource(R.string.sort_usage)
                 AppSortOrder.CATEGORY -> stringResource(R.string.sort_category)
+                AppSortOrder.INSTALL_DATE -> stringResource(R.string.sort_install_date)
             },
             style = BentoTypography.displayLarge,
             color = BentoColors.AccentGreen,
@@ -532,6 +590,7 @@ fun SortAppsByCardContent(sortOrder: AppSortOrder) {
                 AppSortOrder.NAME -> stringResource(R.string.sort_name_desc)
                 AppSortOrder.USAGE -> stringResource(R.string.sort_usage_desc)
                 AppSortOrder.CATEGORY -> stringResource(R.string.sort_category_desc)
+                AppSortOrder.INSTALL_DATE -> stringResource(R.string.sort_install_date_desc)
             },
             color = BentoColors.TextSecondary,
             style = BentoTypography.bodyMedium

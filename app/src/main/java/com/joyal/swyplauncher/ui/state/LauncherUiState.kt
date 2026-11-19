@@ -16,6 +16,8 @@ data class LauncherUiState(
     val voiceFilteredApps: List<AppInfo> = emptyList(),
     val voiceSmartApps: List<AppInfo> = emptyList(),
     val hiddenApps: List<AppInfo> = emptyList(),
+    // Hidden apps that text searches also match ("show hidden apps in search" on; else empty)
+    val searchableHiddenApps: List<AppInfo> = emptyList(),
     val hiddenShortcuts: List<ShortcutSearchItem> = emptyList(),
     val newlyInstalledAppPackage: String? = null, // Package name of app that should show badge
     val isLoading: Boolean = false,
@@ -40,6 +42,9 @@ data class LauncherUiState(
     val handwritingShortcutResults: List<ShortcutSearchItem> = emptyList(),
     val keyboardShortcutResults: List<ShortcutSearchItem> = emptyList(),
     val voiceShortcutResults: List<ShortcutSearchItem> = emptyList(),
+    // True while handwriting shows a custom gesture's results. A matched gesture with nothing
+    // to show (its apps hidden or uninstalled) falls back to a text search and leaves this false.
+    val handwritingGestureMatched: Boolean = false,
     // Tooltip visibility
     val showHideAppTooltip: Boolean = false
 )

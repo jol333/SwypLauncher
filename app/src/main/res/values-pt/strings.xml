@@ -85,15 +85,22 @@
     <string name="by_usage">Por uso</string>
     <string name="by_category">Por categoria</string>
     <string name="grouped_by_app_category">Agrupado por categoria de app</string>
+    <string name="sort_install_date">Recentes</string>
+    <string name="sort_install_date_desc">Apps instalados recentemente aparecem primeiro</string>
+    <string name="by_install_date">Por data de instalação</string>
     
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">Abrir automaticamente</string>
     <string name="auto_open_desc">Abrir app se houver apenas um resultado</string>
 
-    <!-- Settings Screen - App shortcut search -->
-    <string name="shortcut_search_title">Buscar atalhos de apps</string>
-    <string name="shortcut_search_desc">Mostrar ações de atalhos de apps nos resultados de busca</string>
-    <string name="shortcut_search_assistant_needed">Buscar atalhos de apps requer que o Swyp Launcher seja seu assistente digital padrão</string>
+    <!-- Settings Screen - Search section -->
+    <string name="search_results_label">RESULTADOS DE BUSCA</string>
+    <string name="shortcut_search_title">Incluir atalhos de apps</string>
+    <string name="shortcut_search_desc">Encontre ações rápidas dentro dos apps nos resultados de busca</string>
+    <string name="show_hidden_apps_in_search_title">Incluir apps ocultos</string>
+    <string name="show_hidden_apps_in_search_desc">Mostrar apps ocultos nos resultados de busca</string>
+    <string name="default_assistant_required">Assistente padrão necessário</string>
+    <string name="shortcut_search_assistant_needed">O Android requer que o Swyp Launcher seja seu assistente digital padrão para buscar atalhos de apps</string>
     <string name="hide_shortcut">Ocultar</string>
     <string name="shortcut_alias_hint">Digite uma palavra mágica para encontrar \"%1$s\" na busca</string>
 

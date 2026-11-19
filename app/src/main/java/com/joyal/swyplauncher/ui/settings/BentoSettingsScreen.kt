@@ -109,6 +109,9 @@ fun BentoSettingsScreen(
     var shortcutSearchEnabled by remember {
         mutableStateOf(preferencesRepository.isShortcutSearchEnabled())
     }
+    var showHiddenAppsInSearch by remember {
+        mutableStateOf(preferencesRepository.isShowHiddenAppsInSearchEnabled())
+    }
     // Bottom sheet asking the user to become the default assistant before enabling
     // shortcut search (the OS only grants shortcut access to the role holder)
     var showShortcutSearchAssistantSheet by remember { mutableStateOf(false) }
@@ -468,11 +471,12 @@ fun BentoSettingsScreen(
                 }
             }
 
-            // App shortcut search toggle (needs the default-assistant role for shortcut access)
+            // Search results card: app-shortcut search (needs the default-assistant role for
+            // shortcut access) + showing hidden apps in search
             item {
-                ShortcutSearchCard(
-                    checked = shortcutSearchEnabled,
-                    onCheckedChange = { wantEnabled ->
+                SearchResultsCard(
+                    shortcutSearchEnabled = shortcutSearchEnabled,
+                    onShortcutSearchChange = { wantEnabled ->
                         when {
                             !wantEnabled -> {
                                 shortcutSearchEnabled = false
@@ -485,8 +489,12 @@ fun BentoSettingsScreen(
                             else -> showShortcutSearchAssistantSheet = true
                         }
                     },
+                    showHiddenApps = showHiddenAppsInSearch,
+                    onShowHiddenAppsChange = {
+                        showHiddenAppsInSearch = it
+                        preferencesRepository.setShowHiddenAppsInSearch(it)
+                    },
                     modifier = Modifier
-                        .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                         .offset(y = (-32).dp)
                 )
@@ -693,6 +701,7 @@ fun BentoSettingsScreen(
                     onSetupAssistant()
                     showShortcutSearchAssistantSheet = false
                 },
+                title = stringResource(R.string.default_assistant_required),
                 message = stringResource(R.string.shortcut_search_assistant_needed)
             )
         }

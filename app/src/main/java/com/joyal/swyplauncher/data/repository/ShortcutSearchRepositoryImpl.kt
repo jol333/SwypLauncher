@@ -59,7 +59,10 @@ class ShortcutSearchRepositoryImpl @Inject constructor(
         if (entries.isEmpty()) return emptyList()
 
         val q = trimmed.lowercase()
-        val hiddenApps = preferencesRepository.getHiddenApps()
+        // Hidden apps' shortcuts are searchable along with the apps themselves when the user
+        // has opted into showing hidden apps in search
+        val hiddenApps = if (preferencesRepository.isShowHiddenAppsInSearchEnabled()) emptySet()
+        else preferencesRepository.getHiddenApps()
         val hiddenShortcuts = preferencesRepository.getHiddenShortcuts()
         // Shortcut ids mapped to this exact search word via the long-press "set a shortcut"
         val aliasedIds = preferencesRepository.getShortcutSearchAliases()
@@ -83,12 +86,14 @@ class ShortcutSearchRepositoryImpl @Inject constructor(
             .toList()
     }
 
-    override suspend fun getAllShortcuts(): List<ShortcutSearchItem> {
+    override suspend fun getAllShortcuts(forResults: Boolean): List<ShortcutSearchItem> {
         if (!preferencesRepository.isShortcutSearchEnabled()) return emptyList()
         val entries = ensureIndex(maxAgeMs = Long.MAX_VALUE) ?: return emptyList()
         if (entries.isEmpty()) return emptyList()
 
-        val hiddenApps = preferencesRepository.getHiddenApps()
+        val hiddenApps =
+            if (forResults && preferencesRepository.isShowHiddenAppsInSearchEnabled()) emptySet()
+            else preferencesRepository.getHiddenApps()
         val hiddenShortcuts = preferencesRepository.getHiddenShortcuts()
 
         return entries.asSequence()

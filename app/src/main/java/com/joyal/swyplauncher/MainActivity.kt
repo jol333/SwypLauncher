@@ -279,6 +279,7 @@ fun SortOrderDialogContent(
                                 com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> stringResource(R.string.by_name_az)
                                 com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> stringResource(R.string.by_usage)
                                 com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> stringResource(R.string.by_category)
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.INSTALL_DATE -> stringResource(R.string.by_install_date)
                             },
                             style = MaterialTheme.typography.bodyLarge
                         )
@@ -287,6 +288,7 @@ fun SortOrderDialogContent(
                                 com.joyal.swyplauncher.domain.repository.AppSortOrder.NAME -> stringResource(R.string.sort_name_desc)
                                 com.joyal.swyplauncher.domain.repository.AppSortOrder.USAGE -> stringResource(R.string.sort_usage_desc)
                                 com.joyal.swyplauncher.domain.repository.AppSortOrder.CATEGORY -> stringResource(R.string.grouped_by_app_category)
+                                com.joyal.swyplauncher.domain.repository.AppSortOrder.INSTALL_DATE -> stringResource(R.string.sort_install_date_desc)
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant

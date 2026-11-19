@@ -229,6 +229,7 @@ fun KeyboardModeScreen(
                     smartApps = launcherState.keyboardSmartApps,
                     appsToShow = appsToShow,
                     hiddenApps = launcherState.hiddenApps,
+                    searchableHiddenApps = launcherState.searchableHiddenApps,
                     sortOrder = sortOrder,
                     gridSize = gridSize,
                     cornerRadius = cornerRadius,

@@ -148,7 +148,9 @@ fun HandwritingModeScreen(
     LaunchedEffect(matchedGesture, handwritingState.recognizedText) {
         val gesture = matchedGesture
         when {
-            gesture != null -> launcherViewModel.filterAppsByCustomGestureHandwriting(gesture.appIds, gesture.shortcutIds)
+            gesture != null -> launcherViewModel.filterAppsByCustomGestureHandwriting(
+                gesture.appIds, gesture.shortcutIds, handwritingState.recognizedText
+            )
             handwritingState.recognizedText.isNotEmpty() ->
                 launcherViewModel.filterAppsByPrefixHandwriting(handwritingState.recognizedText)
 
@@ -163,8 +165,9 @@ fun HandwritingModeScreen(
         if (wasLoading && !launcherState.isLoading) {
             val gesture = matchedGesture
             when {
-                gesture != null ->
-                    launcherViewModel.filterAppsByCustomGestureHandwriting(gesture.appIds, gesture.shortcutIds)
+                gesture != null -> launcherViewModel.filterAppsByCustomGestureHandwriting(
+                    gesture.appIds, gesture.shortcutIds, handwritingState.recognizedText
+                )
 
                 handwritingState.recognizedText.isNotEmpty() ->
                     launcherViewModel.filterAppsByPrefixHandwriting(handwritingState.recognizedText)
@@ -479,9 +482,10 @@ fun HandwritingModeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        val gestureNow = matchedGesture
+                        // From the results rather than matchedGesture: a gesture with nothing
+                        // visible to show falls back to (and is labelled as) its recognized text
                         Text(
-                            text = if (gestureNow != null) {
+                            text = if (launcherState.handwritingGestureMatched) {
                                 stringResource(R.string.gesture_matched_label)
                             } else {
                                 "${stringResource(R.string.recognized)} ${handwritingState.recognizedText}"
@@ -573,6 +577,7 @@ fun HandwritingModeScreen(
                 smartApps = launcherState.handwritingSmartApps,
                 appsToShow = launcherState.handwritingFilteredApps,
                 hiddenApps = launcherState.hiddenApps,
+                searchableHiddenApps = launcherState.searchableHiddenApps,
                 sortOrder = sortOrder,
                 gridSize = gridSize,
                 cornerRadius = cornerRadius,
@@ -587,7 +592,7 @@ fun HandwritingModeScreen(
                 onDismiss = onDismiss,
                 shortcutResults = launcherState.handwritingShortcutResults,
                 // A matched gesture carries assigned shortcuts but no text query, so surface them.
-                forceShowShortcuts = matchedGesture != null,
+                forceShowShortcuts = launcherState.handwritingGestureMatched,
                 loadAllAppsOnOpen = loadAllAppsOnOpen,
                 allAppsRevealed = allAppsRevealed,
                 onRevealAllApps = { launcherViewModel.revealAllApps() }

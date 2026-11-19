@@ -85,15 +85,22 @@
     <string name="by_usage">Nach Nutzung</string>
     <string name="by_category">Nach Kategorie</string>
     <string name="grouped_by_app_category">Nach App-Kategorie gruppiert</string>
+    <string name="sort_install_date">Neueste</string>
+    <string name="sort_install_date_desc">Neu installierte Apps zuerst</string>
+    <string name="by_install_date">Nach Installationsdatum</string>
     
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">App automatisch öffnen</string>
     <string name="auto_open_desc">App sofort öffnen, wenn nur ein Treffer</string>
 
-    <!-- Settings Screen - App shortcut search -->
-    <string name="shortcut_search_title">App-Shortcuts suchen</string>
-    <string name="shortcut_search_desc">App-Shortcut-Aktionen in den Suchergebnissen anzeigen</string>
-    <string name="shortcut_search_assistant_needed">Die Suche nach App-Shortcuts erfordert, dass Swyp Launcher dein Standard-Assistent ist</string>
+    <!-- Settings Screen - Search section -->
+    <string name="search_results_label">SUCHERGEBNISSE</string>
+    <string name="shortcut_search_title">App-Shortcuts einbeziehen</string>
+    <string name="shortcut_search_desc">Schnellaktionen in Apps in den Suchergebnissen finden</string>
+    <string name="show_hidden_apps_in_search_title">Versteckte Apps einbeziehen</string>
+    <string name="show_hidden_apps_in_search_desc">Versteckte Apps in den Suchergebnissen anzeigen</string>
+    <string name="default_assistant_required">Standard-Assistent erforderlich</string>
+    <string name="shortcut_search_assistant_needed">Android erfordert, dass Swyp Launcher dein Standard-Assistent ist, um nach App-Shortcuts zu suchen</string>
     <string name="hide_shortcut">Verbergen</string>
     <string name="shortcut_alias_hint">Tippe ein Zauberwort, um \"%1$s\" in der Suche zu finden</string>
 

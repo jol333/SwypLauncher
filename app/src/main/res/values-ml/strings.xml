@@ -85,15 +85,22 @@
     <string name="by_usage">ഉപയോഗം അനുസരിച്ച്</string>
     <string name="by_category">വിഭാഗം അനുസരിച്ച്</string>
     <string name="grouped_by_app_category">കൂടുതൽ ഉപയോഗിക്കുന്നത് ആദ്യം</string>
+    <string name="sort_install_date">പുതിയവ</string>
+    <string name="sort_install_date_desc">പുതുതായി ഇൻസ്റ്റാൾ ചെയ്ത ആപ്പുകൾ ആദ്യം</string>
+    <string name="by_install_date">ഇൻസ്റ്റാൾ ചെയ്ത തീയതി അനുസരിച്ച്</string>
     
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">ആപ്പ് സ്വയം തുറക്കുക</string>
     <string name="auto_open_desc">ഒരു സെർച്ച് റിസൾട്ട് മാത്രമാണെങ്കിൽ ഉടൻ തുറക്കുക</string>
 
-    <!-- Settings Screen - App shortcut search -->
-    <string name="shortcut_search_title">ആപ്പ് ഷോർട്ട്കട്ടുകൾ തിരയുക</string>
-    <string name="shortcut_search_desc">സെർച്ച് റിസൾട്ടുകളിൽ ആപ്പ് ഷോർട്ട്കട്ടുകൾ കാണിക്കൂ</string>
-    <string name="shortcut_search_assistant_needed">ഷോർട്ട്കട്ടുകൾ തിരയാൻ സ്വൈപ് ലോഞ്ചർ നിങ്ങളുടെ ഡിഫോൾട്ട് അസിസ്റ്റന്റ് ആയിരിക്കണം</string>
+    <!-- Settings Screen - Search section -->
+    <string name="search_results_label">സെർച്ച് റിസൾട്ടുകൾ</string>
+    <string name="shortcut_search_title">ആപ്പ് ഷോർട്ട്കട്ടുകൾ ഉൾപ്പെടുത്തൂ</string>
+    <string name="shortcut_search_desc">സെർച്ച് റിസൾട്ടുകളിൽ ആപ്പുകളിലെ ക്വിക്ക് ആക്ഷനുകൾ കണ്ടെത്തൂ</string>
+    <string name="show_hidden_apps_in_search_title">ഒളിപ്പിച്ച ആപ്പുകൾ ഉൾപ്പെടുത്തൂ</string>
+    <string name="show_hidden_apps_in_search_desc">സെർച്ച് റിസൾട്ടുകളിൽ ഒളിപ്പിച്ച ആപ്പുകൾ കാണിക്കൂ</string>
+    <string name="default_assistant_required">ഡിഫോൾട്ട് അസിസ്റ്റന്റ് ആവശ്യമാണ്</string>
+    <string name="shortcut_search_assistant_needed">ആപ്പ് ഷോർട്ട്കട്ടുകൾ തിരയാൻ സ്വൈപ് ലോഞ്ചർ നിങ്ങളുടെ ഡിഫോൾട്ട് ഡിജിറ്റൽ അസിസ്റ്റന്റ് ആയിരിക്കണമെന്ന് ആൻഡ്രോയിഡ് ആവശ്യപ്പെടുന്നു</string>
     <string name="hide_shortcut">ഒളിപ്പിക്കുക</string>
     <string name="shortcut_alias_hint">സെർച്ചിൽ \"%1$s\" കണ്ടെത്താൻ ഒരു മാന്ത്രിക വാക്ക് ടൈപ്പ് ചെയ്യുക</string>
 

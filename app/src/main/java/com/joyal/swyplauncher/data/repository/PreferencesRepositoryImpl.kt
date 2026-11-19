@@ -96,6 +96,13 @@ class PreferencesRepositoryImpl @Inject constructor(
         prefs.edit { putBoolean(KEY_SHORTCUT_SEARCH_ENABLED, enabled) }
     }
 
+    override fun isShowHiddenAppsInSearchEnabled(): Boolean =
+        prefs.getBoolean(KEY_SHOW_HIDDEN_APPS_IN_SEARCH, false)
+
+    override fun setShowHiddenAppsInSearch(enabled: Boolean) {
+        prefs.edit { putBoolean(KEY_SHOW_HIDDEN_APPS_IN_SEARCH, enabled) }
+    }
+
     override fun getHiddenShortcuts(): Set<String> =
         prefs.getStringSet(KEY_HIDDEN_SHORTCUTS, emptySet()) ?: emptySet()
 
@@ -334,6 +341,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         private const val KEY_AUTO_OPEN_SINGLE_RESULT = "auto_open_single_result"
         private const val KEY_LOAD_ALL_APPS_ON_OPEN = "load_all_apps_on_open"
         private const val KEY_SHORTCUT_SEARCH_ENABLED = "shortcut_search_enabled"
+        private const val KEY_SHOW_HIDDEN_APPS_IN_SEARCH = "show_hidden_apps_in_search"
         private const val KEY_HIDDEN_SHORTCUTS = "hidden_shortcuts"
         private const val KEY_SHORTCUT_SEARCH_ALIASES = "shortcut_search_aliases"
         private const val KEY_ENABLED_MODES = "enabled_modes"

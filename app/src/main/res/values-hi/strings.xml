@@ -85,15 +85,22 @@
     <string name="by_usage">इस्तेमाल से (Usage)</string>
     <string name="by_category">कैटेगरी से</string>
     <string name="grouped_by_app_category">App कैटेगरी के हिसाब से ग्रुप</string>
+    <string name="sort_install_date">नए</string>
+    <string name="sort_install_date_desc">नए इंस्टॉल किए गए apps पहले दिखते हैं</string>
+    <string name="by_install_date">इंस्टॉल तिथि से</string>
     
     <!-- Settings Screen - Auto-open -->
     <string name="auto_open_app">App अपने आप खोलें</string>
     <string name="auto_open_desc">अगर एक ही रिजल्ट हो तो अपने आप खोलें</string>
 
-    <!-- Settings Screen - App shortcut search -->
-    <string name="shortcut_search_title">App शॉर्टकट खोजें</string>
-    <string name="shortcut_search_desc">खोज परिणामों में app शॉर्टकट क्रियाएं दिखाएं</string>
-    <string name="shortcut_search_assistant_needed">App शॉर्टकट खोजने के लिए Swyp Launcher को आपका डिफ़ॉल्ट डिजिटल असिस्टेंट होना चाहिए</string>
+    <!-- Settings Screen - Search section -->
+    <string name="search_results_label">खोज परिणाम</string>
+    <string name="shortcut_search_title">App शॉर्टकट शामिल करें</string>
+    <string name="shortcut_search_desc">सर्च रिज़ल्ट में apps के अंदर के क्विक एक्शन खोजें</string>
+    <string name="show_hidden_apps_in_search_title">छिपे हुए apps शामिल करें</string>
+    <string name="show_hidden_apps_in_search_desc">सर्च रिज़ल्ट में छिपे हुए apps दिखाएं</string>
+    <string name="default_assistant_required">डिफ़ॉल्ट असिस्टेंट ज़रूरी है</string>
+    <string name="shortcut_search_assistant_needed">Android में app शॉर्टकट खोजने के लिए Swyp Launcher का डिफ़ॉल्ट डिजिटल असिस्टेंट होना ज़रूरी है</string>
     <string name="hide_shortcut">छिपाएं</string>
     <string name="shortcut_alias_hint">सर्च में \"%1$s\" खोजने के लिए एक मैजिक वर्ड टाइप करें</string>
 

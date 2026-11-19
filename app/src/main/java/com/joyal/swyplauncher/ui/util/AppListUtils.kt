@@ -23,6 +23,10 @@ fun sortApps(
             compareBy<AppInfo> { if (it.category == "Other") "zzz" else it.category }
                 .thenBy { it.sortKey }
         )
+        // Newest install first; apps from the same package (same install time) stay together
+        AppSortOrder.INSTALL_DATE -> apps.sortedWith(
+            compareByDescending<AppInfo> { it.installTime }.thenBy { it.sortKey }
+        )
     }
 }
 
