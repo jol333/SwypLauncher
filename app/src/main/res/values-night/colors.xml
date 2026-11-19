@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Widget colors (dark/night mode) -->
-    <color name="widget_background">#1C1B1F</color>
-    <color name="widget_icon_container">#2B2930</color>
-    <color name="widget_text_color">#E6E1E5</color>
-    <color name="widget_icon_tint">#E6E1E5</color>
+    <!-- Widget colors (dark/night mode), matching the settings screen's bento cards -->
+    <color name="widget_background">#111113</color>
+    <color name="widget_background_glow">#0F1F19</color>
+    <color name="widget_tile">#1C1C1F</color>
+    <color name="widget_tile_stroke">#1AFFFFFF</color>
+    <color name="widget_text_color">#FFFFFF</color>
+    <color name="widget_text_secondary">#9F9FA9</color>
+    <color name="widget_accent">#00BC7D</color>
+    <color name="widget_accent_container">#2600BC7D</color>
+    <color name="widget_on_accent">#0B0B0C</color>
+    <color name="widget_ripple">#33FFFFFF</color>
 </resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ic_keyboard inset by a fraction, so drawn over widget_circle at the same size it scales with it -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_keyboard"
+    android:inset="27%" />

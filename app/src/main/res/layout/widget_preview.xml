@@ -1,142 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget picker preview and initial layout: a static copy of the Glance search bar
+     (SearchBarLayout in SwypLauncherWidget) with all four modes enabled, without click actions. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/widget_background"
-    android:gravity="center"
+    android:background="@drawable/widget_background"
+    android:baselineAligned="false"
+    android:clipToOutline="true"
+    android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="8dp"
-    android:paddingVertical="4dp">
+    android:padding="8dp">
 
-    <!-- Draw -->
     <LinearLayout
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:layout_weight="1"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:padding="2dp">
+        android:background="@drawable/widget_pill"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="4dp"
+        android:paddingEnd="16dp">
 
         <FrameLayout
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="@color/widget_icon_container">
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/widget_accent_circle">
 
             <ImageView
-                android:layout_width="26dp"
-                android:layout_height="26dp"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_handwriting"
-                android:tint="@color/widget_icon_tint" />
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_quick_tile"
+                android:tint="@color/widget_on_accent" />
         </FrameLayout>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="@string/shortcut_handwriting_short"
-            android:textColor="@color/widget_text_color"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-medium"
-            android:maxLines="1" />
+            android:layout_marginStart="10dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/search_apps_hint"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="14sp" />
     </LinearLayout>
 
-    <!-- Index -->
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:padding="2dp">
+    <FrameLayout
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/widget_pill">
 
-        <FrameLayout
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="@color/widget_icon_container">
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_handwriting"
+            android:tint="@color/widget_accent" />
+    </FrameLayout>
 
-            <ImageView
-                android:layout_width="26dp"
-                android:layout_height="26dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_index"
-                android:tint="@color/widget_icon_tint" />
-        </FrameLayout>
+    <FrameLayout
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/widget_pill">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="@string/shortcut_index_short"
-            android:textColor="@color/widget_text_color"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-medium"
-            android:maxLines="1" />
-    </LinearLayout>
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_index"
+            android:tint="@color/widget_accent" />
+    </FrameLayout>
 
-    <!-- Type -->
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:padding="2dp">
+    <FrameLayout
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/widget_pill">
 
-        <FrameLayout
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="@color/widget_icon_container">
-
-            <ImageView
-                android:layout_width="26dp"
-                android:layout_height="26dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_keyboard"
-                android:tint="@color/widget_icon_tint" />
-        </FrameLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="@string/shortcut_keyboard_short"
-            android:textColor="@color/widget_text_color"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-medium"
-            android:maxLines="1" />
-    </LinearLayout>
-
-    <!-- Voice -->
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:padding="2dp">
-
-        <FrameLayout
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="@color/widget_icon_container">
-
-            <ImageView
-                android:layout_width="26dp"
-                android:layout_height="26dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_microphone"
-                android:tint="@color/widget_icon_tint" />
-        </FrameLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="@string/shortcut_voice_short"
-            android:textColor="@color/widget_text_color"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-medium"
-            android:maxLines="1" />
-    </LinearLayout>
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_microphone"
+            android:tint="@color/widget_accent" />
+    </FrameLayout>
 
 </LinearLayout>

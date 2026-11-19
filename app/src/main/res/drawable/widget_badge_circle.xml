@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Filled accent circle behind the Swyp mark in the search pill. The size is only its aspect
+     ratio, kept tiny so the pill never asks for more height than the round buttons beside it. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/widget_accent" />
+    <size
+        android:width="8dp"
+        android:height="8dp" />
+</shape>

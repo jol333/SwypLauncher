@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- MATCH_PARENT as a dimen, for the widget's search pill: Glance turns a fillMaxHeight() child
+         into a fill-height parent, while a dimen height reaches the RemoteViews unchanged, so the
+         pill can match its row's height without making the row fill the widget (see SearchPill). -->
+    <dimen name="widget_match_parent">-1px</dimen>
+</resources>

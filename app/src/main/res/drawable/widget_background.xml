@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget surface: a faint green glow from the top-left corner, like the settings cards.
+     The launcher clips the widget to its own corner shape. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="315"
+        android:endColor="@color/widget_background"
+        android:startColor="@color/widget_background_glow" />
+    <corners android:radius="@android:dimen/system_app_widget_background_radius" />
+</shape>

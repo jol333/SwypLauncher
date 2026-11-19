@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Widget colors (light/day mode) -->
-    <color name="widget_background">#F2F2F2</color>
-    <color name="widget_icon_container">#E0E0E0</color>
-    <color name="widget_text_color">#1C1B1F</color>
-    <color name="widget_icon_tint">#1C1B1F</color>
+    <!-- Widget colors (light/day mode). Night values are in values-night; the launcher resolves
+         them itself, so the widget follows the system theme without being re-rendered.
+         Zinc neutrals + the settings screen's green accent (BentoColors). -->
+    <color name="widget_background">#F4F4F5</color>
+    <color name="widget_background_glow">#E3F4EC</color>
+    <color name="widget_tile">#FFFFFF</color>
+    <color name="widget_tile_stroke">#1418181B</color>
+    <color name="widget_text_color">#18181B</color>
+    <color name="widget_text_secondary">#71717A</color>
+    <color name="widget_accent">#009966</color>
+    <color name="widget_accent_container">#1F00BC7D</color>
+    <color name="widget_on_accent">#FFFFFF</color>
+    <color name="widget_ripple">#1F18181B</color>
 </resources>

@@ -43,6 +43,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
 import com.joyal.swyplauncher.domain.model.AppInfo
 import com.joyal.swyplauncher.domain.model.IconPackInfo
@@ -482,6 +483,11 @@ fun ModeOrderDialogContent(
                             context,
                             modesToSave
                         )
+                    }
+                    // The home-screen widget shows one button per enabled mode. No-op (and no
+                    // WorkManager start) when no widget is placed.
+                    (context as? androidx.lifecycle.LifecycleOwner)?.lifecycleScope?.launch {
+                        com.joyal.swyplauncher.widget.SwypLauncherWidget().updateAll(context)
                     }
                     onSave(enabledModes.size)
                     onDismiss()
